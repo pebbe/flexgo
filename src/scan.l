@@ -360,6 +360,7 @@ M4QEND      "]]"
 			useecs = usemecs = false;
 			use_read = fulltbl = true;
 			}
+	go		Go = option_sense;
 	input		ACTION_IFDEF("YY_NO_INPUT", ! option_sense);
 	interactive	interactive = option_sense;
 	lex-compat	lex_compat = option_sense;

@@ -22,6 +22,7 @@ flex_SOURCES = \
 	parse.y \
 	scan.l \
 	skel.c \
+	skel_go.c \
 	sym.c \
 	tblcmp.c \
 	yylex.c \
@@ -62,15 +63,20 @@ include_HEADERS = \
 EXTRA_DIST = \
 	flex.skl \
 	mkskel.sh \
+	mkskel_go.sh \
 	gettext.h
 
 BUILT_SOURCES = \
-	skel.c
+	skel.c \
+	skel_go.c
 
-MAINTAINERCLEANFILES = skel.c
+MAINTAINERCLEANFILES = skel.c skel_go.c
 
 skel.c: flex.skl mkskel.sh flexint.h tables_shared.h
 	sed 's/m4_/m4postproc_/g; s/m4preproc_/m4_/g' $(srcdir)/flex.skl | $(m4) -P -DFLEX_MAJOR_VERSION=`echo $(VERSION)|cut -f 1 -d .` -DFLEX_MINOR_VERSION=`echo $(VERSION)|cut -f 2 -d .` -DFLEX_SUBMINOR_VERSION=`echo $(VERSION)|cut -f 3 -d .` | sed 's/m4postproc_/m4_/g' | $(SHELL) $(srcdir)/mkskel.sh  >skel.c
+
+skel_go.c: flex_go.skl mkskel_go.sh flexint.h tables_shared.h
+	sed 's/m4_/m4postproc_/g; s/m4preproc_/m4_/g' $(srcdir)/flex_go.skl | $(m4) -P -DFLEX_MAJOR_VERSION=`echo $(VERSION)|cut -f 1 -d .` -DFLEX_MINOR_VERSION=`echo $(VERSION)|cut -f 2 -d .` -DFLEX_SUBMINOR_VERSION=`echo $(VERSION)|cut -f 3 -d .` | sed 's/m4postproc_/m4_/g' | $(SHELL) $(srcdir)/mkskel_go.sh  >skel_go.c
 
 # Explicitly describe dependencies.
 # You can recreate this with `gcc -I. -MM *.c'
@@ -91,6 +97,7 @@ parse.o: parse.c flexdef.h flexint.h tables.h tables_shared.h
 scan.o: scan.c flexdef.h flexint.h parse.h
 scanopt.o: scanopt.c flexdef.h flexint.h scanopt.h
 skel.o: skel.c flexdef.h flexint.h
+skel_go.o: skel_go.c flexdef.h flexint.h
 sym.o: sym.c flexdef.h flexint.h
 tables.o: tables.c flexdef.h flexint.h tables.h tables_shared.h
 tables_shared.o: tables_shared.c flexdef.h flexint.h tables.h \

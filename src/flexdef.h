@@ -373,6 +373,8 @@ char *alloca ();
  *   listing backing-up states
  * C_plus_plus - if true (i.e., -+ flag), generate a C++ scanner class;
  *   otherwise, a standard C scanner
+ * Go - if true (i.e., --go flag), generate Go code;
+ *   otherwise, C or C++ code
  * reentrant - if true (-R), generate a reentrant C scanner.
  * bison_bridge_lval - if true (--bison-bridge), bison pure calling convention.
  * bison_bridge_lloc - if true (--bison-locations), bison yylloc.
@@ -406,6 +408,7 @@ extern int gen_line_dirs, performance_report, backing_up_report;
 extern int reentrant, bison_bridge_lval, bison_bridge_lloc;
 extern bool ansi_func_defs, ansi_func_protos;
 extern int C_plus_plus, long_align, use_read, yytext_is_array, do_yywrap;
+extern int Go;
 extern int csize;
 extern int yymore_used, reject, real_reject, continued_action, in_rule;
 
@@ -419,6 +422,7 @@ extern int trace_hex;
  * linenum - current input line number
  * skelfile - the skeleton file
  * skel - compiled-in skeleton array
+ * skel_go - compiled-in skeleton array, Go version
  * skel_ind - index into "skel" array, if skelfile is nil
  * yyin - input file
  * backing_up_file - file to summarize backing-up states to
@@ -446,7 +450,8 @@ extern int trace_hex;
 
 extern int datapos, dataline, linenum;
 extern FILE *skelfile, *yyin, *backing_up_file;
-extern const char *skel[];
+extern const char **skel;
+extern const char **skel_go;
 extern int skel_ind;
 extern char *infilename, *outfilename, *headerfilename;
 extern int did_outfilename;

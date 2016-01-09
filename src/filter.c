@@ -394,7 +394,7 @@ int filter_fix_linedirs (struct filter *chain)
 
 				/* Adjust the line directives. */
 				in_gen = true;
-				snprintf (buf, readsz, "#line %d \"%s\"\n",
+				snprintf (buf, readsz, Go ? "//line %d \"%s\"\n" : "#line %d \"%s\"\n",
 					  lineno + 1, filename);
 			}
 			else {

@@ -159,7 +159,7 @@ PROGRAMS = $(bin_PROGRAMS)
 am_flex_OBJECTS = ccl.$(OBJEXT) dfa.$(OBJEXT) ecs.$(OBJEXT) \
 	scanflags.$(OBJEXT) gen.$(OBJEXT) main.$(OBJEXT) \
 	misc.$(OBJEXT) nfa.$(OBJEXT) parse.$(OBJEXT) scan.$(OBJEXT) \
-	skel.$(OBJEXT) sym.$(OBJEXT) tblcmp.$(OBJEXT) yylex.$(OBJEXT) \
+	skel.$(OBJEXT) skel_go.$(OBJEXT) sym.$(OBJEXT) tblcmp.$(OBJEXT) yylex.$(OBJEXT) \
 	options.$(OBJEXT) scanopt.$(OBJEXT) buf.$(OBJEXT) \
 	tables.$(OBJEXT) tables_shared.$(OBJEXT) filter.$(OBJEXT) \
 	regex.$(OBJEXT)
@@ -417,6 +417,7 @@ flex_SOURCES = \
 	parse.y \
 	scan.l \
 	skel.c \
+	skel_go.c \
 	sym.c \
 	tblcmp.c \
 	yylex.c \
@@ -454,12 +455,14 @@ include_HEADERS = \
 EXTRA_DIST = \
 	flex.skl \
 	mkskel.sh \
+	mkskel_go.sh \
 	gettext.h
 
 BUILT_SOURCES = \
-	skel.c
+	skel.c \
+	skel_go.c
 
-MAINTAINERCLEANFILES = skel.c
+MAINTAINERCLEANFILES = skel.c skel_go.c
 
 # Run GNU indent on sources. Don't run this unless all the sources compile cleanly.
 #
@@ -683,6 +686,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scanflags.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scanopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/skel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/skel_go.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sym.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables_shared.Po@am__quote@
@@ -969,6 +973,9 @@ uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
 skel.c: flex.skl mkskel.sh flexint.h tables_shared.h
 	sed 's/m4_/m4postproc_/g; s/m4preproc_/m4_/g' $(srcdir)/flex.skl | $(m4) -P -DFLEX_MAJOR_VERSION=`echo $(VERSION)|cut -f 1 -d .` -DFLEX_MINOR_VERSION=`echo $(VERSION)|cut -f 2 -d .` -DFLEX_SUBMINOR_VERSION=`echo $(VERSION)|cut -f 3 -d .` | sed 's/m4postproc_/m4_/g' | $(SHELL) $(srcdir)/mkskel.sh  >skel.c
 
+skel_go.c: flex_go.skl mkskel_go.sh flexint.h tables_shared.h
+	sed 's/m4_/m4postproc_/g; s/m4preproc_/m4_/g' $(srcdir)/flex_go.skl | $(m4) -P -DFLEX_MAJOR_VERSION=`echo $(VERSION)|cut -f 1 -d .` -DFLEX_MINOR_VERSION=`echo $(VERSION)|cut -f 2 -d .` -DFLEX_SUBMINOR_VERSION=`echo $(VERSION)|cut -f 3 -d .` | sed 's/m4postproc_/m4_/g' | $(SHELL) $(srcdir)/mkskel_go.sh  >skel_go.c
+
 # Explicitly describe dependencies.
 # You can recreate this with `gcc -I. -MM *.c'
 buf.o: buf.c flexdef.h flexint.h
@@ -988,6 +995,7 @@ parse.o: parse.c flexdef.h flexint.h tables.h tables_shared.h
 scan.o: scan.c flexdef.h flexint.h parse.h
 scanopt.o: scanopt.c flexdef.h flexint.h scanopt.h
 skel.o: skel.c flexdef.h flexint.h
+skel_go.o: skel_go.c flexdef.h flexint.h
 sym.o: sym.c flexdef.h flexint.h
 tables.o: tables.c flexdef.h flexint.h tables.h tables_shared.h
 tables_shared.o: tables_shared.c flexdef.h flexint.h tables.h \

@@ -22,11 +22,11 @@
 #  PURPOSE.
 
 cat <<!
-/* File created from flex.skl via mkskel.sh */
+/* File created from flex_go.skl via mkskel_go.sh */
 
 #include "flexdef.h"
 
-const char *skel1[] = {
+const char *skel1_go[] = {
 !
 
 sed 's/\\/&&/g' | sed 's/"/\\"/g' | sed 's/.*/  "&",/'
@@ -34,5 +34,5 @@ sed 's/\\/&&/g' | sed 's/"/\\"/g' | sed 's/.*/  "&",/'
 cat <<!
   0
 };
-const char **skel = skel1;
+const char **skel_go = skel1_go;
 !

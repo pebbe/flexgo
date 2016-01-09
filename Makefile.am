@@ -66,5 +66,7 @@ ChangeLog: $(srcdir)/tools/git2cl
 install-exec-hook:
 	cd $(DESTDIR)$(bindir) && \
 		$(LN_S) -f flex$(EXEEXT) flex++$(EXEEXT)
+	cd $(DESTDIR)$(bindir) && \
+		$(LN_S) -f flex$(EXEEXT) flexgo$(EXEEXT)
 
 .PHONY: ChangeLog tags indent

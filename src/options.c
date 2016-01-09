@@ -109,6 +109,10 @@ optspec_t flexopts[] = {
 	,
 	{"--full", OPT_FULL, 0}
 	,			/* Same as -Cfr. */
+	{"-G", OPT_GO, 0}
+	,
+	{"--go", OPT_GO, 0}
+	,			/* Generate Go code. */
 	{"--header-file[=FILE]", OPT_HEADER_FILE, 0}
 	,
 	{"-?", OPT_HELP, 0}

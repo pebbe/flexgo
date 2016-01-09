@@ -2,7 +2,7 @@
 
 #include "flexdef.h"
 
-const char *skel[] = {
+const char *skel1[] = {
   "%# -*-C-*- vi: set ft=c:",
   "%# This file is processed in several stages.",
   "%# Here are the stages, as best as I can describe:",
@@ -3833,3 +3833,4 @@ const char *skel[] = {
   "]])",
   0
 };
+const char **skel = skel1;

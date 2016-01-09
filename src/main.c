@@ -54,6 +54,7 @@ int     interactive, lex_compat, posix_compat, do_yylineno,
 int     fullspd, gen_line_dirs, performance_report, backing_up_report;
 int     C_plus_plus, long_align, use_read, yytext_is_array, do_yywrap,
 	csize;
+int     Go;
 int     reentrant, bison_bridge_lval, bison_bridge_lloc;
 int     yymore_used, reject, real_reject, continued_action, in_rule;
 int     yymore_really_used, reject_really_used;
@@ -343,6 +344,8 @@ void check_options ()
 
 			if (C_plus_plus)
 				suffix = "cc";
+			else if (Go)
+				suffix = "go";
 			else
 				suffix = "c";
 
@@ -741,6 +744,8 @@ void flexend (exit_status)
 
 		if (C_plus_plus)
 			putc ('+', stderr);
+		if (Go)
+			putc ('G', stderr);
 		if (backing_up_report)
 			putc ('b', stderr);
 		if (ddebug)
@@ -937,6 +942,7 @@ void flexinit (argc, argv)
 	printstats = syntaxerror = trace = spprdflt = false;
 	lex_compat = posix_compat = C_plus_plus = backing_up_report =
 		ddebug = fulltbl = false;
+	Go = false;
 	fullspd = long_align = nowarn = yymore_used = continued_action =
 		false;
 	do_yylineno = yytext_is_array = in_rule = reject = do_stdinit =
@@ -987,6 +993,9 @@ void flexinit (argc, argv)
 	if (program_name[0] != '\0' &&
 	    program_name[strlen (program_name) - 1] == '+')
 		C_plus_plus = true;
+	if (program_name[0] != '\0' &&
+	    !strcmp(program_name, "flexgo"))
+		Go = true;
 
 	/* read flags */
 	sopt = scanopt_init (flexopts, argc, argv, 0);
@@ -1082,6 +1091,10 @@ void flexinit (argc, argv)
 		case OPT_FAST:
 			useecs = usemecs = false;
 			use_read = fullspd = true;
+			break;
+
+		case OPT_GO:
+			Go = true;
 			break;
 
 		case OPT_HELP:
@@ -1428,6 +1441,9 @@ void flexinit (argc, argv)
 	}			/* while scanopt() */
 
 	scanopt_destroy (sopt);
+
+	if (Go)
+	    skel = skel_go;
 
 	num_input_files = argc - optind;
 	input_files = argv + optind;
@@ -1799,7 +1815,7 @@ void usage ()
 
 	if (!did_outfilename) {
 		snprintf (outfile_path, sizeof(outfile_path), outfile_template,
-			 prefix, C_plus_plus ? "cc" : "c");
+			  prefix, Go ? "go" : (C_plus_plus ? "cc" : "c"));
 		outfilename = outfile_path;
 	}
 
@@ -1844,6 +1860,7 @@ void usage ()
 		  "      --yylineno          track line count in yylineno\n"
 		  "\n" "Generated code:\n"
 		  "  -+,  --c++               generate C++ scanner class\n"
+		  "  -G,  --go                generate Go code\n"
 		  "  -Dmacro[=defn]           #define macro defn  (default defn is '1')\n"
 		  "  -L,  --noline            suppress #line directives in scanner\n"
 		  "  -P,  --prefix=STRING     use STRING as prefix instead of \"yy\"\n"
