@@ -480,5 +480,4 @@ tests/yyextra
 tests/yyextra.c
 tests/yyextra.log
 tests/yyextra.trs
-tmp
 tools/Makefile

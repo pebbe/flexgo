@@ -1,0 +1,17 @@
+
+FLEX=/home/peter/goflex/bin/flex
+GOFLEX=/home/peter/goflex/bin/goflex
+
+all: demo-c demo-go demo-test
+
+demo-c: demo-c.c
+	gcc -s -Wall -o demo-c demo-c.c
+
+demo-c.c: demo.l
+	$(FLEX) -B -8 -o demo-c.c demo.l
+
+demo-go: demo-go.go
+	go build demo-go.go
+
+demo-test:
+	echo -n 'ACabc' | ./demo-go
