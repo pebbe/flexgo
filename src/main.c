@@ -468,6 +468,11 @@ void check_options ()
 
     /* This is where we begin writing to the file. */
 
+    if (Go) {
+	skelout();
+	out (&action_array[defs1_offset]);
+    }
+
     /* Dump the %top code. */
     if( top_buf.elts)
         outn((char*) top_buf.elts);
@@ -483,7 +488,8 @@ void check_options ()
 	if (userdef_buf.elts)
 		outn ((char *) (userdef_buf.elts));
 
-	skelout ();
+	if (!Go)
+	    skelout ();
 	/* %% [1.0] */
 }
 
@@ -1442,8 +1448,10 @@ void flexinit (argc, argv)
 
 	scanopt_destroy (sopt);
 
-	if (Go)
+	if (Go) {
 	    skel = skel_go;
+	    gen_line_dirs = false;
+	}
 
 	num_input_files = argc - optind;
 	input_files = argv + optind;

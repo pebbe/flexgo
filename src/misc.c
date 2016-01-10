@@ -321,7 +321,10 @@ void dataend ()
 			dataflush ();
 
 		/* add terminator for initialization; { for vi */
-		outn ("    } ;\n");
+		if (Go)
+		    outn ("    }\n");
+		else
+		    outn ("    } ;\n");
 	}
 	dataline = 0;
 	datapos = 0;
@@ -525,20 +528,35 @@ void mkdata (value)
 	if (!gentables)
 		return;
 
-	if (datapos >= NUMDATAITEMS) {
-		outc (',');
+	if (Go) {
+	    if (datapos >= NUMDATAITEMS) {
 		dataflush ();
-	}
+	    }
 
-	if (datapos == 0)
+	    if (datapos == 0)
 		/* Indent. */
 		out ("    ");
-	else
+
+	    ++datapos;
+
+	    out_dec ("%5d,", value);
+	} else {
+
+	    if (datapos >= NUMDATAITEMS) {
+		outc (',');
+		dataflush ();
+	    }
+
+	    if (datapos == 0)
+		/* Indent. */
+		out ("    ");
+	    else
 		outc (',');
 
-	++datapos;
+	    ++datapos;
 
-	out_dec ("%5d", value);
+	    out_dec ("%5d", value);
+	}
 }
 
 
