@@ -1071,10 +1071,10 @@ void gen_start_state (void)
 	}
 
 	else {
-		indent_puts ("yy_current_state = YY_G(yy_start);");
+	    indent_puts (Go ? "yy_current_state = yy_start" : "yy_current_state = YY_G(yy_start);");
 
 		if (bol_needed)
-			indent_puts ("yy_current_state += YY_AT_BOL();");
+		    indent_puts (Go ? "yy_current_state += YY_AT_BOL()" : "yy_current_state += YY_AT_BOL();");
 
 		if (reject) {
 			/* Set up for storing up states. */
