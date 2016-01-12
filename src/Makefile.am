@@ -16,6 +16,7 @@ flex_SOURCES = \
 	ecs.c \
 	scanflags.c \
 	gen.c \
+	gen_go.c \
 	main.c \
 	misc.c \
 	nfa.c \
@@ -86,6 +87,7 @@ dfa.o: dfa.c flexdef.h flexint.h tables.h tables_shared.h
 ecs.o: ecs.c flexdef.h flexint.h
 scanflags.o: scanflags.c flexdef.h flexint.h
 gen.o: gen.c flexdef.h flexint.h tables.h tables_shared.h
+gen_go.o: gen_go.c flexdef.h flexint.h tables.h tables_shared.h
 libmain.o: libmain.c
 libyywrap.o: libyywrap.c
 main.o: main.c flexdef.h flexint.h version.h options.h scanopt.h \
@@ -124,6 +126,7 @@ indentfiles = \
 	filter.c \
 	flexdef.h \
 	gen.c \
+	gen_go.c \
 	libmain.c \
 	libyywrap.c \
 	main.c \

@@ -199,7 +199,10 @@ int flex_main (argc, argv)
 			      rule_linenum[default_rule]);
 
 	/* Generate the C state transition tables from the DFA. */
-	make_tables ();
+	if (Go)
+	    make_tables_go ();
+	else
+	    make_tables ();
 
 	/* Note, flexend does not return.  It exits with its argument
 	 * as status.

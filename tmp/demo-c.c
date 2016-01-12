@@ -1079,36 +1079,32 @@ int yywrap()
 /*SKEL*/ 		yy_bp = yy_cp;
 /*SKEL*/
 /* %% [9.0] code to set up and find next match goes here */
-		yy_current_state = (yy_start);
-yy_match:
-		do
-			{
-			YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)] ;
-			if ( yy_accept[yy_current_state] )
-				{
-				(yy_last_accepting_state) = yy_current_state;
-				(yy_last_accepting_cpos) = yy_cp;
-				}
-			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
-				{
-				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 7 )
-					yy_c = yy_meta[(unsigned int) yy_c];
-				}
-			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-			++yy_cp;
-			}
-		while ( yy_base[yy_current_state] != 4 );
+/*make_tables():gen_start_state()*/		yy_current_state = (yy_start);
+/*make_tables()*/ yy_match:
+/*make_tables():gen_next_match()*/ 		do
+/*make_tables():gen_next_match()*/			{
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/			YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)] ;
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map):gen_backing_up()*/			if ( yy_accept[yy_current_state] )
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map):gen_backing_up()*/				{
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map):gen_backing_up()*/				(yy_last_accepting_state) = yy_current_state;
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map):gen_backing_up()*/				(yy_last_accepting_cpos) = yy_cp;
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map):gen_backing_up()*/				}
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/				{
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/				yy_current_state = (int) yy_def[yy_current_state];
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/				if ( yy_current_state >= 7 )
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/					yy_c = yy_meta[(unsigned int) yy_c];
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/				}
+/*make_tables():gen_next_match():gen_next_state(false):gen_next_compressed_state(char_map)*/			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+/*make_tables():gen_next_match()*/			++yy_cp;
+/*make_tables():gen_next_match()*/			}
+/*make_tables():gen_next_match()*/		while ( yy_current_state != 6 );
+/*make_tables():gen_next_match()*/		yy_cp = (yy_last_accepting_cpos);
+/*make_tables():gen_next_match()*/		yy_current_state = (yy_last_accepting_state);
 /*SKEL*/
 /*SKEL*/ yy_find_action:
 /* %% [10.0] code to find the action number goes here */
 		yy_act = yy_accept[yy_current_state];
-		if ( yy_act == 0 )
-			{ /* have to back up */
-			yy_cp = (yy_last_accepting_cpos);
-			yy_current_state = (yy_last_accepting_state);
-			yy_act = yy_accept[yy_current_state];
-			}
 /*SKEL*/
 /*SKEL*/ 		YY_DO_BEFORE_ACTION;
 /*SKEL*/
@@ -1154,7 +1150,7 @@ YY_RULE_SETUP
 #line 17 "demo.l"
 ECHO;
 	YY_BREAK
-#line 1158 "demo-c.c"
+#line 1154 "demo-c.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 /*SKEL*/
@@ -1226,7 +1222,8 @@ case YY_STATE_EOF(INITIAL):
 /*SKEL*/ 			else
 /*SKEL*/ 				{
 /* %% [14.0] code to do back-up for compressed tables and set up yy_cp goes here */
-				yy_cp = (yy_c_buf_p);
+				yy_cp = (yy_last_accepting_cpos);
+				yy_current_state = (yy_last_accepting_state);
 /*SKEL*/ 				goto yy_find_action;
 /*SKEL*/ 				}
 /*SKEL*/ 			}
@@ -2330,7 +2327,7 @@ case YY_STATE_EOF(INITIAL):
 /*SKEL*/ #ifndef yytext_ptr
 /*SKEL*/ static void yy_flex_strncpy (char* s1, yyconst char * s2, int n )
 /*SKEL*/ {
-/*SKEL*/ 	 	
+/*SKEL*/
 /*SKEL*/ 	int i;
 /*SKEL*/ 	for ( i = 0; i < n; ++i )
 /*SKEL*/ 		s1[i] = s2[i];
@@ -2361,7 +2358,7 @@ case YY_STATE_EOF(INITIAL):
 /*SKEL*/
 /*SKEL*/ void *yyrealloc  (void * ptr, yy_size_t  size )
 /*SKEL*/ {
-/*SKEL*/ 	 	
+/*SKEL*/
 /*SKEL*/ 	/* The cast to (char *) in the following accommodates both */
 /*SKEL*/ 	 /* implementations that use char* generic pointers, and those */
 /*SKEL*/ 	 /* that use void* generic pointers.  It works with the latter */

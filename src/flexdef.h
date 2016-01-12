@@ -831,6 +831,7 @@ extern void indent_put2s PROTO ((const char *, const char *));
 extern void indent_puts PROTO ((const char *));
 
 extern void make_tables PROTO ((void));	/* generate transition tables */
+extern void make_tables_go PROTO ((void));	/* generate transition tables */
 
 
 /* from file main.c */

@@ -157,7 +157,7 @@ libfl_pic_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(libfl_pic_la_LDFLAGS) $(LDFLAGS) -o $@
 PROGRAMS = $(bin_PROGRAMS)
 am_flex_OBJECTS = ccl.$(OBJEXT) dfa.$(OBJEXT) ecs.$(OBJEXT) \
-	scanflags.$(OBJEXT) gen.$(OBJEXT) main.$(OBJEXT) \
+	scanflags.$(OBJEXT) gen.$(OBJEXT) gen_go.$(OBJEXT) main.$(OBJEXT) \
 	misc.$(OBJEXT) nfa.$(OBJEXT) parse.$(OBJEXT) scan.$(OBJEXT) \
 	skel.$(OBJEXT) skel_go.$(OBJEXT) sym.$(OBJEXT) tblcmp.$(OBJEXT) yylex.$(OBJEXT) \
 	options.$(OBJEXT) scanopt.$(OBJEXT) buf.$(OBJEXT) \
@@ -411,6 +411,7 @@ flex_SOURCES = \
 	ecs.c \
 	scanflags.c \
 	gen.c \
+	gen_go.c \
 	main.c \
 	misc.c \
 	nfa.c \
@@ -482,6 +483,7 @@ indentfiles = \
 	filter.c \
 	flexdef.h \
 	gen.c \
+	gen_go.c \
 	libmain.c \
 	libyywrap.c \
 	main.c \
@@ -674,6 +676,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ecs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gen.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gen_go.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmain.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libyywrap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
@@ -984,6 +987,7 @@ dfa.o: dfa.c flexdef.h flexint.h tables.h tables_shared.h
 ecs.o: ecs.c flexdef.h flexint.h
 scanflags.o: scanflags.c flexdef.h flexint.h
 gen.o: gen.c flexdef.h flexint.h tables.h tables_shared.h
+gen_go.o: gen_go.c flexdef.h flexint.h tables.h tables_shared.h
 libmain.o: libmain.c
 libyywrap.o: libyywrap.c
 main.o: main.c flexdef.h flexint.h version.h options.h scanopt.h \
