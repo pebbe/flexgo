@@ -362,19 +362,24 @@ int filter_fix_linedirs (struct filter *chain)
 			&& regexec (&regex_linedir, buf, 3, m, 0) == 0) {
 
 			char   *fname;
+			char	filename[MAXLINE];
 
 			/* extract the line number and filename */
 			fname = regmatch_dup (&m[2], buf);
+
+			in_gen = false;
 
 			if (strcmp (fname,
 				outfilename ? outfilename : "<stdout>")
 					== 0
 			 || strcmp (fname,
 			 	headerfilename ? headerfilename : "<stdout>")
-					== 0) {
+					== 0)
+			    in_gen = true;
 
+			if (in_gen || Go) {
+				
 				char    *s1, *s2;
-				char	filename[MAXLINE];
 
 				s1 = fname;
 				s2 = filename;
@@ -392,14 +397,22 @@ int filter_fix_linedirs (struct filter *chain)
 
 				*s2 = '\0';
 
-				/* Adjust the line directives. */
-				in_gen = true;
-				snprintf (buf, readsz, Go ? "//line %d \"%s\"\n" : "#line %d \"%s\"\n",
+			}
+
+			/* Adjust the line directives. */
+			if (in_gen) {
+			    if (Go)
+				snprintf (buf, readsz, "//line %s:%d\n",
+					  filename, lineno + 1);
+			    else
+				snprintf (buf, readsz, "#line %d \"%s\"\n",
 					  lineno + 1, filename);
 			}
 			else {
-				/* it's a #line directive for code we didn't write */
-				in_gen = false;
+			    if (Go)
+				snprintf (buf, readsz, "//line %s:%s\n",
+					  filename, regmatch_dup (&m[1], buf));
+			    /* it's a #line directive for code we didn't write */
 			}
 
 			free (fname);

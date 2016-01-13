@@ -151,6 +151,14 @@ struct Buf *buf_strdefine (buf, str, def)
      const char *str;
      const char *def;
 {
+    if (Go) {
+	buf_strappend (buf, "const c");
+	buf_strappend (buf, str);
+	buf_strappend (buf, " = ");
+	buf_strappend (buf, def);
+	buf_strappend (buf, "\n");
+	return buf;
+    }
 	buf_strappend (buf, "#define ");
 	buf_strappend (buf, " ");
 	buf_strappend (buf, str);

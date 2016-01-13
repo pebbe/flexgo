@@ -1927,66 +1927,16 @@ void make_tables_go (void)
 
     skelout ();		/* %% [5.0] - break point in skel */
 
-
-    if (!C_plus_plus) {
-	if (use_read) {
-	    outn ("\terrno=0; \\");
-	    outn ("\twhile ( (result = read( fileno(yyin), (char *) buf, max_size )) < 0 ) \\");
-	    outn ("\t{ \\");
-	    outn ("\t\tif( errno != EINTR) \\");
-	    outn ("\t\t{ \\");
-	    outn ("\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
-	    outn ("\t\t\tbreak; \\");
-	    outn ("\t\t} \\");
-	    outn ("\t\terrno=0; \\");
-	    outn ("\t\tclearerr(yyin); \\");
-	    outn ("\t}\\");
-	}
-
-	else {
-	    outn ("\tif ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \\");
-	    outn ("\t\t{ \\");
-	    outn ("\t\tint c = '*'; \\");
-	    outn ("\t\tsize_t n; \\");
-	    outn ("\t\tfor ( n = 0; n < max_size && \\");
-	    outn ("\t\t\t     (c = getc( yyin )) != EOF && c != '\\n'; ++n ) \\");
-	    outn ("\t\t\tbuf[n] = (char) c; \\");
-	    outn ("\t\tif ( c == '\\n' ) \\");
-	    outn ("\t\t\tbuf[n++] = (char) c; \\");
-	    outn ("\t\tif ( c == EOF && ferror( yyin ) ) \\");
-	    outn ("\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
-	    outn ("\t\tresult = n; \\");
-	    outn ("\t\t} \\");
-	    outn ("\telse \\");
-	    outn ("\t\t{ \\");
-	    outn ("\t\terrno=0; \\");
-	    outn ("\t\twhile ( (result = fread(buf, 1, max_size, yyin))==0 && ferror(yyin)) \\");
-	    outn ("\t\t\t{ \\");
-	    outn ("\t\t\tif( errno != EINTR) \\");
-	    outn ("\t\t\t\t{ \\");
-	    outn ("\t\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
-	    outn ("\t\t\t\tbreak; \\");
-	    outn ("\t\t\t\t} \\");
-	    outn ("\t\t\terrno=0; \\");
-	    outn ("\t\t\tclearerr(yyin); \\");
-	    outn ("\t\t\t} \\");
-	    outn ("\t\t}\\");
-	}
-    }
-
     skelout ();		/* %% [6.0] - break point in skel */
 
-    indent_puts_go ("#define YY_RULE_SETUP \\");
+    indent_puts_go ("func YY_RULE_SETUP() {");
     indent_up_go ();
     if (bol_needed) {
-	indent_puts_go ("if ( yyleng > 0 ) \\");
-	indent_up_go ();
-	indent_puts_go ("YY_CURRENT_BUFFER_LVALUE->yy_at_bol = \\");
-	indent_puts_go ("\t\t(yytext[yyleng - 1] == '\\n'); \\");
-	indent_down_go ();
+	indent_puts_go ("buffer.yy_at_bol = strings.HasSuffix(yytext, \"\\n\")\n");
     }
-    indent_puts_go ("YY_USER_ACTION");
+    indent_puts_go ("YY_USER_ACTION()");
     indent_down_go ();
+    indent_puts_go ("}");
 
     skelout ();		/* %% [7.0] - break point in skel */
 
