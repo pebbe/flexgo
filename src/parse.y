@@ -138,9 +138,9 @@ goal		:  initlex sect1 sect1end sect2 initforrule
 				add_action(
 				"YY_FATAL_ERROR( \"flex scanner jammed\" )" );
 			else
-				add_action( "ECHO" );
+			    add_action( Go ? "ECHO()" : "ECHO" );
 
-			add_action( ";\n\tYY_BREAK\n" );
+			add_action( Go ? "\n" : ";\n\tYY_BREAK\n" );
 			}
 		;
 

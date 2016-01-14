@@ -3811,7 +3811,7 @@ YY_RULE_SETUP
 			if ( bracelevel == 0 ||
 			     (doing_codeblock && indented_code) )
 				{
-				if ( doing_rule_action )
+				if ( doing_rule_action && !Go )
 					add_action( "\tYY_BREAK\n" );
 
 				doing_rule_action = doing_codeblock = false;
@@ -3876,7 +3876,7 @@ YY_RULE_SETUP
 			ACTION_ECHO;
 			if ( bracelevel == 0 )
 				{
-				if ( doing_rule_action )
+				if ( doing_rule_action && !Go )
 					add_action( "\tYY_BREAK\n" );
 
 				doing_rule_action = false;

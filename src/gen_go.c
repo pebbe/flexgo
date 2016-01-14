@@ -631,7 +631,7 @@ void gen_find_action_go (void)
     }
 
     else {			/* compressed */
-	indent_puts_go ("yy_act = yy_accept[yy_current_state];");
+	indent_puts_go ("yy_act = yy_accept[yy_current_state]");
 
 	if (interactive && !reject) {
 	    /* Do the guaranteed-needed backing up to figure out
@@ -1971,7 +1971,7 @@ void make_tables_go (void)
 
     skelout ();		/* %% [10.0] - break point in skel */
     set_indent_go (2);
-    gen_find_action ();
+    gen_find_action_go ();
 
     skelout ();		/* %% [11.0] - break point in skel */
     outn ("m4_ifdef( [[M4_YY_USE_LINENO]],[[");
@@ -1996,86 +1996,57 @@ void make_tables_go (void)
 
     skelout ();		/* %% [12.0] - break point in skel */
     if (ddebug) {
-	indent_puts_go ("if ( yy_flex_debug )");
+	indent_puts_go ("if yy_flex_debug {");
 	indent_up_go ();
 
-	indent_puts_go ("{");
-	indent_puts_go ("if ( yy_act == 0 )");
+	indent_puts_go ("if yy_act == 0 {");
 	indent_up_go ();
-	indent_puts_go (C_plus_plus ?
-			"std::cerr << \"--scanner backing up\\n\";" :
-			"fprintf( stderr, \"--scanner backing up\\n\" );");
+	indent_puts_go ("fmt.Fprintln(os.Stderr, \"--scanner backing up\")");
 	indent_down_go ();
 
 	do_indent_go ();
-	out_dec ("else if ( yy_act < %d )\n", num_rules);
+	out_dec ("} else if yy_act < %d {\n", num_rules);
 	indent_up_go ();
 
-	if (C_plus_plus) {
-	    indent_puts_go
-		("std::cerr << \"--accepting rule at line \" << yy_rule_linenum[yy_act] <<");
-	    indent_puts_go
-		("         \"(\\\"\" << yytext << \"\\\")\\n\";");
-	}
-	else {
-	    indent_puts_go
-		("fprintf( stderr, \"--accepting rule at line %ld (\\\"%s\\\")\\n\",");
-
-	    indent_puts_go
-		("         (long)yy_rule_linenum[yy_act], yytext );");
-	}
+	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting rule at line %d (%q)\\n\",");
+	indent_puts_go ("         yy_rule_linenum[yy_act], yytext)");
 
 	indent_down_go ();
 
 	do_indent_go ();
-	out_dec ("else if ( yy_act == %d )\n", num_rules);
+	out_dec ("} else if yy_act == %d {\n", num_rules);
 	indent_up_go ();
 
-	if (C_plus_plus) {
-	    indent_puts_go
-		("std::cerr << \"--accepting default rule (\\\"\" << yytext << \"\\\")\\n\";");
-	}
-	else {
-	    indent_puts_go
-		("fprintf( stderr, \"--accepting default rule (\\\"%s\\\")\\n\",");
-	    indent_puts_go ("         yytext );");
-	}
+	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yytext)");
 
 	indent_down_go ();
 
 	do_indent_go ();
-	out_dec ("else if ( yy_act == %d )\n", num_rules + 1);
+	out_dec ("} else if yy_act == %d {\n", num_rules + 1);
 	indent_up_go ();
 
-	indent_puts_go (C_plus_plus ?
-			"std::cerr << \"--(end of buffer or a NUL)\\n\";" :
-			"fprintf( stderr, \"--(end of buffer or a NUL)\\n\" );");
+	indent_puts_go ("fmt.Fprintln(os.Stderr, \"--(end of buffer or a NUL)\")");
 
 	indent_down_go ();
 
 	do_indent_go ();
-	outn ("else");
+	outn ("} else {");
 	indent_up_go ();
 
-	if (C_plus_plus) {
-	    indent_puts_go
-		("std::cerr << \"--EOF (start condition \" << YY_START << \")\\n\";");
-	}
-	else {
-	    indent_puts_go
-		("fprintf( stderr, \"--EOF (start condition %d)\\n\", YY_START );");
-	}
+	indent_puts_go
+	    ("fmt.Fprintf(os.Stderr, \"--EOF (start condition %d)\\n\", YY_START)");
 
 	indent_down_go ();
-
 	indent_puts_go ("}");
+
 	indent_down_go ();
+	indent_puts_go ("}");
     }
 
     /* Copy actions to output file. */
     skelout ();		/* %% [13.0] - break point in skel */
     indent_up_go ();
-    gen_bu_action ();
+    gen_bu_action_go ();
     out (&action_array[action_offset]);
 
     line_directive_out (stdout, 0);
@@ -2090,7 +2061,7 @@ void make_tables_go (void)
 
     if (did_eof_rule) {
 	indent_up_go ();
-	indent_puts_go ("yyterminate();");
+	indent_puts_go ("yyterminate()");
 	indent_down_go ();
     }
 
@@ -2111,18 +2082,24 @@ void make_tables_go (void)
 	    /* Do the guaranteed-needed backing up to figure
 	     * out the match.
 	     */
-	    indent_puts_go
-		("yy_cp = YY_G(yy_last_accepting_cpos);");
-	    indent_puts_go
-		("yy_current_state = YY_G(yy_last_accepting_state);");
+
+	    indent_puts_go ("if ac {");
+	    indent_up_go ();
+	    indent_puts_go ("buffer.Read(unused)");
+	    indent_down_go ();
+	    indent_puts_go ("}");
+	    indent_puts_go ("yy_current_state = yy_last_accepting_state");
+
 	}
 
-	else
+	else {
 	    /* Still need to initialize yy_cp, though
 	     * yy_current_state was set up by
 	     * yy_get_previous_state().
 	     */
-	    indent_puts_go ("yy_cp = YY_G(yy_c_buf_p);");
+	    // TODO
+	    //indent_puts_go ("yy_cp = YY_G(yy_c_buf_p);");
+	}
     }
 
 

@@ -893,7 +893,7 @@ nmstr[yyleng - 2 - end_is_ws] = '\0';  /* chop trailing brace */
 			if ( bracelevel == 0 ||
 			     (doing_codeblock && indented_code) )
 				{
-				if ( doing_rule_action )
+				if ( doing_rule_action && !Go )
 					add_action( "\tYY_BREAK\n" );
 
 				doing_rule_action = doing_codeblock = false;
@@ -919,7 +919,7 @@ nmstr[yyleng - 2 - end_is_ws] = '\0';  /* chop trailing brace */
 			ACTION_ECHO;
 			if ( bracelevel == 0 )
 				{
-				if ( doing_rule_action )
+				if ( doing_rule_action && !Go )
 					add_action( "\tYY_BREAK\n" );
 
 				doing_rule_action = false;
