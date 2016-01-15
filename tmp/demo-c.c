@@ -1458,24 +1458,24 @@ case YY_STATE_EOF(INITIAL):
 /*SKEL*/ 	char *yy_cp;
 /*SKEL*/
 /* %% [15.0] code to get the start state into yy_current_state goes here */
-	yy_current_state = (yy_start);
+/*make_tables:gen_start_state()*/	yy_current_state = (yy_start);
 /*SKEL*/
 /*SKEL*/ 	for ( yy_cp = (yytext_ptr) + YY_MORE_ADJ; yy_cp < (yy_c_buf_p); ++yy_cp )
 /*SKEL*/ 		{
 /* %% [16.0] code to find the next state goes here */
-		YY_CHAR yy_c = (*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : 1);
-		if ( yy_accept[yy_current_state] )
-			{
-			(yy_last_accepting_state) = yy_current_state;
-			(yy_last_accepting_cpos) = yy_cp;
-			}
-		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
-			{
-			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 7 )
-				yy_c = yy_meta[(unsigned int) yy_c];
-			}
-		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/		YY_CHAR yy_c = (*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : 1);
+/*make_tables:gen_next_state(true):gen_next_compressed_state:gen_backing_up*/		if ( yy_accept[yy_current_state] )
+/*make_tables:gen_next_state(true):gen_next_compressed_state:gen_backing_up*/			{
+/*make_tables:gen_next_state(true):gen_next_compressed_state:gen_backing_up*/			(yy_last_accepting_state) = yy_current_state;
+/*make_tables:gen_next_state(true):gen_next_compressed_state:gen_backing_up*/			(yy_last_accepting_cpos) = yy_cp;
+/*make_tables:gen_next_state(true):gen_next_compressed_state:gen_backing_up*/			}
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/			{
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/			yy_current_state = (int) yy_def[yy_current_state];
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/			if ( yy_current_state >= 7 )
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/				yy_c = yy_meta[(unsigned int) yy_c];
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/			}
+/*make_tables:gen_next_state(true):gen_next_compressed_state*/		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 /*SKEL*/ 		}
 /*SKEL*/
 /*SKEL*/ 	return yy_current_state;
@@ -1495,22 +1495,22 @@ case YY_STATE_EOF(INITIAL):
 /*SKEL*/ {
 /*SKEL*/ 	int yy_is_jam;
 /*SKEL*/     /* %% [17.0] code to find the next state, and perhaps do backing up, goes here */
-	char *yy_cp = (yy_c_buf_p);
-
-	YY_CHAR yy_c = 1;
-	if ( yy_accept[yy_current_state] )
-		{
-		(yy_last_accepting_state) = yy_current_state;
-		(yy_last_accepting_cpos) = yy_cp;
-		}
-	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
-		{
-		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 7 )
-			yy_c = yy_meta[(unsigned int) yy_c];
-		}
-	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 6);
+/*make_tables:gen_NUL_trans*/	char *yy_cp = (yy_c_buf_p);
+/*make_tables:gen_NUL_trans*/
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str)*/	YY_CHAR yy_c = 1;
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str):gen_backing_up*/	if ( yy_accept[yy_current_state] )
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str):gen_backing_up*/		{
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str):gen_backing_up*/		(yy_last_accepting_state) = yy_current_state;
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str):gen_backing_up*/		(yy_last_accepting_cpos) = yy_cp;
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str):gen_backing_up*/		}
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str)*/	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str)*/		{
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str)*/		yy_current_state = (int) yy_def[yy_current_state];
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str)*/		if ( yy_current_state >= 7 )
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str)*/			yy_c = yy_meta[(unsigned int) yy_c];
+/*make_tables:gen_NUL_trans:gen_next_compressed_state(NUL_ec_str)*/		}
+/*make_tables:gen_NUL_trans*/	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+/*make_tables:gen_NUL_trans*/	yy_is_jam = (yy_current_state == 6);
 /*SKEL*/
 /*SKEL*/ 	 	return yy_is_jam ? 0 : yy_current_state;
 /*SKEL*/ }

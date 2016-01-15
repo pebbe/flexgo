@@ -37,7 +37,7 @@
 
 /* declare functions that have forward references */
 
-void gen_next_state_go PROTO ((int));
+void gen_next_state_go PROTO ((int, int));
 void genecs_go PROTO ((void));
 void indent_put2s_go PROTO ((const char *, const char *));
 void indent_puts_go PROTO ((const char *));
@@ -166,7 +166,7 @@ static void geneoltbl_go (void)
 
 /* Generate the code to keep backing-up information. */
 
-void gen_backing_up_go (void)
+void gen_backing_up_go (int has_bytes, int from_NUL)
 {
     if (reject || num_backing_up == 0)
 	return;
@@ -174,11 +174,18 @@ void gen_backing_up_go (void)
     if (fullspd)
 	indent_puts_go ("if yy_current_state[-1].yy_nxt {");
     else
-	indent_puts_go ("if yy_accept[yy_current_state] {");
+	indent_puts_go ("if yy_accept[yy_current_state] != 0 {");
 
     indent_up_go ();
     indent_puts_go ("yy_last_accepting_state = yy_current_state");
-    indent_puts_go ("yy_last_accepting_cpos = buffer.Max(n)");
+    if (has_bytes) {
+	if (from_NUL) {
+	    indent_puts_go ("ac_cur = true");
+	}
+	indent_puts_go ("//yy_last_accepting_cpos = yy_cp");
+    } else {
+	indent_puts_go ("yy_last_accepting_cpos = buffer.Max(n)");
+    }
     indent_down_go ();
     indent_puts_go ("}");
 }
@@ -194,20 +201,22 @@ void gen_bu_action_go (void)
     set_indent_go (3);
 
     indent_puts_go ("case 0: /* must back up */");
-    indent_puts_go ("/* undo the effects of YY_DO_BEFORE_ACTION */");
-    indent_puts_go ("*yy_cp = YY_G(yy_hold_char);");
+    indent_puts_go ("yy_current_state = yy_last_accepting_state");
+    indent_puts_go ("goto yy_find_action");
 
+    /*
     if (fullspd || fulltbl)
 	indent_puts_go ("yy_cp = YY_G(yy_last_accepting_cpos) + 1;");
     else
-	/* Backing-up info for compressed tables is taken \after/
-	 * yy_cp has been incremented for the next state.
-	 */
+        // Backing-up info for compressed tables is taken \after/
+	// yy_cp has been incremented for the next state.
 	indent_puts_go ("yy_cp = YY_G(yy_last_accepting_cpos);");
 
     indent_puts_go ("yy_current_state = YY_G(yy_last_accepting_state);");
     indent_puts_go ("goto yy_find_action;");
     outc ('\n');
+
+    */
 
     set_indent_go (0);
 }
@@ -518,10 +527,10 @@ void genecs_go (void)
 void gen_find_action_go (void)
 {
     if (fullspd)
-	indent_puts_go ("yy_act = yy_current_state[-1].yy_nxt;");
+	indent_puts_go ("yy_act = yy_current_state[-1].yy_nxt");
 
     else if (fulltbl)
-	indent_puts_go ("yy_act = yy_accept[yy_current_state];");
+	indent_puts_go ("yy_act = int(yy_accept[yy_current_state])");
 
     else if (reject) {
 	indent_puts_go ("yy_current_state = *--YY_G(yy_state_ptr);");
@@ -631,7 +640,7 @@ void gen_find_action_go (void)
     }
 
     else {			/* compressed */
-	indent_puts_go ("yy_act = yy_accept[yy_current_state]");
+	indent_puts_go ("yy_act = int(yy_accept[yy_current_state])");
 
 	if (interactive && !reject) {
 	    /* Do the guaranteed-needed backing up to figure out
@@ -645,7 +654,7 @@ void gen_find_action_go (void)
 	    indent_puts_go
 		("yy_current_state = YY_G(yy_last_accepting_state);");
 	    indent_puts_go
-		("yy_act = yy_accept[yy_current_state];");
+		("yy_act = int(yy_accept[yy_current_state])");
 	    indent_puts_go ("}");
 	    indent_down_go ();
 	}
@@ -726,25 +735,34 @@ void genftbl_go (void)
 
 /* Generate the code to find the next compressed-table state. */
 
-void gen_next_compressed_state_go (char_map)
-     char   *char_map;
+void gen_next_compressed_state_go (char *char_map, int has_bytes, int from_NUL)
 {
     //indent_put2s_go ("YY_CHAR yy_c = %s;", char_map);
 
-    indent_puts_go ("curbyte := buffer.PeekAt(n)");
-    indent_puts_go ("yy_c := int(yy_ec[curbyte])");
-
+    if (has_bytes) {
+	indent_puts_go ("yy_c := 1");
+	if (! from_NUL) {
+	    indent_puts_go ("if yy_cp < i1 {");
+	    indent_up_go ();
+	    indent_puts_go ("yy_c = int(yy_ec[bytes[yy_cp]])");
+	    indent_down_go ();
+	    indent_puts_go ("}");
+	}
+    } else {
+	indent_puts_go ("curbyte := buffer.PeekAt(n)");
+	indent_puts_go ("yy_c := int(yy_ec[curbyte])");
+    }
 
     /* Save the backing-up info \before/ computing the next state
      * because we always compute one more state than needed - we
      * always proceed until we reach a jam state
      */
-    gen_backing_up_go ();
+    gen_backing_up_go (has_bytes, from_NUL);
 
     indent_puts_go
-	("for yy_chk[yy_base[yy_current_state]+yy_c] != yy_current_state {");
+	("for int(yy_chk[int(yy_base[yy_current_state])+yy_c]) != yy_current_state {");
     indent_up_go ();
-    indent_puts_go ("yy_current_state = yy_def[yy_current_state]");
+    indent_puts_go ("yy_current_state = int(yy_def[yy_current_state])");
 
     if (usemecs) {
 	/* We've arrange it so that templates are never chained
@@ -769,7 +787,7 @@ void gen_next_compressed_state_go (char_map)
     indent_puts_go ("}");
 
     indent_puts_go
-	("yy_current_state = int(yy_nxt[yy_base[yy_current_state]+yy_c])");
+	("yy_current_state = int(yy_nxt[int(yy_base[yy_current_state])+yy_c])");
 }
 
 
@@ -800,7 +818,7 @@ void gen_next_match_go (void)
 
 	if (num_backing_up > 0) {
 	    indent_puts_go ("{");
-	    gen_backing_up_go ();
+	    gen_backing_up_go (false, false);
 	    outc ('\n');
 	}
 
@@ -836,7 +854,7 @@ void gen_next_match_go (void)
 
 	if (num_backing_up > 0) {
 	    outc ('\n');
-	    gen_backing_up_go ();
+	    gen_backing_up_go (false, false);
 	    indent_puts_go ("}");
 	}
 
@@ -852,7 +870,7 @@ void gen_next_match_go (void)
 
 	indent_up_go ();
 
-	gen_next_state_go (false);
+	gen_next_state_go (false, false);
 
 	do_indent_go ();
 
@@ -872,11 +890,11 @@ void gen_next_match_go (void)
 	    indent_puts_go ("unused = len(bytes) - yy_last_accepting_cpos");
 	    indent_puts_go ("if yy_last_accepting_cpos > 0 {");
 	    indent_up_go ();
-	    indent_puts_go ("yytext = buffer.Read(yy_last_accepting_cpos)");
+	    indent_puts_go ("YYtext = buffer.Read(yy_last_accepting_cpos)");
 	    indent_down_go ();
 	    indent_puts_go ("} else {");
 	    indent_up_go ();
-	    indent_puts_go ("yytext = []byte{}");
+	    indent_puts_go ("YYtext = []byte{}");
 	    indent_down_go ();
 	    indent_puts_go ("}");
 	    indent_puts_go ("yy_current_state = yy_last_accepting_state");
@@ -884,7 +902,7 @@ void gen_next_match_go (void)
 	} else {
 	    indent_puts_go ("bytes = buffer.Peeked(n) // dit moet voor buffer.Read()");
 	    indent_puts_go ("unused = 0");
-	    indent_puts_go ("yytext = buffer.Read(n)");
+	    indent_puts_go ("YYtext = buffer.Read(n)");
 	}
 
 	indent_puts_go ("break");
@@ -899,8 +917,7 @@ void gen_next_match_go (void)
 
 /* Generate the code to find the next state. */
 
-void gen_next_state_go (worry_about_NULs)
-     int worry_about_NULs;
+void gen_next_state_go (int worry_about_NULs, int has_bytes)
 {				/* NOTE - changes in here should be reflected in gen_next_match_go() */
     char    char_map[256];
 
@@ -923,7 +940,7 @@ void gen_next_state_go (worry_about_NULs)
     if (worry_about_NULs && nultrans) {
 	if (!fulltbl && !fullspd)
 	    /* Compressed tables back up *before* they match. */
-	    gen_backing_up_go ();
+	    gen_backing_up_go (has_bytes, false);
 
 	indent_puts_go ("if ( *yy_cp )");
 	indent_up_go ();
@@ -947,7 +964,7 @@ void gen_next_state_go (worry_about_NULs)
 	     char_map);
 
     else
-	gen_next_compressed_state_go (char_map);
+	gen_next_compressed_state_go (char_map, has_bytes, false);
 
     if (worry_about_NULs && nultrans) {
 
@@ -961,7 +978,7 @@ void gen_next_state_go (worry_about_NULs)
     }
 
     if (fullspd || fulltbl)
-	gen_backing_up_go ();
+	gen_backing_up_go (has_bytes, false);
 
     if (reject)
 	indent_puts_go ("*YY_G(yy_state_ptr)++ = yy_current_state;");
@@ -977,11 +994,12 @@ void gen_NUL_trans_go (void)
      */
     int     need_backing_up = (num_backing_up > 0 && !reject);
 
-    if (need_backing_up && (!nultrans || fullspd || fulltbl))
+    if (need_backing_up && (!nultrans || fullspd || fulltbl)) {
 	/* We're going to need yy_cp lying around for the call
 	 * below to gen_backing_up_go().
 	 */
-	indent_puts_go ("char *yy_cp = YY_G(yy_c_buf_p);");
+	/* indent_puts_go ("char *yy_cp = YY_G(yy_c_buf_p);"); */
+    }
 
     outc ('\n');
 
@@ -1018,11 +1036,14 @@ void gen_NUL_trans_go (void)
 	char    NUL_ec_str[20];
 
 	snprintf (NUL_ec_str, sizeof(NUL_ec_str), "%d", NUL_ec);
-	gen_next_compressed_state_go (NUL_ec_str);
+	gen_next_compressed_state_go (NUL_ec_str, true, true);
 
 	do_indent_go ();
-	out_dec ("yy_is_jam = (yy_current_state == %d);\n",
-		 jamstate);
+	out_dec ("if yy_current_state == %d {\n", jamstate);
+	indent_up_go ();
+	indent_puts_go ("yy_is_jam = true");
+	indent_down_go ();
+	indent_puts_go ("}");
 
 	if (reject) {
 	    /* Only stack this state if it's a transition we
@@ -1046,7 +1067,7 @@ void gen_NUL_trans_go (void)
 	indent_puts_go ("if ( ! yy_is_jam )");
 	indent_up_go ();
 	indent_puts_go ("{");
-	gen_backing_up_go ();
+	gen_backing_up_go (false, true);
 	indent_puts_go ("}");
 	indent_down_go ();
     }
@@ -1518,8 +1539,7 @@ void gentabs_go (void)
  * current indentation level, adding a final newline.
  */
 
-void indent_put2s_go (fmt, arg)
-     const char *fmt, *arg;
+void indent_put2s_go (const char *fmt, const char *arg)
 {
     do_indent_go ();
     out_str (fmt, arg);
@@ -1531,8 +1551,7 @@ void indent_put2s_go (fmt, arg)
  * newline.
  */
 
-void indent_puts_go (str)
-     const char *str;
+void indent_puts_go (const char *str)
 {
     do_indent_go ();
     outn (str);
@@ -1556,6 +1575,7 @@ void make_tables_go (void)
      */
     set_indent_go (1);
 
+    /*
     if (yymore_used && !yytext_is_array) {
 	indent_puts_go ("YY_G(yytext_ptr) -= YY_G(yy_more_len); \\");
 	indent_puts_go
@@ -1564,6 +1584,7 @@ void make_tables_go (void)
 
     else
 	indent_puts_go ("yyleng = (size_t) (yy_cp - yy_bp); \\");
+    */
 
     /* Now also deal with copying yytext_ptr to yytext if needed. */
     skelout ();		/* %% [3.0] - break point in skel */
@@ -1600,8 +1621,8 @@ void make_tables_go (void)
 
     /* This is where we REALLY begin generating the tables. */
 
-    out_dec (Go ? "const YY_NUM_RULES = %d\n" : "#define YY_NUM_RULES %d\n", num_rules);
-    out_dec (Go ? "const YY_END_OF_BUFFER = %d\n" : "#define YY_END_OF_BUFFER %d\n", num_rules + 1);
+    out_dec (Go ? "const yy_NUM_RULES = %d\n" : "#define YY_NUM_RULES %d\n", num_rules);
+    out_dec (Go ? "const yy_END_OF_BUFFER = %d\n" : "#define YY_END_OF_BUFFER %d\n", num_rules + 1);
 
     if (fullspd) {
 	/* Need to define the transet type as a size large
@@ -1916,7 +1937,7 @@ void make_tables_go (void)
 
 	else {
 	    if(! reentrant)
-		outn (Go ? "var yytext []byte" : "char *yytext;");
+		outn (Go ? "var YYtext []byte" : "char *yytext;");
 	}
     }
 
@@ -1934,7 +1955,7 @@ void make_tables_go (void)
     if (bol_needed) {
 	indent_puts_go ("buffer.yy_at_bol = strings.HasSuffix(yytext, \"\\n\")\n");
     }
-    indent_puts_go ("YY_USER_ACTION()");
+    indent_puts_go ("//YY_USER_ACTION()");
     indent_down_go ();
     indent_puts_go ("}");
 
@@ -2034,7 +2055,7 @@ void make_tables_go (void)
 	indent_up_go ();
 
 	indent_puts_go
-	    ("fmt.Fprintf(os.Stderr, \"--EOF (start condition %d)\\n\", YY_START)");
+	    ("fmt.Fprintf(os.Stderr, \"--EOF (start condition %d)\\n\", yy_START)");
 
 	indent_down_go ();
 	indent_puts_go ("}");
@@ -2055,13 +2076,13 @@ void make_tables_go (void)
     for (i = 1; i <= lastsc; ++i)
 	if (!sceof[i]) {
 	    do_indent_go ();
-	    out_str ("case YY_STATE_EOF(%s):\n", scname[i]);
+	    out_str ("case yy_STATE_EOF(%s):\n", scname[i]);
 	    did_eof_rule = true;
 	}
 
     if (did_eof_rule) {
 	indent_up_go ();
-	indent_puts_go ("yyterminate()");
+	indent_puts_go ("YYterminate()");
 	indent_down_go ();
     }
 
@@ -2107,15 +2128,15 @@ void make_tables_go (void)
     set_indent_go (1);
     skelout ();		/* %% [15.0] - break point in skel */
 
-    gen_start_state ();
+    gen_start_state_go ();
 
     set_indent_go (2);
     skelout ();		/* %% [16.0] - break point in skel */
-    gen_next_state_go (true);
+    gen_next_state_go (true, true);
 
     set_indent_go (1);
     skelout ();		/* %% [17.0] - break point in skel */
-    gen_NUL_trans ();
+    gen_NUL_trans_go ();
 
     skelout ();		/* %% [18.0] - break point in skel */
     skelout ();		/* %% [19.0] - break point in skel */
