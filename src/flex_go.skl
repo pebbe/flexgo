@@ -23,7 +23,6 @@ const (
 )
 
 var (
-	YYtext              []byte
         YYin                io.Reader
         YYout               io.Writer
         YYwrap              = func() bool { return true }

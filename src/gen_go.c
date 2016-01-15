@@ -1953,7 +1953,7 @@ void make_tables_go (void)
     indent_puts_go ("func YY_RULE_SETUP() {");
     indent_up_go ();
     if (bol_needed) {
-	indent_puts_go ("buffer.yy_at_bol = strings.HasSuffix(yytext, \"\\n\")\n");
+	indent_puts_go ("buffer.yy_at_bol = strings.HasSuffix(YYtext, \"\\n\")\n");
     }
     indent_puts_go ("//YY_USER_ACTION()");
     indent_down_go ();
@@ -2030,7 +2030,7 @@ void make_tables_go (void)
 	indent_up_go ();
 
 	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting rule at line %d (%q)\\n\",");
-	indent_puts_go ("         yy_rule_linenum[yy_act], yytext)");
+	indent_puts_go ("         yy_rule_linenum[yy_act], YYtext)");
 
 	indent_down_go ();
 
@@ -2038,7 +2038,7 @@ void make_tables_go (void)
 	out_dec ("} else if yy_act == %d {\n", num_rules);
 	indent_up_go ();
 
-	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yytext)");
+	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", YYtext)");
 
 	indent_down_go ();
 

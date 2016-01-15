@@ -28,7 +28,6 @@ const char *skel1_go[] = {
   ")",
   "",
   "var (",
-  "	YYtext              []byte",
   "        YYin                io.Reader",
   "        YYout               io.Writer",
   "        YYwrap              = func() bool { return true }",
