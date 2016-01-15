@@ -8,3 +8,14 @@ Keywords: flex, lex, go, golang
 
 **This isn't working yet**
 
+### To do
+
+ * option -I
+ * rules with ^
+ * REJECT()
+ * BEGIN(state)
+ * YYless(n)
+ * YYmore()
+ * Unput(c)
+ * Input()
+ * non-default table compression
