@@ -738,10 +738,7 @@ void genftbl_go (void)
 
 void gen_next_compressed_state_go (char *char_map)
 {
-    //indent_put2s_go ("YY_CHAR yy_c = %s;", char_map);
-
-    indent_puts_go ("yy_cp := yy_c_buf_p");
-    indent_puts_go ("yy_c := 1");
+    indent_put2s_go ("yy_c := %s", char_map);
 
     /* Save the backing-up info \before/ computing the next state
      * because we always compute one more state than needed - we
@@ -899,18 +896,18 @@ void gen_next_state_go (int worry_about_NULs)
     if (worry_about_NULs && !nultrans) {
 	if (useecs)
 	    snprintf (char_map, sizeof(char_map),
-		      "(*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : %d)",
+		      "ifelse(buffer.isNul(yy_cp), %d, int(yy_ec[buffer.PeekAt(yy_cp)]))",
 		      NUL_ec);
 	else
             snprintf (char_map, sizeof(char_map),
-		      "(*yy_cp ? YY_SC_TO_UI(*yy_cp) : %d)",
+		      "ifelse(buffer.isNul(yy_cp), %d, buffer.PeekAt(yy_cp))",
 		      NUL_ec);
     }
 
     else
 	strcpy (char_map, useecs ?
-		"yy_ec[YY_SC_TO_UI(*yy_cp)] " :
-		"YY_SC_TO_UI(*yy_cp)");
+		"int(yy_ec[buffer.PeekAt(yy_cp)])" :
+		"buffer.PeekAt(yy_cp)");
 
     if (worry_about_NULs && nultrans) {
 	if (!fulltbl && !fullspd)
@@ -973,15 +970,15 @@ void gen_NUL_trans_go (void)
 	/* We're going to need yy_cp lying around for the call
 	 * below to gen_backing_up_go().
 	 */
-	/* indent_puts_go ("char *yy_cp = YY_G(yy_c_buf_p);"); */
+	indent_puts_go ("yy_cp := yy_c_buf_p");
     }
 
     outc ('\n');
 
     if (nultrans) {
 	indent_puts_go
-	    ("yy_current_state = yy_NUL_trans[yy_current_state];");
-	indent_puts_go ("yy_is_jam = (yy_current_state == 0);");
+	    ("yy_current_state = yy_NUL_trans[yy_current_state]");
+	indent_puts_go ("yy_is_jam = (yy_current_state == 0)");
     }
 
     else if (fulltbl) {
