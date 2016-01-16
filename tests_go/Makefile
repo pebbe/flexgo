@@ -14,11 +14,11 @@ test01c: test01c.l
 	gcc -s -Wall -o test01c test01c.c
 
 test01go_b: test01go.l
-	flexgo -d -B -o test01go_b.go test01go.l
+	flexgo -B -o test01go_b.go test01go.l
 	go build test01go_b.go
 
 test01go_i: test01go.l
-	flexgo -d -I -o test01go_i.go test01go.l
+	flexgo -I -o test01go_i.go test01go.l
 	go build test01go_i.go
 
 test02c: test02c.l

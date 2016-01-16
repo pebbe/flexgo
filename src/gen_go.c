@@ -644,17 +644,9 @@ void gen_find_action_go (void)
 	    indent_puts_go ("if yy_act == 0 {");
 	    indent_up_go ();
 	    indent_puts_go ("/* have to back up */");
-	    indent_puts_go ("buffer.Push(YYtext)");
-	    indent_puts_go ("if yy_last_accepting_cpos > 0 {");
-	    indent_up_go ();
-	    indent_puts_go ("YYtext = buffer.Read(yy_last_accepting_cpos)");
-	    indent_down_go ();
-	    indent_puts_go ("} else {");
-	    indent_up_go ();
-	    indent_puts_go ("YYtext = []byte{}");
-	    indent_down_go ();
-	    indent_puts_go ("}");
+	    indent_puts_go ("yy_cp = yy_last_accepting_cpos");
 	    indent_puts_go ("yy_current_state = yy_last_accepting_state");
+	    indent_puts_go ("yy_act = int(yy_accept[yy_current_state])");
 	    indent_down_go ();
 	    indent_puts_go ("}");
 
@@ -862,7 +854,7 @@ void gen_next_match_go (void)
 	do_indent_go ();
 
 	if (interactive)
-	    out_dec ("if yy_current_state == %d {\n", jambase);
+	    out_dec ("if yy_base[yy_current_state] == %d {\n", jambase);
 	else
 	    out_dec ("if yy_current_state == %d {\n",
 		     jamstate);
@@ -1590,11 +1582,12 @@ void make_tables_go (void)
 
     skelout ();		/* %% [4.0] - break point in skel */
 
-
     /* This is where we REALLY begin generating the tables. */
 
-    out_dec (Go ? "const yy_NUM_RULES = %d\n" : "#define YY_NUM_RULES %d\n", num_rules);
-    out_dec (Go ? "const yy_END_OF_BUFFER = %d\n" : "#define YY_END_OF_BUFFER %d\n", num_rules + 1);
+    out_dec ("const yy_batch = %d // must by zero for interactive scanner\n", interactive ? 0 : 100);
+
+    out_dec ("const yy_NUM_RULES = %d\n", num_rules);
+    out_dec ("const yy_END_OF_BUFFER = %d\n", num_rules + 1);
 
     if (fullspd) {
 	/* Need to define the transet type as a size large
@@ -2087,8 +2080,7 @@ void make_tables_go (void)
 	     * yy_current_state was set up by
 	     * yy_get_previous_state().
 	     */
-	    // TODO
-	    //indent_puts_go ("yy_cp = YY_G(yy_c_buf_p);");
+	    indent_puts_go ("yy_cp = yy_c_buf_p");
 	}
     }
 

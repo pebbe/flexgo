@@ -119,7 +119,7 @@ const char *skel1_go[] = {
   "	}",
   "	if n >= pn+bn && !b.eof {",
   "		var err error",
-  "		b.peek, err = b.yy_reader.Peek(n + 100)",
+  "		b.peek, err = b.yy_reader.Peek(n + yy_batch)",
   "		pn = len(b.peek)",
   "		b.eof = false",
   "		if err != nil {",
