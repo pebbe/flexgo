@@ -646,17 +646,23 @@ void gen_find_action_go (void)
 	    /* Do the guaranteed-needed backing up to figure out
 	     * the match.
 	     */
-	    indent_puts_go ("if ( yy_act == 0 )");
+	    indent_puts_go ("if yy_act == 0 {");
 	    indent_up_go ();
-	    indent_puts_go ("{ /* have to back up */");
-	    indent_puts_go
-		("yy_cp = YY_G(yy_last_accepting_cpos);");
-	    indent_puts_go
-		("yy_current_state = YY_G(yy_last_accepting_state);");
-	    indent_puts_go
-		("yy_act = int(yy_accept[yy_current_state])");
-	    indent_puts_go ("}");
+	    indent_puts_go ("/* have to back up */");
+	    indent_puts_go ("buffer.Push(YYtext)");
+	    indent_puts_go ("if yy_last_accepting_cpos > 0 {");
+	    indent_up_go ();
+	    indent_puts_go ("YYtext = buffer.Read(yy_last_accepting_cpos)");
 	    indent_down_go ();
+	    indent_puts_go ("} else {");
+	    indent_up_go ();
+	    indent_puts_go ("YYtext = []byte{}");
+	    indent_down_go ();
+	    indent_puts_go ("}");
+	    indent_puts_go ("yy_current_state = yy_last_accepting_state");
+	    indent_down_go ();
+	    indent_puts_go ("}");
+
 	}
     }
 }
@@ -2114,6 +2120,8 @@ void make_tables_go (void)
 	}
 
 	else {
+	    indent_puts_go ("_ = ac");
+	    indent_puts_go ("buffer.Flush()");
 	    /* Still need to initialize yy_cp, though
 	     * yy_current_state was set up by
 	     * yy_get_previous_state().
