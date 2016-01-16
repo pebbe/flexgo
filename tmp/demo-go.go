@@ -1,6 +1,7 @@
 package main
 
 import (
+	//"fmt"
 	"bufio"
 	"io"
 	"log"
@@ -139,6 +140,7 @@ func (b *yy_buffer_state) Peeked(n int) []byte {
 }
 
 func (b *yy_buffer_state) Advance(n int) {
+	//fmt.Printf("\n\nAdvance %d", n)
 
 	if n < 1 {
 		return
@@ -193,7 +195,12 @@ var (
 	yy_last_accepting_cpos  int
 	yy_c_buf_p              int
 	yytext_ptr              int
+	yy_running              bool
 )
+
+func YYterminate() {
+	yy_running = false
+}
 
 func yy_init_buffer(b *yy_buffer_state, file io.Reader) {
 	if yy_buffer_stack_top < 0 || b != yy_buffer_stack[yy_buffer_stack_top] {
@@ -209,6 +216,7 @@ func yy_init_buffer(b *yy_buffer_state, file io.Reader) {
 		b.eof = false
 	}
 	YYin = file
+	yy_c_buf_p = 0
 }
 
 func yy_create_buffer(file io.Reader) *yy_buffer_state {
@@ -258,6 +266,10 @@ func yy_get_previous_state(b *yy_buffer_state) int {
 
 func yy_get_next_buffer(b *yy_buffer_state) int {
 
+	if yy_c_buf_p > b.yy_n_chars()+1 {
+		panic("fatal flex scanner internal error--end of buffer missed")
+	}
+
 	if yy_c_buf_p-yytext_ptr-b.YY_MORE_ADJ == 1 {
 		/* We matched a single character, the EOB, so
 		 * treat this as a final EOF.
@@ -272,6 +284,10 @@ func yy_get_next_buffer(b *yy_buffer_state) int {
 }
 
 func yy_load_buffer_state() {
+	b := yy_buffer_stack[yy_buffer_stack_top]
+	yytext_ptr = 0
+	yy_c_buf_p = 0
+	YYin = b.yy_file
 }
 
 /* yy_try_NUL_trans - try to make a transition on the NUL character
@@ -328,9 +344,12 @@ func YY_NEW_FILE() {
 func YYrestart(input_file io.Reader) {
 
 	if yy_buffer_stack == nil {
-		yy_buffer_stack = make([]*yy_buffer_state, 1)
-		yy_buffer_stack[0] = yy_create_buffer(YYin)
-		yy_buffer_stack_top = 0
+		yy_buffer_stack = make([]*yy_buffer_state, 0)
+	}
+	if len(yy_buffer_stack) == 0 {
+		b := yy_create_buffer(input_file)
+		yy_buffer_stack = append(yy_buffer_stack, b)
+		yy_buffer_stack_top = len(yy_buffer_stack) - 1
 	}
 
 	yy_init_buffer(yy_buffer_stack[yy_buffer_stack_top], input_file)
@@ -377,20 +396,10 @@ func yylex() {
 
 		//#line 696 "tst.c"
 
-		for { // loops until end-of-file is reached
+		yy_running = true
+		for yy_running { // loops until end-of-file is reached
 
 			buffer := yy_buffer_stack[yy_buffer_stack_top]
-
-			dont := false
-			if dont {
-				goto yy_match
-			}
-			if dont {
-				goto yy_find_action
-			}
-			if dont {
-				goto do_action
-			}
 
 			// [8.0] yymore()-related code goes here
 
@@ -409,6 +418,7 @@ func yylex() {
 			yy_current_state = yy_start
 
 		yy_match:
+			buffer = yy_buffer_stack[yy_buffer_stack_top]
 			for {
 				curbyte := buffer.PeekAt(yy_cp)
 				yy_c := int(yy_ec[curbyte])
@@ -432,34 +442,37 @@ func yylex() {
 			yy_current_state = yy_last_accepting_state
 
 		yy_find_action:
+			buffer = yy_buffer_stack[yy_buffer_stack_top]
 			yy_act = yy_accept[yy_current_state]
 
 			buffer.YY_DO_BEFORE_ACTION(yy_cp, yy_bp)
 
 		do_action: /* This label is used only to access EOF actions. */
+			buffer = yy_buffer_stack[yy_buffer_stack_top]
 
 			switch yy_act { /* beginning of action switch */
 			case 0: /* must back up */
-				//fmt.Println("case 0")
+				//fmt.Printf("\n-- case 0 %q\n", string(YYtext))
 				buffer.clearNul()
 				yy_cp = yy_last_accepting_cpos
 				yy_current_state = yy_last_accepting_state
 				goto yy_find_action
 			case 1:
-				//fmt.Println("case 1")
+				//fmt.Printf("\n-- case 1 %q\n", string(YYtext))
 				//YY_RULE_SETUP
 				//#line 15 "tst.l"
 				YYout.Write([]byte("Go"))
 			case 2:
-				//fmt.Println("case 2")
+				//fmt.Printf("\n-- case 2 %q\n", string(YYtext))
 				//YY_RULE_SETUP
 				//#line 17 "tst.l"
 				YYout.Write(YYtext)
 				//#line 759 "tst.c"
 			case YY_STATE_EOF(INITIAL):
-				//fmt.Println("case YY_STATE_EOF(INITIAL)")
-				return
+				//fmt.Printf("\n-- EOF(INITIAL %q\n", string(YYtext))
+				YYterminate()
 			case YY_END_OF_BUFFER:
+				//fmt.Printf("\n-- END OF BUFFER %q\n", string(YYtext))
 				/* Amount of text matched not including the EOB char. */
 				yy_amount_of_matched_text := yy_cp - yytext_ptr - 1
 
@@ -477,9 +490,12 @@ func yylex() {
 					 * this is the first action (other than possibly a
 					 * back-up) that will match for the new input source.
 					 */
-					buffer.yy_file = YYin
-					buffer.yy_reader = bufio.NewReaderSize(YYin, 100000)
-					buffer.peek = nil
+					if buffer.yy_file != YYin {
+						buffer.yy_file = YYin
+						buffer.yy_reader = bufio.NewReaderSize(YYin, 100000)
+						buffer.peek = nil
+						buffer.backup = nil
+					}
 					buffer.yy_buffer_status = yy_BUFFER_NORMAL
 				}
 
@@ -544,6 +560,7 @@ func yylex() {
 							goto do_action
 						} else {
 							if !yy_did_buffer_switch_on_eof {
+								yy_c_buf_p = 0
 								YY_NEW_FILE()
 							}
 						}
@@ -655,13 +672,14 @@ func main() {
 				return true
 			}
 			r, err = os.Open(files[0])
-			YYrestart(r)
 			if err != nil {
 				log.Fatal(err)
 			}
+			YYin = r
 			return false
 		}
 	}
 
 	yylex()
+	//fmt.Println("Done")
 }

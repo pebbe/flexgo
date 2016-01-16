@@ -17,30 +17,40 @@ const (
 	yy_END_OF_BUFFER_CHAR = 0
 	INITIAL               = 0
 
+	eob_ACT_END_OF_FILE   = 0
+	eob_ACT_CONTINUE_SCAN = 1
+	eob_ACT_LAST_MATCH    = 2
+
 	yy_BUFFER_NEW         = 0
 	yy_BUFFER_NORMAL      = 1
 	yy_BUFFER_EOF_PENDING = 2
 )
 
 var (
-        YYin                io.Reader
-        YYout               io.Writer
-        YYwrap              = func() bool { return true }
-        yy_init             = false
-        yy_start            = 0
-        yy_buffer_stack     []*yy_buffer_state
-        yy_buffer_stack_top = -1
-	yy_running	    bool
+	YYin                    io.Reader
+	YYout                   io.Writer
+	YYleng                  int
+	YYwrap                  = func() bool { return true }
+	yy_buffer_stack         []*yy_buffer_state
+	yy_buffer_stack_top     = -1
+	yy_c_buf_p              int
+	yy_init                 = false
+	yy_running              bool
+	yy_start                = 0
+	yytext_ptr              int
 )
 
 type yy_buffer_state struct {
 	yy_file   io.Reader
 	yy_reader *bufio.Reader
 
-	peek   []byte
-	backup []byte
-	eof    bool
-	peeked int
+	peek        []byte
+	backup      []byte
+	eof         bool
+	peeked      int
+	nul         int
+	is_nul      bool
+	YY_MORE_ADJ int
 
 	/* Whether we're considered to be at the beginning of a line.
 	 * If so, '^' rules will be active on the next match, otherwise
@@ -54,10 +64,35 @@ type yy_buffer_state struct {
 	yy_buffer_status int
 }
 
-func (b *yy_buffer_state) Flush() {
-     b.yy_reader.ReadLine()
-     b.peek = nil
-     b.backup = nil
+func (b *yy_buffer_state) yy_n_chars() int {
+	var n int
+	if b.peek != nil {
+		n = len(b.peek)
+	}
+	if b.backup != nil {
+		n += len(b.backup)
+	}
+	return n
+}
+
+func (b *yy_buffer_state) isNul(n int) bool {
+	return b.is_nul && b.nul == n
+}
+
+func (b *yy_buffer_state) clearNul() {
+	b.is_nul = false
+}
+
+func (b *yy_buffer_state) YY_DO_BEFORE_ACTION(yy_cp, yy_bp int) {
+	yytext_ptr = yy_bp
+	YYleng = yy_cp - yy_bp
+	b.nul = yy_cp
+	b.is_nul = true
+	yy_c_buf_p = yy_cp
+	YYtext = b.Peeked(yy_cp)
+	if yy_bp > 0 {
+		YYtext = YYtext[yy_bp:]
+	}
 }
 
 func (b *yy_buffer_state) Push(bytes []byte) {
@@ -77,7 +112,7 @@ func (b *yy_buffer_state) PeekAt(n int) int {
 	if b.backup != nil {
 		bn = len(b.backup)
 	}
-	if n >= pn + bn && !b.eof {
+	if n >= pn+bn && !b.eof {
 		var err error
 		b.peek, err = b.yy_reader.Peek(n + 100)
 		pn = len(b.peek)
@@ -98,20 +133,6 @@ func (b *yy_buffer_state) PeekAt(n int) int {
 		return int(b.peek[n])
 	}
 	return yy_END_OF_BUFFER_CHAR
-}
-
-func (b *yy_buffer_state) Max(n int) int {
-	var pn, bn int
-	if b.peek != nil {
-		pn = len(b.peek)
-	}
-	if b.backup != nil {
-		bn = len(b.backup)
-	}
-	if i := pn + bn; i < n {
-		return i
-	}
-	return n
 }
 
 func (b *yy_buffer_state) Peeked(n int) []byte {
@@ -137,38 +158,39 @@ func (b *yy_buffer_state) Peeked(n int) []byte {
 	return bb
 }
 
-func (b *yy_buffer_state) Read(n int) []byte {
-	var pn, bn int
-	if b.peek != nil {
-		pn = len(b.peek)
+func (b *yy_buffer_state) Advance(n int) {
+	//fmt.Printf("\n\nAdvance %d", n)
+
+	if n < 1 {
+		return
 	}
+
 	if b.backup != nil {
-		bn = len(b.backup)
-	}
-	bb := make([]byte, 0, n)
-	if bn > 0 {
+		bn := len(b.backup)
 		if n < bn {
-			bb = append(bb, b.backup[:n]...)
 			b.backup = b.backup[n:]
-			bn = len(b.backup)
-			n = 0
-		} else {
-			bb = append(bb, b.backup...)
-			b.backup = nil
-			n -= bn
-			bn = 0
+			return
 		}
+		b.backup = nil
+		n -= bn
 	}
-	if n == 0 {
-		return bb
+
+	if n < 1 {
+		return
 	}
 
 	if b.peek != nil {
-		if pn > n {
+		bn := len(b.peek)
+		if n < bn {
 			b.peek = b.peek[n:]
-		} else {
-			b.peek = nil
+			return
 		}
+		b.peek = nil
+		n -= bn
+	}
+
+	if n < 1 {
+		return
 	}
 
 	buf := make([]byte, n)
@@ -176,25 +198,25 @@ func (b *yy_buffer_state) Read(n int) []byte {
 	if n != nn {
 		log.Panic(err)
 	}
-	bb = append(bb, buf...)
-	return bb
 }
 
+
 func yy_init_buffer(b *yy_buffer_state, file io.Reader) {
-        if yy_buffer_stack_top < 0 || b != yy_buffer_stack[yy_buffer_stack_top] {
-                b.yy_at_bol = 1
-                b.yy_bs_lineno = 1
-                b.yy_bs_column = 0
-        }
-        if b.yy_file != file {
-                b.yy_file = file
-                b.yy_reader = bufio.NewReaderSize(file, 100000)
+	if yy_buffer_stack_top < 0 || b != yy_buffer_stack[yy_buffer_stack_top] {
+		b.yy_at_bol = 1
+		b.yy_bs_lineno = 1
+		b.yy_bs_column = 0
+	}
+	if b.yy_file != file {
+		b.yy_file = file
+		b.yy_reader = bufio.NewReaderSize(file, 100000)
 		b.backup = b.peek
-                b.peek = nil
-                b.eof = false
-        }
-        YYin = file
-}       
+		b.peek = nil
+		b.eof = false
+	}
+	YYin = file
+	yy_c_buf_p = 0
+}
 
 func yy_create_buffer(file io.Reader) *yy_buffer_state {
 	b := yy_buffer_state{
@@ -204,6 +226,36 @@ func yy_create_buffer(file io.Reader) *yy_buffer_state {
 	}
 	yy_init_buffer(&b, file)
 	return &b
+}
+
+func YY_STATE_EOF(state int) int {
+	return yy_END_OF_BUFFER + state + 1
+}
+
+func yy_get_next_buffer(b *yy_buffer_state) int {
+
+	if yy_c_buf_p > b.yy_n_chars()+1 {
+		panic("fatal flex scanner internal error--end of buffer missed")
+	}
+
+	if yy_c_buf_p-yytext_ptr-b.YY_MORE_ADJ == 1 {
+		/* We matched a single character, the EOB, so
+		 * treat this as a final EOF.
+		 */
+		return eob_ACT_END_OF_FILE
+	}
+
+	/* We matched some text prior to the EOB, first
+	 * process it.
+	 */
+	return eob_ACT_LAST_MATCH
+}
+
+func yy_load_buffer_state() {
+	b := yy_buffer_stack[yy_buffer_stack_top]
+	yytext_ptr = 0
+	yy_c_buf_p = 0
+	YYin = b.yy_file
 }
 
 // [1.5] DFA------------------------------------------------------------
@@ -231,6 +283,10 @@ func yy_create_buffer(file io.Reader) *yy_buffer_state {
 // SKEL ----------------------------------------------------------------
 
 func YYlex() {
+	var yy_current_state int
+	var yy_cp, yy_bp int
+	var yy_act int
+
 	if !yy_init {
 		yy_init = true
 
@@ -239,7 +295,7 @@ func YYlex() {
 		// #endif
 
 		if yy_start == 0 {
-			yy_start = 1 // first start state
+			yy_start = 1 /* first start state */
 		}
 
 		if YYin == nil {
@@ -251,10 +307,15 @@ func YYlex() {
 		}
 
 		if yy_buffer_stack == nil {
-			yy_buffer_stack = make([]*yy_buffer_state, 1)
-			yy_buffer_stack[0] = yy_create_buffer(YYin)
-			yy_buffer_stack_top = 0
+			yy_buffer_stack = make([]*yy_buffer_state, 0, 1)
 		}
+		if len(yy_buffer_stack) == 0 {
+			b := yy_create_buffer(YYin)
+			yy_buffer_stack = append(yy_buffer_stack, b)
+		}
+		yy_buffer_stack_top = len(yy_buffer_stack) - 1
+
+		yy_load_buffer_state()
 	}
 
 	{
@@ -262,42 +323,44 @@ func YYlex() {
 %% [7.0] user's declarations go here
 // SKEL ----------------------------------------------------------------
 
-		var yy_act, yy_last_accepting_state, yy_last_accepting_cpos int
-		for yy_running = true; yy_running; { // loops until YYterminate()
-			var bytes []byte
-			var unused int
+		yy_running = true
+		for yy_running { // loops until end-of-file is reached
 
 			buffer := yy_buffer_stack[yy_buffer_stack_top]
 
-			var yy_current_state int
-			dont := false
-			if dont {
-				goto yy_match
-			}
-			if dont {
-				goto yy_find_action
-			}
-			if dont {
-				goto do_action
-			}
 // [8.0] yymore()-related code goes here -------------------------------
 %% [8.0] yymore()-related code goes here
 // SKEL ----------------------------------------------------------------
+
+			buffer.Advance(yy_c_buf_p)
+			yy_c_buf_p = 0
+			yy_cp = 0
+
+			/* Support of yytext. */
+			buffer.clearNul()
+
+			// yy_bp points to the position in yy_ch_buf of the start of
+			// the current run.
+			yy_bp = yy_cp
 
 // [9.0] code to set up and find next match goes here ------------------
 %% [9.0] code to set up and find next match goes here
 // SKEL ----------------------------------------------------------------
 
 yy_find_action:
+			buffer = yy_buffer_stack[yy_buffer_stack_top]
 // [10.0] code to find the action number goes here ---------------------
 %% [10.0] code to find the action number goes here
 // SKEL ----------------------------------------------------------------
+
+			buffer.YY_DO_BEFORE_ACTION(yy_cp, yy_bp)
 
 // [11.0] code for yylineno update goes here ---------------------------
 %% [11.0] code for yylineno update goes here
 // SKEL ----------------------------------------------------------------
 
 do_action:     // This label is used only to access EOF actions.
+			buffer = yy_buffer_stack[yy_buffer_stack_top]
 
 // [12.0] debug code goes here -----------------------------------------
 %% [12.0] debug code goes here
@@ -309,60 +372,65 @@ do_action:     // This label is used only to access EOF actions.
 // SKEL ----------------------------------------------------------------
 
 			case yy_END_OF_BUFFER:
-				//fmt.Println("case yy_END_OF_BUFFER\n")
+				//fmt.Printf("\n-- END OF BUFFER %q\n", string(YYtext))
+				/* Amount of text matched not including the EOB char. */
+				yy_amount_of_matched_text := yy_cp - yytext_ptr - 1
 
-				// Amount of text matched not including the EOB char.
-				// yy_amount_of_matched_text := len(bytes)
-
-				// Undo the effects of YY_DO_BEFORE_ACTION.
-				//YY_RESTORE_YY_MORE_OFFSET
+				/* Undo the effects of YY_DO_BEFORE_ACTION. */
+				buffer.clearNul()
+				//TODO: YY_RESTORE_YY_MORE_OFFSET
 
 				if buffer.yy_buffer_status == yy_BUFFER_NEW {
-					// We're scanning a new file or input source.  It's
-					// possible that this happened because the user
-					// just pointed yyin at a new source and called
-					// yylex().  If so, then we have to assure
-					// consistency between YY_CURRENT_BUFFER and our
-					// globals.  Here is the right place to do so, because
-					// this is the first action (other than possibly a
-					// back-up) that will match for the new input source.
-					buffer.yy_buffer_status = yy_BUFFER_NORMAL
+					/* We're scanning a new file or input source.  It's
+					 * possible that this happened because the user
+					 * just pointed yyin at a new source and called
+					 * yylex().  If so, then we have to assure
+					 * consistency between YY_CURRENT_BUFFER and our
+					 * globals.  Here is the right place to do so, because
+					 * this is the first action (other than possibly a
+					 * back-up) that will match for the new input source.
+					 */
 					if buffer.yy_file != YYin {
 						buffer.yy_file = YYin
 						buffer.yy_reader = bufio.NewReaderSize(YYin, 100000)
+						buffer.peek = nil
+						buffer.backup = nil
 					}
+					buffer.yy_buffer_status = yy_BUFFER_NORMAL
 				}
 
-				// Note that here we test for yy_c_buf_p "<=" to the position
-				// of the first EOB in the buffer, since yy_c_buf_p will
-				// already have been incremented past the NUL character
-				// (since all states make transitions on EOB to the
-				// end-of-buffer state).  Contrast this with the test
-				// in input().
-				if len(bytes) > 0 {
-					// This was really a NUL.
+				/* Note that here we test for yy_c_buf_p "<=" to the position
+				 * of the first EOB in the buffer, since yy_c_buf_p will
+				 * already have been incremented past the NUL character
+				 * (since all states make transitions on EOB to the
+				 * end-of-buffer state).  Contrast this with the test
+				 * in input().
+				 */
+				if yy_c_buf_p <= buffer.yy_n_chars() {
+					/* This was really a NUL. */
 					var yy_next_state int
 
-					// (yy_c_buf_p) = (yytext_ptr) + yy_amount_of_matched_text;
+					yy_c_buf_p = yytext_ptr + yy_amount_of_matched_text
 
-					yy_current_state, yy_last_accepting_state = yy_get_previous_state(yy_last_accepting_state, bytes)
+					yy_current_state = yy_get_previous_state(buffer)
 
-					// Okay, we're now positioned to make the NUL
-					// transition.  We couldn't have
-					// yy_get_previous_state() go ahead and do it
-					// for us because it doesn't know how to deal
-					// with the possibility of jamming (and we don't
-					// want to build jamming into it because then it
-					// will run more slowly).
+					/* Okay, we're now positioned to make the NUL
+					 * transition.  We couldn't have
+					 * yy_get_previous_state() go ahead and do it
+					 * for us because it doesn't know how to deal
+					 * with the possibility of jamming (and we don't
+					 * want to build jamming into it because then it
+					 * will run more slowly).
+					 */
 
-					var ac bool
-					yy_next_state, yy_last_accepting_state, ac = yy_try_NUL_trans(yy_current_state, yy_last_accepting_state)
+					yy_next_state = yy_try_NUL_trans(buffer, yy_current_state)
 
-					// yy_bp = (yytext_ptr) + YY_MORE_ADJ;
+					yy_bp = yytext_ptr + buffer.YY_MORE_ADJ
 
 					if yy_next_state != 0 {
-						// Consume the NUL.
-						buffer.Read(unused)
+						/* Consume the NUL. */
+						yy_c_buf_p++
+						yy_cp = yy_c_buf_p
 						yy_current_state = yy_next_state
 						goto yy_match
 					} else {
@@ -375,56 +443,68 @@ do_action:     // This label is used only to access EOF actions.
 
 				} else {
 
-					yy_did_buffer_switch_on_eof := false
+					switch yy_get_next_buffer(buffer) {
+					case eob_ACT_END_OF_FILE:
+						yy_did_buffer_switch_on_eof := false
 
-					if YYwrap() {
-						// Note: because we've taken care in
-						// yy_get_next_buffer() to have set up
-						// yytext, we can now set up
-						// yy_c_buf_p so that if some total
-						// hoser (like flex itself) wants to
-						// call the scanner after we return the
-						// YY_NULL, it'll still work - another
-						// YY_NULL will get returned.
-						//(yy_c_buf_p) = (yytext_ptr) + YY_MORE_ADJ
+						if YYwrap() {
+							// Note: because we've taken care in
+							// yy_get_next_buffer() to have set up
+							// yytext, we can now set up
+							// yy_c_buf_p so that if some total
+							// hoser (like flex itself) wants to
+							// call the scanner after we return the
+							// YY_NULL, it'll still work - another
+							// YY_NULL will get returned.
+							yy_c_buf_p = yytext_ptr + buffer.YY_MORE_ADJ
 
-						yy_act = yy_STATE_EOF(yy_START())
-						goto do_action
-					} else {
-						if !yy_did_buffer_switch_on_eof {
-							yy_NEW_FILE()
+							yy_act = YY_STATE_EOF(yy_START())
+							goto do_action
+						} else {
+							if !yy_did_buffer_switch_on_eof {
+								yy_c_buf_p = 0
+								yy_NEW_FILE()
+							}
 						}
+					case eob_ACT_CONTINUE_SCAN:
+						// C only
+					case eob_ACT_LAST_MATCH:
+						yy_c_buf_p = buffer.yy_n_chars()
+
+						yy_current_state = yy_get_previous_state(buffer)
+
+						yy_cp = yy_c_buf_p
+						yy_bp = yytext_ptr + buffer.YY_MORE_ADJ
+						goto yy_find_action
 					}
 				}
 
 			default:
 				log.Fatalln("fatal flex scanner internal error--no action found:", yy_act)
-			} // end of action switch
-		} // end of scanning one token
-	} // end of user's declarations
+			} /* end of action switch */
+		} /* end of scanning one token */
+	} /* end of user's declarations */
 
-} // end of YYlex
+} /* end of yylex */
 
 /* yy_get_previous_state - get the state just before the EOB char was reached */
-func yy_get_previous_state(yy_last_accepting_state int, bytes []byte) (int, int) {
-
-	//yy_last_accepting_cpos := 0
+func yy_get_previous_state(buffer *yy_buffer_state) int {
 
 	var yy_current_state int
+	var yy_cp int
+
 // [15.0] code to get the start state into yy_current_state goes here --
 %% [15.0] code to get the start state into yy_current_state goes here
 // SKEL ----------------------------------------------------------------
 
-	i1 := len(bytes)
-	ii := i1 + 2
-	for yy_cp := 0; yy_cp < ii; yy_cp++ {
+	for yy_cp = yytext_ptr + buffer.YY_MORE_ADJ; yy_cp < yy_c_buf_p; yy_cp++ {
 
 // [16.0] code to find the next state goes here ------------------------
 %% [16.0] code to find the next state goes here
 // SKEL ----------------------------------------------------------------
 
 	}
-        return yy_current_state, yy_last_accepting_state
+        return yy_current_state
 }
 
 /* yy_try_NUL_trans - try to make a transition on the NUL character
@@ -432,19 +512,19 @@ func yy_get_previous_state(yy_last_accepting_state int, bytes []byte) (int, int)
  * synopsis
  *      next_state = yy_try_NUL_trans( current_state );
  */
-func yy_try_NUL_trans(yy_current_state, yy_last_accepting_state int) (int, int, bool) {
+func yy_try_NUL_trans(buffer *yy_buffer_state, yy_current_state int) int {
 
-	ac_cur := false
-	yy_is_jam := false
+	var yy_is_jam bool
 
 // [17.0] code to find the next state, and perhaps do backing up, goes here
 %% [17.0] code to find the next state, and perhaps do backing up, goes here
 // SKEL ----------------------------------------------------------------
 
 	if yy_is_jam {
-		yy_current_state = 0
+		return 0
 	}
-        return yy_current_state, yy_last_accepting_state, ac_cur
+
+	return yy_current_state
 }
 
 // [18.0] update yylineno here -----------------------------------------
@@ -508,7 +588,7 @@ func YYmain(filenames ...string) {
                                 return true
                         }
                         r, err = os.Open(filenames[0])
-                        YYrestart(r)
+                        YYin = r
                         if err != nil {
                                 log.Fatal(err)
                         }
