@@ -14,17 +14,14 @@ import (
 	"os"
 )
 
-const yy_BUF_SIZE = 32768
-const yy_READ_BUF_SIZE = 16384
-
-const cYY_INT_ALIGNED = "int16"
+const yy_INT_ALIGNED = "int16"
 
 /* Begin user sect3 */
-const cFLEX_DEBUG = true
+const yy_FLEX_DEBUG = true
 
 type yy_state_type int
 
-const cYY_FLEX_LEX_COMPAT = false
+const yy_FLEX_LEX_COMPAT = false
 
 var yylineno = 1
 
@@ -33,7 +30,6 @@ var yylineno = 1
 const (
 	yy_END_OF_BUFFER_CHAR = 0
 	INITIAL               = 0
-	YY_BUFSIZE            = 100000 // buffer size for bufio.Reader, increase this if you get ErrBufferFull
 
 	eob_ACT_END_OF_FILE   = 0
 	eob_ACT_CONTINUE_SCAN = 1
@@ -42,6 +38,9 @@ const (
 	yy_BUFFER_NEW         = 0
 	yy_BUFFER_NORMAL      = 1
 	yy_BUFFER_EOF_PENDING = 2
+
+	yy_BUF_SIZE      = 32768
+	yy_READ_BUF_SIZE = 16384
 )
 
 var (
@@ -300,15 +299,6 @@ func YY_DO_BEFORE_ACTION(buffer *yy_buffer_state, yy_cp, yy_bp int) {
 	/* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array */
 	// SKEL ----------------------------------------------------------------
 
-	/*
-		var i int
-		for i = yy_cp; i > yy_bp; i-- {
-			if buffer.yy_ch_buf[i-1] != 0 {
-				break
-			}
-		}
-		YYtext = buffer.yy_ch_buf[yy_bp:i]
-	*/
 	YYtext = buffer.yy_ch_buf[yy_bp:yy_cp]
 
 	yy_c_buf_p = yy_cp
@@ -561,7 +551,7 @@ func YYlex() {
 				} else if yy_act == 4 {
 					fmt.Fprintln(os.Stderr, "--(end of buffer or a NUL)")
 				} else {
-					fmt.Fprintf(os.Stderr, "--EOF (start condition %d)\n", yy_START)
+					fmt.Fprintf(os.Stderr, "--EOF (start condition %d)\n", yy_START())
 				}
 			}
 			// SKEL ----------------------------------------------------------------

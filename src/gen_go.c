@@ -194,7 +194,7 @@ void gen_bu_action_go (void)
     set_indent_go (3);
 
     indent_puts_go ("case 0: /* must back up */");
-    indent_puts_go ("buffer.clearNul()");
+    indent_puts_go ("buffer.yy_ch_buf[yy_cp] = yy_hold_char");
     indent_puts_go ("yy_cp = yy_last_accepting_cpos");
     indent_puts_go ("yy_current_state = yy_last_accepting_state");
     indent_puts_go ("goto yy_find_action");
@@ -888,18 +888,18 @@ void gen_next_state_go (int worry_about_NULs)
     if (worry_about_NULs && !nultrans) {
 	if (useecs)
 	    snprintf (char_map, sizeof(char_map),
-		      "ifelse(buffer.isNul(yy_cp), %d, int(yy_ec[buffer.PeekAt(yy_cp)]))",
+		      "ifelse(buffer.yy_ch_buf[yy_cp] != 0, int(yy_ec[buffer.yy_ch_buf[yy_cp]]), %d)",
 		      NUL_ec);
 	else
             snprintf (char_map, sizeof(char_map),
-		      "ifelse(buffer.isNul(yy_cp), %d, buffer.PeekAt(yy_cp))",
+		      "ifelse(buffer.yy_ch_buf[yy_cp] != 0, int(buffer.yy_ch_buf[yy_cp]), %d)",
 		      NUL_ec);
     }
 
     else
 	strcpy (char_map, useecs ?
-		"int(yy_ec[buffer.PeekAt(yy_cp)])" :
-		"buffer.PeekAt(yy_cp)");
+		"int(yy_ec[buffer.yy_ch_buf[yy_cp]])" :
+		"int(buffer.yy_ch_buf[yy_cp])");
 
     if (worry_about_NULs && nultrans) {
 	if (!fulltbl && !fullspd)
@@ -2021,7 +2021,7 @@ void make_tables_go (void)
 	indent_up_go ();
 
 	indent_puts_go
-	    ("fmt.Fprintf(os.Stderr, \"--EOF (start condition %d)\\n\", yy_START)");
+	    ("fmt.Fprintf(os.Stderr, \"--EOF (start condition %d)\\n\", yy_START())");
 
 	indent_down_go ();
 	indent_puts_go ("}");

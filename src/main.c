@@ -1616,6 +1616,9 @@ void readin ()
 	else if (Go)
 	    outn (Go ? "const cFLEX_DEBUG = false\n" : "\n#define FLEX_DEBUG");
 
+	if (Go)
+	    out_str ("var IsInteractive = func(file io.Reader) bool { return %s }", interactive ? "true" : "false");
+
 	OUT_BEGIN_CODE ();
 	if (!Go) {
 	    if (csize == 256)

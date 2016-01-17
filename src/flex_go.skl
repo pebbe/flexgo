@@ -16,7 +16,6 @@ m4_changequote([[, ]])
 const (
 	yy_END_OF_BUFFER_CHAR = 0
 	INITIAL               = 0
-	YY_BUFSIZE	      = 100000 // buffer size for bufio.Reader, increase this if you get ErrBufferFull
 
 	eob_ACT_END_OF_FILE   = 0
 	eob_ACT_CONTINUE_SCAN = 1
@@ -25,6 +24,9 @@ const (
 	yy_BUFFER_NEW         = 0
 	yy_BUFFER_NORMAL      = 1
 	yy_BUFFER_EOF_PENDING = 2
+
+	yy_BUF_SIZE      = 32768
+	yy_READ_BUF_SIZE = 16384
 )
 
 var (
@@ -37,21 +39,40 @@ var (
 	yy_c_buf_p              int
 	yy_init                 = false
 	yy_running              bool
+	yy_n_chars          int
 	yy_start                = 0
 	yytext_ptr              int
+	yy_hold_char        byte
 )
 
 type yy_buffer_state struct {
-	yy_file   io.Reader
-	yy_reader *bufio.Reader
+	yy_input_file io.Reader
 
-	peek        []byte
-	backup      []byte
-	eof         bool
-	peeked      int
-	nul         int
-	is_nul      bool
-	YY_MORE_ADJ int
+	yy_ch_buf  []byte // input buffer
+	yy_buf_pos int    // current position in input buffer
+
+	/* Size of input buffer in bytes, not including room for EOB
+	 * characters.
+	 */
+	yy_buf_size int
+
+	/* Number of characters read into yy_ch_buf, not including EOB
+	 * characters.
+	 */
+	yy_n_chars int
+
+	/* Whether we "own" the buffer - i.e., we know we created it,
+	 * and can realloc() it to grow it, and should free() it to
+	 * delete it.
+	 */
+	yy_is_our_buffer bool
+
+	/* Whether this is an "interactive" input source; if so, and
+	 * if we're using stdio for input, then we want to use getc()
+	 * instead of fread(), to make sure we stop fetching input after
+	 * each newline.
+	 */
+	yy_is_interactive bool
 
 	/* Whether we're considered to be at the beginning of a line.
 	 * If so, '^' rules will be active on the next match, otherwise
@@ -62,224 +83,252 @@ type yy_buffer_state struct {
 	yy_bs_lineno int /**< The line count. */
 	yy_bs_column int /**< The column count. */
 
+	/* Whether to try to fill the input buffer when we reach the
+	 * end of it.
+	 */
+	yy_fill_buffer bool
+
 	yy_buffer_status int
 }
 
-func (b *yy_buffer_state) yy_n_chars() int {
-	var n int
-	if b.peek != nil {
-		n = len(b.peek)
-	}
-	if b.backup != nil {
-		n += len(b.backup)
-	}
-	return n
-}
-
-func (b *yy_buffer_state) isNul(n int) bool {
-	return b.is_nul && b.nul == n
-}
-
-func (b *yy_buffer_state) clearNul() {
-	b.is_nul = false
-}
-
-func (b *yy_buffer_state) YY_DO_BEFORE_ACTION(yy_cp, yy_bp int) {
-	yytext_ptr = yy_bp
-	b.nul = yy_cp
-	b.is_nul = true
-	yy_c_buf_p = yy_cp
-	YYtext = b.Peeked(yy_cp)
-	if yy_bp > 0 {
-		if yy_bp < len(YYtext) {
-			YYtext = YYtext[yy_bp:]
-		} else {
-			YYtext = []byte{}
-		}
-	}
-	YYleng = len(YYtext)
-}
-
-func (b *yy_buffer_state) Push(bytes []byte) {
-	n1 := len(bytes)
-	n2 := n1
-	if b.backup != nil {
-		n2 += len(b.backup)
-	}
-	bb := make([]byte, n1, n2)
-	copy(bb, bytes)
-	if n2 > n1 {
-		bb = append(bb, b.backup...)
-	}
-	b.backup = bb
-}
-
-func (b *yy_buffer_state) PeekAt(n int) int {
-	var pn, bn int
-	if b.peek != nil {
-		pn = len(b.peek)
-	}
-	if b.backup != nil {
-		bn = len(b.backup)
-	}
-	if n >= pn+bn && !b.eof {
-		var err error
-		b.peek, err = b.yy_reader.Peek(n + yy_batch)
-		pn = len(b.peek)
-		b.eof = false
-		if err != nil {
-			if err.Error() == "EOF" {
-				b.eof = true
-			} else {
-				log.Panic(err)
-			}
-		}
-	}
-	if bn > n {
-		return int(b.backup[n])
-	}
-	n -= bn
-	if pn > n {
-		return int(b.peek[n])
-	}
-	return yy_END_OF_BUFFER_CHAR
-}
-
-func (b *yy_buffer_state) Peeked(n int) []byte {
-	var pn, bn int
-	if b.peek != nil {
-		pn = len(b.peek)
-	}
-	if b.backup != nil {
-		bn = len(b.backup)
-	}
-	if i := pn + bn; i < n {
-		n = i
-	}
-	if n <= bn {
-		return b.backup[:n]
-	}
-	if bn == 0 && n <= pn {
-		return b.peek[:n]
-	}
-	bb := make([]byte, bn, n)
-	copy(bb, b.backup)
-	bb = append(bb, b.peek[:n-bn]...)
-	return bb
-}
-
-func (b *yy_buffer_state) Advance(n int) {
-
-	if n < 1 {
-		return
-	}
-
-	if b.backup != nil {
-		bn := len(b.backup)
-		if n < bn {
-			b.backup = b.backup[n:]
-			return
-		}
-		b.backup = nil
-		n -= bn
-	}
-
-	if n < 1 {
-		return
-	}
-
-	if b.peek != nil {
-		bn := len(b.peek)
-		if n < bn {
-			b.peek = b.peek[n:]
-		} else {
-			b.peek = nil
-		}
-	}
-
-	buf := make([]byte, n)
-	_, err := b.yy_reader.Read(buf)
-	if err != nil && err != io.EOF {
-		log.Panic(err)
-	}
-}
-
 func yy_init_buffer(b *yy_buffer_state, file io.Reader) {
+
+	yy_flush_buffer(b)
+
+	b.yy_input_file = file
+
+	b.yy_fill_buffer = true
+
+	/* If b is the current buffer, then yy_init_buffer was _probably_
+	 * called from yyrestart() or through yy_get_next_buffer.
+	 * In that case, we don't want to reset the lineno or column.
+	 */
 	if yy_buffer_stack_top < 0 || b != yy_buffer_stack[yy_buffer_stack_top] {
-		b.yy_at_bol = 1
 		b.yy_bs_lineno = 1
 		b.yy_bs_column = 0
 	}
-	if b.yy_file != file {
-		b.yy_file = file
-		b.yy_reader = bufio.NewReaderSize(file, YY_BUFSIZE)
-		b.backup = b.peek
-		b.peek = nil
-		b.eof = false
-	}
-	YYin = file
-	yy_c_buf_p = 0
+
+	b.yy_is_interactive = IsInteractive(file)
 }
 
-func yy_create_buffer(file io.Reader) *yy_buffer_state {
+func yy_flush_buffer(b *yy_buffer_state) {
+	if b == nil {
+		return
+	}
+	b.yy_n_chars = 0
+	b.yy_ch_buf[0] = yy_END_OF_BUFFER_CHAR
+	b.yy_ch_buf[1] = yy_END_OF_BUFFER_CHAR
+
+	b.yy_buf_pos = 0
+
+	b.yy_at_bol = 1
+	b.yy_buffer_status = yy_BUFFER_NEW
+
+	if yy_buffer_stack_top >= 0 && b == yy_buffer_stack[yy_buffer_stack_top] {
+		yy_load_buffer_state()
+	}
+}
+
+func yy_create_buffer(file io.Reader, size int) *yy_buffer_state {
 	b := yy_buffer_state{
-		yy_file:          file,
-		yy_reader:        bufio.NewReaderSize(file, YY_BUFSIZE),
-		yy_buffer_status: yy_BUFFER_NEW,
+		yy_buf_size:      size,
+		yy_ch_buf:        make([]byte, size+2),
+		yy_is_our_buffer: true,
 	}
 	yy_init_buffer(&b, file)
 	return &b
 }
 
-func YY_STATE_EOF(state int) int {
-	return yy_END_OF_BUFFER + state + 1
+func yy_MORE_ADJ() int {
+	return 0
 }
 
-func yy_get_next_buffer(b *yy_buffer_state) int {
+func yy_get_next_buffer() int {
 
-	if yy_c_buf_p > b.yy_n_chars()+1 {
-		panic("fatal flex scanner internal error--end of buffer missed")
+	curbuf := yy_buffer_stack[yy_buffer_stack_top]
+
+	var number_to_move, i int
+	var ret_val int
+
+	if yy_c_buf_p > yy_n_chars+1 {
+		log.Panic("fatal flex scanner internal error--end of buffer missed")
 	}
 
-	if yy_c_buf_p-yytext_ptr-b.YY_MORE_ADJ == 1 {
-		/* We matched a single character, the EOB, so
-		 * treat this as a final EOF.
-		 */
-		return eob_ACT_END_OF_FILE
+	if !curbuf.yy_fill_buffer {
+		// Don't try to fill the buffer, so this is an EOF.
+		if yy_c_buf_p-yytext_ptr-yy_MORE_ADJ() == 1 {
+			// We matched a single character, the EOB, so
+			// treat this as a final EOF.
+			return eob_ACT_END_OF_FILE
+		} else {
+			// We matched some text prior to the EOB, first
+			// process it.
+			return eob_ACT_LAST_MATCH
+		}
 	}
 
-	/* We matched some text prior to the EOB, first
-	 * process it.
-	 */
-	return eob_ACT_LAST_MATCH
+	/* Try to read more data. */
+
+	/* First move last chars to start of buffer. */
+	number_to_move = yy_c_buf_p - yytext_ptr - 1
+
+	for i = 0; i < number_to_move; i++ {
+		curbuf.yy_ch_buf[i] = curbuf.yy_ch_buf[i+yytext_ptr]
+	}
+
+	if curbuf.yy_buffer_status == yy_BUFFER_EOF_PENDING {
+		// don't do the read, it's not guaranteed to return an EOF,
+		// just force an EOF
+		yy_n_chars = 0
+		curbuf.yy_n_chars = 0
+	} else {
+		num_to_read := curbuf.yy_buf_size - number_to_move - 1
+
+		for num_to_read <= 0 {
+			/* Not enough room in the buffer - grow it. */
+
+			/* just a shorter name for the current buffer */
+			b := curbuf
+
+			yy_c_buf_p_offset := yy_c_buf_p
+
+			if b.yy_is_our_buffer {
+				new_size := b.yy_buf_size * 2
+
+				if new_size <= 0 {
+					b.yy_buf_size += b.yy_buf_size / 8
+				} else {
+					b.yy_buf_size *= 2
+				}
+
+				// Include room in for 2 EOB chars.
+				bb := make([]byte, b.yy_buf_size+2-len(b.yy_ch_buf))
+				b.yy_ch_buf = append(b.yy_ch_buf, bb...)
+			} else {
+				// Can't grow it, we don't own it.
+				b.yy_ch_buf = nil
+			}
+
+			if b.yy_ch_buf == nil {
+				log.Panicln(
+					"fatal error - scanner input buffer overflow")
+			}
+
+			yy_c_buf_p = yy_c_buf_p_offset
+
+			num_to_read = curbuf.yy_buf_size - number_to_move - 1
+
+		}
+
+		if num_to_read > yy_READ_BUF_SIZE {
+			num_to_read = yy_READ_BUF_SIZE
+		}
+
+		// Read in more data.
+		yy_n_chars = yy_INPUT(number_to_move, num_to_read)
+		curbuf.yy_n_chars = yy_n_chars
+	}
+
+	if yy_n_chars == 0 {
+		if number_to_move == yy_MORE_ADJ() {
+			ret_val = eob_ACT_END_OF_FILE
+			YYrestart(YYin)
+		} else {
+			ret_val = eob_ACT_LAST_MATCH
+			curbuf.yy_buffer_status =
+				yy_BUFFER_EOF_PENDING
+		}
+	} else {
+		ret_val = eob_ACT_CONTINUE_SCAN
+	}
+
+	if yy_n_chars+number_to_move > curbuf.yy_buf_size {
+		// Extend the array by 50%, plus the number we really need. *
+		new_size := yy_n_chars + number_to_move + (yy_n_chars >> 1)
+		if l := len(curbuf.yy_ch_buf); l < new_size {
+			b2 := make([]byte, new_size-l)
+			curbuf.yy_ch_buf = append(curbuf.yy_ch_buf, b2...)
+		}
+	}
+
+	yy_n_chars += number_to_move
+	curbuf.yy_ch_buf[yy_n_chars] = yy_END_OF_BUFFER_CHAR
+	curbuf.yy_ch_buf[yy_n_chars+1] = yy_END_OF_BUFFER_CHAR
+
+	yytext_ptr = 0
+
+	return ret_val
 }
 
 func yy_load_buffer_state() {
 	b := yy_buffer_stack[yy_buffer_stack_top]
-	yytext_ptr = 0
-	yy_c_buf_p = 0
-	YYin = b.yy_file
+	yy_n_chars = b.yy_n_chars
+	yy_c_buf_p = b.yy_buf_pos
+	yytext_ptr = yy_c_buf_p
+	YYin = b.yy_input_file
+	yy_hold_char = b.yy_ch_buf[yy_c_buf_p]
 }
 
 // [1.5] DFA------------------------------------------------------------
 %% [1.5] DFA
 // SKEL ----------------------------------------------------------------
 
+func yy_DO_BEFORE_ACTION(buffer *yy_buffer_state, yy_cp, yy_bp int) {
+	yytext_ptr = yy_bp
 // [2.0] code to fiddle yytext and yyleng for yymore() goes here -------
 %% [2.0] code to fiddle yytext and yyleng for yymore() goes here
 // SKEL ----------------------------------------------------------------
-
+	YYleng = yy_cp - yy_bp
+	yy_hold_char = buffer.yy_ch_buf[yy_cp]
+	buffer.yy_ch_buf[yy_cp] = 0
 // [3.0] code to copy yytext_ptr to yytext[] goes here, if %array ------
 %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array
 // SKEL ----------------------------------------------------------------
+
+	YYtext = buffer.yy_ch_buf[yy_bp:yy_cp]
+
+	yy_c_buf_p = yy_cp
+}
 
 // [4.0] data tables for the DFA go here -------------------------------
 %% [4.0] data tables for the DFA go here
 // SKEL ----------------------------------------------------------------
 
+func yy_INPUT(offset, max_read int) int {
 // [5.0] fread()/read() definition of YY_INPUT goes here ---------------
 %% [5.0] fread()/read() definition of YY_INPUT goes here
 // SKEL ----------------------------------------------------------------
+	curbuf := yy_buffer_stack[yy_buffer_stack_top]
+	if curbuf.yy_is_interactive {
+		b := make([]byte, 1)
+		var n int
+		for n = 0; n < max_read; n++ {
+			nn, err := curbuf.yy_input_file.Read(b)
+			if nn < 1 {
+				if err != nil && err != io.EOF {
+					log.Panicln("input in flex scanner failed:", err)
+				}
+				break
+			}
+			curbuf.yy_ch_buf[offset+n] = b[0]
+			if b[0] == '\n' {
+				n++
+				break
+			}
+		}
+		return n
+	}
+
+	b := make([]byte, max_read)
+	n, err := curbuf.yy_input_file.Read(b)
+	if err != nil && err != io.EOF {
+		log.Panicln("input in flex scanner failed:", err)
+	}
+	for i := 0; i < n; i++ {
+		curbuf.yy_ch_buf[offset+i] = b[i]
+	}
+	return n
+}
 
 // [6.0] YY_RULE_SETUP definition goes here ----------------------------
 %% [6.0] YY_RULE_SETUP definition goes here
@@ -313,8 +362,7 @@ func YYlex() {
 			yy_buffer_stack = make([]*yy_buffer_state, 0, 1)
 		}
 		if len(yy_buffer_stack) == 0 {
-			b := yy_create_buffer(YYin)
-			yy_buffer_stack = append(yy_buffer_stack, b)
+			yy_buffer_stack = append(yy_buffer_stack, yy_create_buffer(YYin, yy_BUF_SIZE))
 		}
 		yy_buffer_stack_top = len(yy_buffer_stack) - 1
 
@@ -335,12 +383,10 @@ func YYlex() {
 %% [8.0] yymore()-related code goes here
 // SKEL ----------------------------------------------------------------
 
-			buffer.Advance(yy_c_buf_p)
-			yy_c_buf_p = 0
-			yy_cp = 0
+			yy_cp = yy_c_buf_p
 
 			/* Support of yytext. */
-			buffer.clearNul()
+			buffer.yy_ch_buf[yy_cp] = yy_hold_char
 
 			// yy_bp points to the position in yy_ch_buf of the start of
 			// the current run.
@@ -356,13 +402,13 @@ yy_find_action:
 %% [10.0] code to find the action number goes here
 // SKEL ----------------------------------------------------------------
 
-			buffer.YY_DO_BEFORE_ACTION(yy_cp, yy_bp)
+			yy_DO_BEFORE_ACTION(buffer, yy_cp, yy_bp)
 
 // [11.0] code for yylineno update goes here ---------------------------
 %% [11.0] code for yylineno update goes here
 // SKEL ----------------------------------------------------------------
 
-do_action:     // This label is used only to access EOF actions.
+		do_action: // This label is used only to access EOF actions.
 			buffer = yy_buffer_stack[yy_buffer_stack_top]
 
 // [12.0] debug code goes here -----------------------------------------
@@ -379,7 +425,7 @@ do_action:     // This label is used only to access EOF actions.
 				yy_amount_of_matched_text := yy_cp - yytext_ptr - 1
 
 				/* Undo the effects of YY_DO_BEFORE_ACTION. */
-				buffer.clearNul()
+				buffer.yy_ch_buf[yy_cp] = yy_hold_char
 				//TODO: YY_RESTORE_YY_MORE_OFFSET
 
 				if buffer.yy_buffer_status == yy_BUFFER_NEW {
@@ -392,12 +438,8 @@ do_action:     // This label is used only to access EOF actions.
 					 * this is the first action (other than possibly a
 					 * back-up) that will match for the new input source.
 					 */
-					if buffer.yy_file != YYin {
-						buffer.yy_file = YYin
-						buffer.yy_reader = bufio.NewReaderSize(YYin, YY_BUFSIZE)
-						buffer.peek = nil
-						buffer.backup = nil
-					}
+					yy_n_chars = buffer.yy_n_chars
+					buffer.yy_input_file = YYin
 					buffer.yy_buffer_status = yy_BUFFER_NORMAL
 				}
 
@@ -408,13 +450,13 @@ do_action:     // This label is used only to access EOF actions.
 				 * end-of-buffer state).  Contrast this with the test
 				 * in input().
 				 */
-				if yy_c_buf_p <= buffer.yy_n_chars() {
+				if yy_c_buf_p <= yy_n_chars {
 					/* This was really a NUL. */
 					var yy_next_state int
 
 					yy_c_buf_p = yytext_ptr + yy_amount_of_matched_text
 
-					yy_current_state = yy_get_previous_state(buffer)
+					yy_current_state = yy_get_previous_state()
 
 					/* Okay, we're now positioned to make the NUL
 					 * transition.  We couldn't have
@@ -425,9 +467,9 @@ do_action:     // This label is used only to access EOF actions.
 					 * will run more slowly).
 					 */
 
-					yy_next_state = yy_try_NUL_trans(buffer, yy_current_state)
+					yy_next_state = yy_try_NUL_trans(yy_current_state)
 
-					yy_bp = yytext_ptr + buffer.YY_MORE_ADJ
+					yy_bp = yytext_ptr + yy_MORE_ADJ()
 
 					if yy_next_state != 0 {
 						/* Consume the NUL. */
@@ -440,12 +482,13 @@ do_action:     // This label is used only to access EOF actions.
 // [14.0] code to do back-up for compressed tables and set up yy_cp goes here
 %% [14.0] code to do back-up for compressed tables and set up yy_cp goes here
 // SKEL ----------------------------------------------------------------
+
 						goto yy_find_action
 					}
 
 				} else {
 
-					switch yy_get_next_buffer(buffer) {
+					switch yy_get_next_buffer() {
 					case eob_ACT_END_OF_FILE:
 						yy_did_buffer_switch_on_eof := false
 
@@ -458,31 +501,36 @@ do_action:     // This label is used only to access EOF actions.
 							// call the scanner after we return the
 							// YY_NULL, it'll still work - another
 							// YY_NULL will get returned.
-							yy_c_buf_p = yytext_ptr + buffer.YY_MORE_ADJ
+							yy_c_buf_p = yytext_ptr + yy_MORE_ADJ()
 
-							yy_act = YY_STATE_EOF(yy_START())
+							yy_act = yy_STATE_EOF(yy_START())
 							goto do_action
 						} else {
 							if !yy_did_buffer_switch_on_eof {
-								yy_c_buf_p = 0
 								yy_NEW_FILE()
 							}
 						}
 					case eob_ACT_CONTINUE_SCAN:
-						// C only
-					case eob_ACT_LAST_MATCH:
-						yy_c_buf_p = buffer.yy_n_chars()
+						yy_c_buf_p = yytext_ptr + yy_amount_of_matched_text
 
-						yy_current_state = yy_get_previous_state(buffer)
+						yy_current_state = yy_get_previous_state()
 
 						yy_cp = yy_c_buf_p
-						yy_bp = yytext_ptr + buffer.YY_MORE_ADJ
+						yy_bp = yytext_ptr + yy_MORE_ADJ()
+						goto yy_match
+					case eob_ACT_LAST_MATCH:
+						yy_c_buf_p = yy_n_chars
+
+						yy_current_state = yy_get_previous_state()
+
+						yy_cp = yy_c_buf_p
+						yy_bp = yytext_ptr + yy_MORE_ADJ()
 						goto yy_find_action
 					}
 				}
 
 			default:
-				log.Fatalln("fatal flex scanner internal error--no action found:", yy_act)
+				log.Panicln("fatal flex scanner internal error--no action found:", yy_act)
 			} /* end of action switch */
 		} /* end of scanning one token */
 	} /* end of user's declarations */
@@ -490,7 +538,9 @@ do_action:     // This label is used only to access EOF actions.
 } /* end of yylex */
 
 /* yy_get_previous_state - get the state just before the EOB char was reached */
-func yy_get_previous_state(buffer *yy_buffer_state) int {
+func yy_get_previous_state() int {
+
+	buffer := yy_buffer_stack[yy_buffer_stack_top]
 
 	var yy_current_state int
 	var yy_cp int
@@ -499,7 +549,7 @@ func yy_get_previous_state(buffer *yy_buffer_state) int {
 %% [15.0] code to get the start state into yy_current_state goes here
 // SKEL ----------------------------------------------------------------
 
-	for yy_cp = yytext_ptr + buffer.YY_MORE_ADJ; yy_cp < yy_c_buf_p; yy_cp++ {
+	for yy_cp = yytext_ptr + yy_MORE_ADJ(); yy_cp < yy_c_buf_p; yy_cp++ {
 
 // [16.0] code to find the next state goes here ------------------------
 %% [16.0] code to find the next state goes here
@@ -514,7 +564,7 @@ func yy_get_previous_state(buffer *yy_buffer_state) int {
  * synopsis
  *      next_state = yy_try_NUL_trans( current_state );
  */
-func yy_try_NUL_trans(buffer *yy_buffer_state, yy_current_state int) int {
+func yy_try_NUL_trans(yy_current_state int) int {
 
 	var yy_is_jam bool
 
@@ -550,11 +600,11 @@ func yy_STATE_EOF(state int) int {
 }
 
 func ECHO() {
-     YYout.Write(YYtext)
+	YYout.Write(YYtext)
 }
 
 func YYterminate() {
-     yy_running = false
+	yy_running = false
 }
 
 /** Immediately switch to a different input stream.
@@ -566,7 +616,7 @@ func YYrestart(input_file io.Reader) {
 
 	if yy_buffer_stack == nil {
 		yy_buffer_stack = make([]*yy_buffer_state, 1)
-		yy_buffer_stack[0] = yy_create_buffer(YYin)
+		yy_buffer_stack[0] = yy_create_buffer(YYin, yy_BUF_SIZE)
 		yy_buffer_stack_top = 0
 	}
 
@@ -584,27 +634,29 @@ func YYmain(filenames ...string) {
 
 	if len(filenames) == 0 {
 		YYin = os.Stdin
- 	} else {
-                r, err := os.Open(filenames[0])
-                if err != nil {
-                        log.Fatal(err)
-                }
-                YYin = r // YYrestart(r) ???
-                YYwrap = func() bool {
-                        r.Close()
-                        filenames = filenames[1:]
-                        if len(filenames) == 0 {
-                                return true
-                        }
-                        r, err = os.Open(filenames[0])
-                        YYin = r
-                        if err != nil {
-                                log.Fatal(err)
-                        }
-                        return false
-                }
-        }
+	} else {
+		r, err := os.Open(filenames[0])
+		if err != nil {
+			log.Fatalln(err)
+		}
+		YYin = r // YYrestart(r) ???
+		YYwrap = func() bool {
+			r.Close()
+			filenames = filenames[1:]
+			if len(filenames) == 0 {
+				return true
+			}
+			r, err = os.Open(filenames[0])
+			YYin = r
+			YYrestart(YYin)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			return false
+		}
+	}
 
-        YYlex()
+	YYlex()
 }
+
 // END OF SKELL --------------------------------------------------------
