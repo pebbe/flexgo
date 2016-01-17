@@ -14,6 +14,7 @@ import (
 	"os"
 )
 
+const yy_BUF_SIZE = 32768
 const yy_READ_BUF_SIZE = 16384
 
 const cYY_INT_ALIGNED = "int16"
@@ -56,6 +57,7 @@ var (
 	yy_n_chars          int
 	yy_start            = 0
 	yytext_ptr          int
+	yy_hold_char        byte
 )
 
 type yy_buffer_state struct {
@@ -122,10 +124,11 @@ func yy_init_buffer(b *yy_buffer_state, file io.Reader) {
 	}
 
 	// TODO:
-	if f, ok := file.(*os.File); ok {
+	//if f, ok := file.(*os.File); ok {
+	if _, ok := file.(*os.File); ok {
 		// b.yy_is_interactive = IsTerminal(f)
 	} else {
-		b.yy_is_interactive = false
+		b.yy_is_interactive = true
 	}
 
 }
@@ -143,7 +146,7 @@ func yy_flush_buffer(b *yy_buffer_state) {
 	b.yy_at_bol = 1
 	b.yy_buffer_status = yy_BUFFER_NEW
 
-	if b == yy_buffer_stack[yy_buffer_stack_top] {
+	if yy_buffer_stack_top >= 0 && b == yy_buffer_stack[yy_buffer_stack_top] {
 		yy_load_buffer_state()
 	}
 }
@@ -158,10 +161,6 @@ func yy_create_buffer(file io.Reader, size int) *yy_buffer_state {
 	return &b
 }
 
-func yy_STATE_EOF(state int) int {
-	return yy_END_OF_BUFFER + state + 1
-}
-
 func yy_MORE_ADJ() int {
 	return 0
 }
@@ -170,8 +169,6 @@ func yy_get_next_buffer() int {
 
 	curbuf := yy_buffer_stack[yy_buffer_stack_top]
 
-	dest := curbuf.yy_ch_buf
-	source := yytext_ptr
 	var number_to_move, i int
 	var ret_val int
 
@@ -215,8 +212,7 @@ func yy_get_next_buffer() int {
 			/* just a shorter name for the current buffer */
 			b := curbuf
 
-			yy_c_buf_p_offset :=
-				yy_c_buf_p
+			yy_c_buf_p_offset := yy_c_buf_p
 
 			if b.yy_is_our_buffer {
 				new_size := b.yy_buf_size * 2
@@ -250,7 +246,7 @@ func yy_get_next_buffer() int {
 		}
 
 		// Read in more data.
-		yy_INPUT(number_to_move, yy_n_chars, num_to_read)
+		yy_n_chars = yy_INPUT(number_to_move, num_to_read)
 		curbuf.yy_n_chars = yy_n_chars
 	}
 
@@ -303,12 +299,21 @@ func YY_DO_BEFORE_ACTION(buffer *yy_buffer_state, yy_cp, yy_bp int) {
 	// [2.0] code to fiddle yytext and yyleng for yymore() goes here -------
 	/* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here */
 	// SKEL ----------------------------------------------------------------
-	yyleng = yy_cp - yy_bp
+	YYleng = yy_cp - yy_bp
 	yy_hold_char = buffer.yy_ch_buf[yy_cp]
 	buffer.yy_ch_buf[yy_cp] = 0
 	// [3.0] code to copy yytext_ptr to yytext[] goes here, if %array ------
 	/* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array */
 	// SKEL ----------------------------------------------------------------
+
+	var i int
+	for i = yy_cp; i > yy_bp; i-- {
+		if buffer.yy_ch_buf[i-1] != 0 {
+			break
+		}
+	}
+	YYtext = buffer.yy_ch_buf[yy_bp:i]
+
 	yy_c_buf_p = yy_cp
 }
 
@@ -397,9 +402,45 @@ var YYtext []byte
 
 // SKEL ----------------------------------------------------------------
 
-// [5.0] fread()/read() definition of YY_INPUT goes here ---------------
-/* %% [5.0] fread()/read() definition of YY_INPUT goes here */
-// SKEL ----------------------------------------------------------------
+func yy_INPUT(offset, max_read int) int {
+	// [5.0] fread()/read() definition of YY_INPUT goes here ---------------
+	/* %% [5.0] fread()/read() definition of YY_INPUT goes here */
+	// SKEL ----------------------------------------------------------------
+	curbuf := yy_buffer_stack[yy_buffer_stack_top]
+	if curbuf.yy_is_interactive {
+		b := make([]byte, 1)
+		var n int
+		for n = 0; n < max_read; n++ {
+			nn, err := curbuf.yy_input_file.Read(b)
+			if nn < 1 {
+				if err != nil && err != io.EOF {
+					log.Fatalln("input in flex scanner failed:", err)
+				}
+				break
+			}
+			curbuf.yy_ch_buf[offset+n] = b[0]
+			if b[0] == '\n' {
+				n++
+				break
+			}
+		}
+		curbuf.yy_ch_buf[offset+n] = yy_END_OF_BUFFER_CHAR
+		curbuf.yy_ch_buf[offset+n+1] = yy_END_OF_BUFFER_CHAR
+		return offset + n
+	}
+
+	b := make([]byte, max_read)
+	n, err := curbuf.yy_input_file.Read(b)
+	if err != nil && err != io.EOF {
+		log.Fatalln("input in flex scanner failed:", err)
+	}
+	for i := 0; i < n; i++ {
+		curbuf.yy_ch_buf[offset+i] = b[i]
+	}
+	curbuf.yy_ch_buf[offset+n] = yy_END_OF_BUFFER_CHAR
+	curbuf.yy_ch_buf[offset+n+1] = yy_END_OF_BUFFER_CHAR
+	return offset + n
+}
 
 // [6.0] YY_RULE_SETUP definition goes here ----------------------------
 /* %% [6.0] YY_RULE_SETUP definition goes here */
@@ -474,7 +515,7 @@ func YYlex() {
 		yy_match:
 			buffer = yy_buffer_stack[yy_buffer_stack_top]
 			for {
-				yy_c := int(yy_ec[buffer.yy_chbuf[yy_cp]])
+				yy_c := int(yy_ec[buffer.yy_ch_buf[yy_cp]])
 				if yy_accept[yy_current_state] != 0 {
 					yy_last_accepting_state = yy_current_state
 					yy_last_accepting_cpos = yy_cp
@@ -620,7 +661,7 @@ func YYlex() {
 
 				} else {
 
-					switch yy_get_next_buffer(buffer) {
+					switch yy_get_next_buffer() {
 					case eob_ACT_END_OF_FILE:
 						yy_did_buffer_switch_on_eof := false
 
@@ -670,7 +711,9 @@ func YYlex() {
 } /* end of yylex */
 
 /* yy_get_previous_state - get the state just before the EOB char was reached */
-func yy_get_previous_state(buffer *yy_buffer_state) int {
+func yy_get_previous_state() int {
+
+	buffer := yy_buffer_stack[yy_buffer_stack_top]
 
 	var yy_current_state int
 	var yy_cp int
@@ -680,11 +723,11 @@ func yy_get_previous_state(buffer *yy_buffer_state) int {
 	yy_current_state = yy_start
 	// SKEL ----------------------------------------------------------------
 
-	for yy_cp = yytext_ptr + buffer.YY_MORE_ADJ; yy_cp < yy_c_buf_p; yy_cp++ {
+	for yy_cp = yytext_ptr + yy_MORE_ADJ(); yy_cp < yy_c_buf_p; yy_cp++ {
 
 		// [16.0] code to find the next state goes here ------------------------
 		/* %% [16.0] code to find the next state goes here */
-		yy_c := ifelse(buffer.isNul(yy_cp), 1, int(yy_ec[buffer.PeekAt(yy_cp)]))
+		yy_c := ifelse(buffer.yy_ch_buf[yy_cp] != 0, int(yy_ec[buffer.yy_ch_buf[yy_cp]]), 1)
 		if yy_accept[yy_current_state] != 0 {
 			yy_last_accepting_state = yy_current_state
 			yy_last_accepting_cpos = yy_cp
@@ -707,7 +750,7 @@ func yy_get_previous_state(buffer *yy_buffer_state) int {
  * synopsis
  *      next_state = yy_try_NUL_trans( current_state );
  */
-func yy_try_NUL_trans(buffer *yy_buffer_state, yy_current_state int) int {
+func yy_try_NUL_trans(yy_current_state int) int {
 
 	var yy_is_jam bool
 
@@ -776,7 +819,7 @@ func YYrestart(input_file io.Reader) {
 
 	if yy_buffer_stack == nil {
 		yy_buffer_stack = make([]*yy_buffer_state, 1)
-		yy_buffer_stack[0] = yy_create_buffer(YYin)
+		yy_buffer_stack[0] = yy_create_buffer(YYin, yy_BUF_SIZE)
 		yy_buffer_stack_top = 0
 	}
 
