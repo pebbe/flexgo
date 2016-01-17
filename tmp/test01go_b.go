@@ -123,14 +123,7 @@ func yy_init_buffer(b *yy_buffer_state, file io.Reader) {
 		b.yy_bs_column = 0
 	}
 
-	// TODO:
-	//if f, ok := file.(*os.File); ok {
-	if _, ok := file.(*os.File); ok {
-		// b.yy_is_interactive = IsTerminal(f)
-	} else {
-		b.yy_is_interactive = true
-	}
-
+	b.yy_is_interactive = IsInteractive(file)
 }
 
 func yy_flush_buffer(b *yy_buffer_state) {
@@ -173,7 +166,7 @@ func yy_get_next_buffer() int {
 	var ret_val int
 
 	if yy_c_buf_p > yy_n_chars+1 {
-		panic("fatal flex scanner internal error--end of buffer missed")
+		log.Panic("fatal flex scanner internal error--end of buffer missed")
 	}
 
 	if !curbuf.yy_fill_buffer {
@@ -224,14 +217,15 @@ func yy_get_next_buffer() int {
 				}
 
 				// Include room in for 2 EOB chars.
-				b.yy_ch_buf = make([]byte, b.yy_buf_size+2)
+				bb := make([]byte, b.yy_buf_size+2-len(b.yy_ch_buf))
+				b.yy_ch_buf = append(b.yy_ch_buf, bb...)
 			} else {
 				// Can't grow it, we don't own it.
 				b.yy_ch_buf = nil
 			}
 
 			if b.yy_ch_buf == nil {
-				log.Fatalln(
+				log.Panicln(
 					"fatal error - scanner input buffer overflow")
 			}
 
@@ -306,13 +300,16 @@ func YY_DO_BEFORE_ACTION(buffer *yy_buffer_state, yy_cp, yy_bp int) {
 	/* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array */
 	// SKEL ----------------------------------------------------------------
 
-	var i int
-	for i = yy_cp; i > yy_bp; i-- {
-		if buffer.yy_ch_buf[i-1] != 0 {
-			break
+	/*
+		var i int
+		for i = yy_cp; i > yy_bp; i-- {
+			if buffer.yy_ch_buf[i-1] != 0 {
+				break
+			}
 		}
-	}
-	YYtext = buffer.yy_ch_buf[yy_bp:i]
+		YYtext = buffer.yy_ch_buf[yy_bp:i]
+	*/
+	YYtext = buffer.yy_ch_buf[yy_bp:yy_cp]
 
 	yy_c_buf_p = yy_cp
 }
@@ -400,6 +397,8 @@ var yy_rule_linenum = [3]int16{0,
 
 var YYtext []byte
 
+var IsInteractive = func(file io.Reader) bool { return false }
+
 // SKEL ----------------------------------------------------------------
 
 func yy_INPUT(offset, max_read int) int {
@@ -414,7 +413,7 @@ func yy_INPUT(offset, max_read int) int {
 			nn, err := curbuf.yy_input_file.Read(b)
 			if nn < 1 {
 				if err != nil && err != io.EOF {
-					log.Fatalln("input in flex scanner failed:", err)
+					log.Panicln("input in flex scanner failed:", err)
 				}
 				break
 			}
@@ -424,22 +423,18 @@ func yy_INPUT(offset, max_read int) int {
 				break
 			}
 		}
-		curbuf.yy_ch_buf[offset+n] = yy_END_OF_BUFFER_CHAR
-		curbuf.yy_ch_buf[offset+n+1] = yy_END_OF_BUFFER_CHAR
-		return offset + n
+		return n
 	}
 
 	b := make([]byte, max_read)
 	n, err := curbuf.yy_input_file.Read(b)
 	if err != nil && err != io.EOF {
-		log.Fatalln("input in flex scanner failed:", err)
+		log.Panicln("input in flex scanner failed:", err)
 	}
 	for i := 0; i < n; i++ {
 		curbuf.yy_ch_buf[offset+i] = b[i]
 	}
-	curbuf.yy_ch_buf[offset+n] = yy_END_OF_BUFFER_CHAR
-	curbuf.yy_ch_buf[offset+n+1] = yy_END_OF_BUFFER_CHAR
-	return offset + n
+	return n
 }
 
 // [6.0] YY_RULE_SETUP definition goes here ----------------------------
@@ -703,7 +698,7 @@ func YYlex() {
 				}
 
 			default:
-				log.Fatalln("fatal flex scanner internal error--no action found:", yy_act)
+				log.Panicln("fatal flex scanner internal error--no action found:", yy_act)
 			} /* end of action switch */
 		} /* end of scanning one token */
 	} /* end of user's declarations */
@@ -840,7 +835,7 @@ func YYmain(filenames ...string) {
 	} else {
 		r, err := os.Open(filenames[0])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 		YYin = r // YYrestart(r) ???
 		YYwrap = func() bool {
@@ -851,8 +846,9 @@ func YYmain(filenames ...string) {
 			}
 			r, err = os.Open(filenames[0])
 			YYin = r
+			YYrestart(YYin)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalln(err)
 			}
 			return false
 		}
