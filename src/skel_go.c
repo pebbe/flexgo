@@ -257,6 +257,7 @@ const char *skel1_go[] = {
   "	}",
   "",
   "	yy_n_chars += number_to_move",
+  "	curbuf.yy_n_chars += number_to_move // TODO: missing in C skel, bug?",
   "	curbuf.yy_ch_buf[yy_n_chars] = yy_END_OF_BUFFER_CHAR",
   "	curbuf.yy_ch_buf[yy_n_chars+1] = yy_END_OF_BUFFER_CHAR",
   "",
