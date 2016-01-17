@@ -2,23 +2,28 @@
 .SUFFIXES:
 
 all: \
-	test01c \
+	test01c_b \
+	test01c_i \
 	test01go_b \
 	test01go_i \
 	test02c \
 	test02go_b \
 	test02go_i
 
-test01c: test01c.l
-	flex -B -8 -o test01c.c test01c.l
-	gcc -s -Wall -o test01c test01c.c
+test01c_b: test01c.l
+	flex -d -B -8 -o test01c_b.c test01c.l
+	gcc -s -Wall -o test01c_b test01c_b.c
+
+test01c_i: test01c.l
+	flex -d -I -8 -o test01c_i.c test01c.l
+	gcc -s -Wall -o test01c_i test01c_i.c
 
 test01go_b: test01go.l
-	flexgo -B -o test01go_b.go test01go.l
+	flexgo -d -B -o test01go_b.go test01go.l
 	go build test01go_b.go
 
 test01go_i: test01go.l
-	flexgo -I -o test01go_i.go test01go.l
+	flexgo -d -I -o test01go_i.go test01go.l
 	go build test01go_i.go
 
 test02c: test02c.l

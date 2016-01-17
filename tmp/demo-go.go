@@ -88,15 +88,21 @@ func (b *yy_buffer_state) YY_DO_BEFORE_ACTION(yy_cp, yy_bp int) {
 	if yy_bp > 0 {
 		YYtext = YYtext[yy_bp:]
 	}
+	b.Advance(YYleng)
 }
 
 func (b *yy_buffer_state) Push(bytes []byte) {
-	if b.backup == nil {
-		b.backup = make([]byte, len(bytes))
-		copy(b.backup, bytes)
-	} else {
-		b.backup = append(b.backup, bytes...)
+	n1 := len(bytes)
+	n2 := n1
+	if b.backup != nil {
+		n2 += len(b.backup)
 	}
+	bb := make([]byte, n1, n2)
+	copy(bb, bytes)
+	if n2 > n1 {
+		bb = append(bb, b.backup...)
+	}
+	b.backup = bb
 }
 
 func (b *yy_buffer_state) PeekAt(n int) int {
@@ -154,7 +160,6 @@ func (b *yy_buffer_state) Peeked(n int) []byte {
 }
 
 func (b *yy_buffer_state) Advance(n int) {
-	//fmt.Printf("\n\nAdvance %d", n)
 
 	if n < 1 {
 		return
@@ -209,7 +214,6 @@ func yy_init_buffer(b *yy_buffer_state, file io.Reader) {
 		b.eof = false
 	}
 	YYin = file
-	yy_c_buf_p = 0
 }
 
 func yy_create_buffer(file io.Reader) *yy_buffer_state {
@@ -376,7 +380,6 @@ func yylex() {
 
 			// [8.0] yymore()-related code goes here
 
-			buffer.Advance(yy_c_buf_p)
 			yy_c_buf_p = 0
 			yy_cp = 0
 
@@ -426,6 +429,7 @@ func yylex() {
 			case 0: /* must back up */
 				//fmt.Printf("\n-- case 0 %q\n", string(YYtext))
 				buffer.clearNul()
+				buffer.Push(YYtext)
 				yy_cp = yy_last_accepting_cpos
 				yy_current_state = yy_last_accepting_state
 				goto yy_find_action
@@ -450,6 +454,7 @@ func yylex() {
 
 				/* Undo the effects of YY_DO_BEFORE_ACTION. */
 				buffer.clearNul()
+				buffer.Push(YYtext)
 				//TODO: YY_RESTORE_YY_MORE_OFFSET
 
 				if buffer.yy_buffer_status == yy_BUFFER_NEW {

@@ -4,6 +4,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -15,6 +16,7 @@ import (
 
 %%
 
+foo|bar	YYout.Write(bytes.ToUpper(YYtext))
 C	YYout.Write([]byte("Go"))
 
 %%
