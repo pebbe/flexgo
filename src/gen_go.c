@@ -1045,7 +1045,7 @@ void gen_start_state_go (void)
     if (fullspd) {
 	if (bol_needed) {
 	    indent_puts_go
-		("yy_current_state = yy_start_state_list[yy_start + YY_AT_BOL()]");
+		("yy_current_state = yy_start_state_list[yy_start + buffer.yy_at_bol]");
 	}
 	else
 	    indent_puts_go
@@ -1056,7 +1056,7 @@ void gen_start_state_go (void)
 	indent_puts_go ("yy_current_state = yy_start");
 
 	if (bol_needed)
-	    indent_puts_go ("yy_current_state += YY_AT_BOL()");
+	    indent_puts_go ("yy_current_state += buffer.yy_at_bol");
 
 	if (reject) {
 	    /* Set up for storing up states. */
@@ -1915,12 +1915,24 @@ void make_tables_go (void)
 
     skelout ();		/* %% [6.0] - break point in skel */
 
-    indent_puts_go ("func YY_RULE_SETUP() {");
+    indent_puts_go ("func yy_RULE_SETUP(b *yy_buffer_state) {");
     indent_up_go ();
     if (bol_needed) {
-	indent_puts_go ("buffer.yy_at_bol = strings.HasSuffix(YYtext, \"\\n\")\n");
+	indent_puts_go ("if YYleng > 0 {");
+	indent_up_go ();
+	indent_puts_go ("if YYtext[YYleng-1] == '\\n' {");
+	indent_up_go ();
+	indent_puts_go ("b.yy_at_bol = 1");
+	indent_down_go ();
+	indent_puts_go ("} else {");
+	indent_up_go ();
+	indent_puts_go ("b.yy_at_bol = 0");
+	indent_down_go ();
+	indent_puts_go ("}");
+	indent_down_go ();
+	indent_puts_go ("}");
     }
-    indent_puts_go ("//YY_USER_ACTION()");
+    indent_puts_go ("//yy_USER_ACTION()");
     indent_down_go ();
     indent_puts_go ("}");
 
@@ -2104,12 +2116,12 @@ void make_tables_go (void)
     /* Update BOL and yylineno inside of input(). */
     if (bol_needed) {
 	indent_puts_go
-	    ("YY_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\\n');");
+	    ("// TODO: YY_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\\n');");
 	if (do_yylineno) {
 	    indent_puts_go
-		("if ( YY_CURRENT_BUFFER_LVALUE->yy_at_bol )");
+		("// TODO: if ( YY_CURRENT_BUFFER_LVALUE->yy_at_bol )");
 	    indent_up_go ();
-	    indent_puts_go ("M4_YY_INCR_LINENO();");
+	    indent_puts_go ("// TODO: M4_YY_INCR_LINENO();");
 	    indent_down_go ();
 	}
     }

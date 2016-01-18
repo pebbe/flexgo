@@ -10,7 +10,6 @@ Keywords: flex, lex, go, golang
 
 ### To do
 
- * rules with ^
  * REJECT()
  * BEGIN(state)
  * YYless(n)

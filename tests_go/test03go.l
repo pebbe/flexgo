@@ -10,12 +10,23 @@ import (
 	"os"
 )
 
+var toggle = true
+
 %}
 
 
 %%
 
 ^.	YYout.Write(bytes.ToUpper(YYtext))
+
+foo	{
+		toggle = !toggle
+		if (toggle) {
+			YYout.Write([]byte("FOO"))
+		} else {
+			REJECT();
+		}
+	}
 
 %%
 

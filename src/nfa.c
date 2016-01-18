@@ -280,7 +280,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 			}
 
 			add_action
-			    (Go ? "YY_DO_BEFORE_ACTION() /* set up yytext again */\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
+			    (Go ? "yy_DO_BEFORE_ACTION() /* set up yytext again */\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
 		}
 	}
 
@@ -290,7 +290,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 	 * as that'll result in multiple YY_RULE_SETUP's.
 	 */
 	if (!continued_action)
-	    add_action (Go ? "YY_RULE_SETUP()\n" : "YY_RULE_SETUP\n");
+	    add_action (Go ? "yy_RULE_SETUP(buffer)\n" : "YY_RULE_SETUP\n");
 
 	line_directive_out ((FILE *) 0, 1);
 }
