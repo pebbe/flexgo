@@ -11,6 +11,7 @@ Keywords: flex, lex, go, golang
 ### To do
 
  * REJECT()
+ * REJECT() with trailing context
  * BEGIN(state)
  * YYless(n)
  * YYmore()

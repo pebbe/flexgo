@@ -945,7 +945,7 @@ void gen_next_state_go (int worry_about_NULs)
 	gen_backing_up_go ();
 
     if (reject)
-	indent_puts_go ("*YY_G(yy_state_ptr)++ = yy_current_state;");
+	indent_puts_go ("yy_state_buf = append(yy_state_buf, yy_current_state)");
 }
 
 
@@ -1017,7 +1017,7 @@ void gen_NUL_trans_go (void)
 	    indent_puts_go ("if ( ! yy_is_jam )");
 	    indent_up_go ();
 	    indent_puts_go
-		("*YY_G(yy_state_ptr)++ = yy_current_state;");
+		("yy_state_buf = append(yy_state_buf, yy_current_state)");
 	    indent_down_go ();
 	}
     }
@@ -1062,9 +1062,9 @@ void gen_start_state_go (void)
 	    /* Set up for storing up states. */
 	    outn ("m4_ifdef( [[M4_YY_USES_REJECT]],\n[[");
 	    indent_puts_go
-		("yy_state_ptr = yy_state_buf");
+		("yy_state_buf = yy_state_buf[0:0]");
 	    indent_puts_go
-		("// TODO *YY_G(yy_state_ptr)++ = yy_current_state;");
+		("yy_state_buf = append(yy_state_buf, yy_current_state)");
 	    outn ("]])");
 	}
     }
@@ -1789,41 +1789,43 @@ void make_tables_go (void)
 
     if (reject) {
 	outn ("m4_ifdef( [[M4_YY_USES_REJECT]],\n[[");
+
 	/* Declare state buffer variables. */
 	if (!C_plus_plus && !reentrant) {
-	    outn ("static yy_state_type *yy_state_buf=0, *yy_state_ptr=0;");
-	    outn ("static char *yy_full_match;");
-	    outn ("static int yy_lp;");
+	    outn ("var yy_state_buf = make([]int, 0)");
+	    outn ("var yy_full_match int");
+	    outn ("var yy_lp int");
 	}
 
 	if (variable_trailing_context_rules) {
 	    if (!C_plus_plus && !reentrant) {
-		outn ("static int yy_looking_for_trail_begin = 0;");
-		outn ("static int yy_full_lp;");
-		outn ("static int *yy_full_state;");
+		outn ("var yy_looking_for_trail_begin = 0");
+		outn ("var yy_full_lp int");
+		outn ("var yy_full_state int");
 	    }
 
-	    out_hex ("#define YY_TRAILING_MASK 0x%x\n",
+	    out_hex ("const yy_TRAILING_MASK 0x%x = ",
 		     (unsigned int) YY_TRAILING_MASK);
-	    out_hex ("#define YY_TRAILING_HEAD_MASK 0x%x\n",
+	    out_hex ("const yy_TRAILING_HEAD_MASK 0x%x = ",
 		     (unsigned int) YY_TRAILING_HEAD_MASK);
 	}
 
-	outn ("#define REJECT \\");
-	outn ("{ \\");
-	outn ("*yy_cp = YY_G(yy_hold_char); /* undo effects of setting up yytext */ \\");
-	outn ("yy_cp = YY_G(yy_full_match); /* restore poss. backed-over text */ \\");
+	outn ("var yy_rejected bool");
+	outn ("func REJECT() {");
+      	outn (" b := yy_buffer_stack[yy_buffer_stack_top]");
+       	outn ("b.yy_ch_buf[yy_cp] = yy_hold_char // undo effects of setting up yytext");
+	outn ("yy_cp = yy_full_match             // restore poss. backed-over text");
 
 	if (variable_trailing_context_rules) {
-	    outn ("YY_G(yy_lp) = YY_G(yy_full_lp); /* restore orig. accepting pos. */ \\");
-	    outn ("YY_G(yy_state_ptr) = YY_G(yy_full_state); /* restore orig. state */ \\");
-	    outn ("yy_current_state = *YY_G(yy_state_ptr); /* restore curr. state */ \\");
+	    outn ("yy_lp = yy_full_lp // restore orig. accepting pos.");
+	    outn ("yy_state_ptr = yy_full_state // restore orig. state");
+	    outn ("yy_current_state = yy_state_ptr // restore curr. state");
 	}
 
-	outn ("++YY_G(yy_lp); \\");
-	outn ("goto find_rule; \\");
-
+       	outn ("yy_lp++");
+       	outn ("yy_rejected = true");
 	outn ("}");
+
 	outn ("]])\n");
     }
 
