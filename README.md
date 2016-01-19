@@ -21,6 +21,7 @@ Keywords: flex, lex, go, golang
  * Input()
  * non-default table compression
  * other functions, like yyrestart(), multiple buffers, etc...
+ * copy and modify all tests from subdirectory `tests` to work with `flexgo`
 
 ## Difference between C output and Go output
 
