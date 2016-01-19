@@ -60,7 +60,8 @@ it will always be called:
                        bar()
                    }
                }       
-### yyterminate()
+
+### YYterminate()
 
 In C output, `yyterminate()` is a macro that ends with a `return` statement. In
 Go output, `YYterminate()` is a function that sets a flag variable.
