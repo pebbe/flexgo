@@ -547,15 +547,15 @@ void gen_find_action_go (void)
 
 	if (variable_trailing_context_rules) {
 	    indent_puts_go
-		("if ( yy_act & YY_TRAILING_HEAD_MASK ||");
-	    indent_puts_go ("     YY_G(yy_looking_for_trail_begin) ) {");
+		("if yy_act & yy_TRAILING_HEAD_MASK != 0 ||");
+	    indent_puts_go ("     yy_looking_for_trail_begin != 0 {");
 	    indent_up_go ();
 
 	    indent_puts_go
-		("if ( yy_act == YY_G(yy_looking_for_trail_begin) ) {");
+		("if yy_act == yy_looking_for_trail_begin {");
 	    indent_up_go ();
-	    indent_puts_go ("YY_G(yy_looking_for_trail_begin) = 0;");
-	    indent_puts_go ("yy_act &= ~YY_TRAILING_HEAD_MASK;");
+	    indent_puts_go ("yy_looking_for_trail_begin = 0");
+	    indent_puts_go ("yy_act &= ^yy_TRAILING_HEAD_MASK");
 	    indent_puts_go ("break;");
 	    indent_puts_go ("}");
 	    indent_down_go ();
@@ -563,38 +563,38 @@ void gen_find_action_go (void)
 	    indent_down_go ();
 
 	    indent_puts_go
-		("} else if ( yy_act & YY_TRAILING_MASK ) {");
+		("} else if yy_act & yy_TRAILING_MASK != 0 {");
 	    indent_up_go ();
 	    indent_puts_go
-		("YY_G(yy_looking_for_trail_begin) = yy_act & ~YY_TRAILING_MASK;");
+		("yy_looking_for_trail_begin = yy_act & ^yy_TRAILING_MASK;");
 	    indent_puts_go
-		("YY_G(yy_looking_for_trail_begin) |= YY_TRAILING_HEAD_MASK;");
+		("yy_looking_for_trail_begin |= yy_TRAILING_HEAD_MASK;");
 
 	    if (real_reject) {
 		/* Remember matched text in case we back up
 		 * due to REJECT.
 		 */
 		indent_puts_go
-		    ("YY_G(yy_full_match) = yy_cp;");
+		    ("yy_full_match = yy_cp");
 		indent_puts_go
-		    ("YY_G(yy_full_state) = YY_G(yy_state_ptr);");
-		indent_puts_go ("YY_G(yy_full_lp) = YY_G(yy_lp);");
+		    ("yy_full_state = yy_state_ptr");
+		indent_puts_go ("yy_full_lp = yy_lp");
 	    }
 
 	    indent_down_go ();
 
 	    indent_puts_go ("} else {");
 	    indent_up_go ();
-	    indent_puts_go ("YY_G(yy_full_match) = yy_cp;");
+	    indent_puts_go ("yy_full_match = yy_cp");
 	    indent_puts_go
-		("YY_G(yy_full_state) = YY_G(yy_state_ptr);");
-	    indent_puts_go ("YY_G(yy_full_lp) = YY_G(yy_lp);");
-	    indent_puts_go ("break;");
-	    indent_puts_go ("}");
+		("yy_full_state = yy_state_ptr");
+	    indent_puts_go ("yy_full_lp = yy_lp");
+	    indent_puts_go ("break");
 	    indent_down_go ();
+	    indent_puts_go ("}");
 
-	    indent_puts_go ("++YY_G(yy_lp);");
-	    indent_puts_go ("goto find_rule;");
+	    indent_puts_go ("yy_lp++");
+	    indent_puts_go ("goto find_rule");
 	}
 
 	else {
@@ -1549,9 +1549,9 @@ void make_tables_go (void)
     if (yytext_is_array) {
 	if (yymore_used)
 	    indent_puts_go
-		("if ( yyleng + YY_G(yy_more_offset) >= YYLMAX ) \\");
+		("if YYleng + yy_more_offset >= YYLMAX \\");
 	else
-	    indent_puts_go ("if ( yyleng >= YYLMAX ) \\");
+	    indent_puts_go ("if YYleng >= YYLMAX \\");
 
 	indent_up_go ();
 	indent_puts_go
@@ -1796,6 +1796,7 @@ void make_tables_go (void)
 		outn ("var yy_looking_for_trail_begin = 0");
 		outn ("var yy_full_lp int");
 		outn ("var yy_full_state int");
+		outn ("var yy_state_ptr int");
 	    }
 
 	    out_hex ("const yy_TRAILING_MASK = 0x%x\n",
