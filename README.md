@@ -10,6 +10,7 @@ Keywords: flex, lex, go, golang
 
  * ~~a simple pattern~~
  * ~~a simple pattern with ^~~
+ * trailing context
  * ~~YYwrap()~~
  * ~~REJECT()~~
  * REJECT() with trailing context

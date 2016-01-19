@@ -10,7 +10,10 @@ TARGETS = \
 	test02go_i.ok \
 	test03c_i.ok \
 	test03go_b.ok \
-	test03go_i.ok
+	test03go_i.ok \
+	test04c_i.ok \
+	test04go_b.ok \
+	test04go_i.ok
 
 all: $(TARGETS)
 
@@ -27,7 +30,10 @@ clean:
 		test03c_b \
 		test03c_i \
 		test03go_b \
-		test03go_i
+		test03go_i \
+		test04c_i \
+		test04go_b \
+		test04go_i
 
 test01c_b.out: test01c.l text1.txt text2.txt text3.txt text4.txt ../src/flex
 	../src/flex -d -B -8 -o test01c_b.c test01c.l
@@ -106,3 +112,29 @@ test03go_i.ok: test03c_b.out test03go.l text1.txt text2.txt text3.txt text4.txt 
 	./test03go_i text1.txt text2.txt text3.txt text4.txt > test03go_i.out 2> /dev/null
 	diff -q test03c_b.out test03go_i.out
 	touch test03go_i.ok
+
+test04c_b.out: test04c.l text3.txt ../src/flex
+	../src/flex -d -B -8 -o test04c_b.c test04c.l
+	gcc -s -Wall -o test04c_b test04c_b.c
+	./test04c_b text3.txt > test04c_b.out 2> /dev/null
+
+test04c_i.ok: test04c_b.out test04c.l text3.txt ../src/flex
+	../src/flex -d -I -8 -o test04c_i.c test04c.l
+	gcc -s -Wall -o test04c_i test04c_i.c
+	./test04c_i text3.txt > test04c_i.out 2> /dev/null
+	diff -q test04c_b.out test04c_i.out
+	touch test04c_i.ok
+
+test04go_b.ok: test04c_b.out test04go.l text3.txt ../src/flex
+	../src/flex --go -d -B -o test04go_b.go test04go.l
+	go build test04go_b.go
+	./test04go_b text3.txt > test04go_b.out 2> /dev/null
+	diff -q test04c_b.out test04go_b.out
+	touch test04go_b.ok
+
+test04go_i.ok: test04c_b.out test04go.l text3.txt ../src/flex
+	../src/flex --go -d -I -o test04go_i.go test04go.l
+	go build test04go_i.go
+	./test04go_i text3.txt > test04go_i.out 2> /dev/null
+	diff -q test04c_b.out test04go_i.out
+	touch test04go_i.ok
