@@ -21,7 +21,7 @@ foo/bar		{
 			YYout.Write(bytes.ToUpper(YYtext))
 			YYout.Write([]byte{'B'})
 		}
-fo+/[a-z]+	{
+fo+/[a-np-z]+	{
 			YYout.Write(bytes.ToUpper(YYtext))
 			YYout.Write([]byte{'X'})
 		}
