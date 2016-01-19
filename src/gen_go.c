@@ -521,11 +521,15 @@ void genecs_go (void)
 
 void gen_find_action_go (void)
 {
-    if (fullspd)
+    if (fullspd) {
 	indent_puts_go ("yy_act = yy_current_state[-1].yy_nxt");
+	indent_puts_go ("find_rule: // not actually used");
+    }
 
-    else if (fulltbl)
+    else if (fulltbl) {
 	indent_puts_go ("yy_act = int(yy_accept[yy_current_state])");
+	indent_puts_go ("find_rule: // not actually used");
+    }
 
     else if (reject) {
 	indent_puts_go ("sp := len(yy_state_buf) - 1");
@@ -533,8 +537,7 @@ void gen_find_action_go (void)
 	indent_puts_go ("yy_state_buf = yy_state_buf[:sp]");
 	indent_puts_go ("yy_lp = int(yy_accept[yy_current_state])");
 
-	if(reject_really_used)
-	    indent_puts_go ("find_rule: // we branch to this label when backing up");
+	indent_puts_go ("find_rule: // we branch to this label when backing up");
 
 	indent_puts_go ("for { // until we find what rule we matched");
 	indent_up_go ();
@@ -622,9 +625,6 @@ void gen_find_action_go (void)
 
 	indent_down_go ();
 	indent_puts_go ("}");
-	if(reject_really_used)
-	    indent_puts_go ("if false { goto find_rule }");
-
     }
 
     else {			/* compressed */
@@ -642,8 +642,8 @@ void gen_find_action_go (void)
 	    indent_puts_go ("yy_act = int(yy_accept[yy_current_state])");
 	    indent_down_go ();
 	    indent_puts_go ("}");
-
 	}
+	indent_puts_go ("find_rule: // not actually used");
     }
 }
 
@@ -1804,7 +1804,6 @@ void make_tables_go (void)
 		     (unsigned int) YY_TRAILING_HEAD_MASK);
 	}
 
-	outn ("var yy_rejected bool");
 	outn ("func REJECT() {");
       	outn (" b := yy_buffer_stack[yy_buffer_stack_top]");
        	outn ("b.yy_ch_buf[yy_cp] = yy_hold_char // undo effects of setting up yytext");

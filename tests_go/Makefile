@@ -30,78 +30,78 @@ clean:
 		test03go_i
 
 test01c_b.out: test01c.l text1.txt text2.txt text3.txt text4.txt
-	flex -d -B -8 -o test01c_b.c test01c.l
+	../src/flex -d -B -8 -o test01c_b.c test01c.l
 	gcc -s -Wall -o test01c_b test01c_b.c
 	./test01c_b text1.txt text2.txt text3.txt text4.txt > test01c_b.out 2> /dev/null
 
 test01c_i.ok: test01c_b.out test01c.l text1.txt text2.txt text3.txt text4.txt
-	flex -d -I -8 -o test01c_i.c test01c.l
+	../src/flex -d -I -8 -o test01c_i.c test01c.l
 	gcc -s -Wall -o test01c_i test01c_i.c
 	./test01c_i text1.txt text2.txt text3.txt text4.txt > test01c_i.out 2> /dev/null
 	diff -q test01c_b.out test01c_i.out
 	touch test01c_i.ok
 
 test01go_b.ok: test01c_b.out test01go.l text1.txt text2.txt text3.txt text4.txt
-	flexgo -d -B -o test01go_b.go test01go.l
+	../src/flex --go -d -B -o test01go_b.go test01go.l
 	go build test01go_b.go
 	./test01go_b text1.txt text2.txt text3.txt text4.txt > test01go_b.out 2> /dev/null
 	diff -q test01c_b.out test01go_b.out
 	touch test01go_b.ok
 
 test01go_i.ok: test01c_b.out test01go.l text1.txt text2.txt text3.txt text4.txt
-	flexgo -d -I -o test01go_i.go test01go.l
+	../src/flex --go -d -I -o test01go_i.go test01go.l
 	go build test01go_i.go
 	./test01go_i text1.txt text2.txt text3.txt text4.txt > test01go_i.out 2> /dev/null
 	diff -q test01c_b.out test01go_i.out
 	touch test01go_i.ok
 
 test02c_b.out: test02c.l text1.txt text2.txt text3.txt text4.txt
-	flex -d -B -8 -o test02c_b.c test02c.l
+	../src/flex -d -B -8 -o test02c_b.c test02c.l
 	gcc -s -Wall -o test02c_b test02c_b.c
 	./test02c_b text1.txt text2.txt text3.txt text4.txt > test02c_b.out 2> /dev/null
 
 test02c_i.ok: test02c_b.out test02c.l text1.txt text2.txt text3.txt text4.txt
-	flex -d -I -8 -o test02c_i.c test02c.l
+	../src/flex -d -I -8 -o test02c_i.c test02c.l
 	gcc -s -Wall -o test02c_i test02c_i.c
 	./test02c_i text1.txt text2.txt text3.txt text4.txt > test02c_i.out 2> /dev/null
 	diff -q test02c_b.out test02c_i.out
 	touch test02c_i.ok
 
 test02go_b.ok: test02c_b.out test02go.l text1.txt text2.txt text3.txt text4.txt
-	flexgo -d -B -o test02go_b.go test02go.l
+	../src/flex --go -d -B -o test02go_b.go test02go.l
 	go build test02go_b.go
 	./test02go_b text1.txt text2.txt text3.txt text4.txt > test02go_b.out 2> /dev/null
 	diff -q test02c_b.out test02go_b.out
 	touch test02go_b.ok
 
 test02go_i.ok: test02c_b.out test02go.l text1.txt text2.txt text3.txt text4.txt
-	flexgo -d -I -o test02go_i.go test02go.l
+	../src/flex --go -d -I -o test02go_i.go test02go.l
 	go build test02go_i.go
 	./test02go_i text1.txt text2.txt text3.txt text4.txt > test02go_i.out 2> /dev/null
 	diff -q test02c_b.out test02go_i.out
 	touch test02go_i.ok
 
 test03c_b.out: test03c.l text1.txt text2.txt text3.txt text4.txt
-	flex -d -B -8 -o test03c_b.c test03c.l
+	../src/flex -d -B -8 -o test03c_b.c test03c.l
 	gcc -s -Wall -o test03c_b test03c_b.c
 	./test03c_b text1.txt text2.txt text3.txt text4.txt > test03c_b.out 2> /dev/null
 
 test03c_i.ok: test03c_b.out test03c.l text1.txt text2.txt text3.txt text4.txt
-	flex -d -I -8 -o test03c_i.c test03c.l
+	../src/flex -d -I -8 -o test03c_i.c test03c.l
 	gcc -s -Wall -o test03c_i test03c_i.c
 	./test03c_i text1.txt text2.txt text3.txt text4.txt > test03c_i.out 2> /dev/null
 	diff -q test03c_b.out test03c_i.out
 	touch test03c_i.ok
 
 test03go_b.ok: test03c_b.out test03go.l text1.txt text2.txt text3.txt text4.txt
-	flexgo -d -B -o test03go_b.go test03go.l
+	../src/flex --go -d -B -o test03go_b.go test03go.l
 	go build test03go_b.go
 	./test03go_b text1.txt text2.txt text3.txt text4.txt > test03go_b.out 2> /dev/null
 	diff -q test03c_b.out test03go_b.out
 	touch test03go_b.ok
 
 test03go_i.ok: test03c_b.out test03go.l text1.txt text2.txt text3.txt text4.txt
-	flexgo -d -I -o test03go_i.go test03go.l
+	../src/flex --go -d -I -o test03go_i.go test03go.l
 	go build test03go_i.go
 	./test03go_i text1.txt text2.txt text3.txt text4.txt > test03go_i.out 2> /dev/null
 	diff -q test03c_b.out test03go_i.out

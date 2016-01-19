@@ -46,6 +46,7 @@ const char *skel1_go[] = {
   "	yy_c_buf_p               int",
   "	yy_init                  = false",
   "	yy_running               bool",
+  "	yy_rejected		 bool",
   "	yy_n_chars               int",
   "	yy_start                 = 0",
   "	yytext_ptr               int",
