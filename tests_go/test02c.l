@@ -4,6 +4,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#define YY_NO_INPUT
+#define YY_NO_UNPUT
+#define YY_SKIP_YYWRAP
+#ifdef yywrap
+#  undef yywrap
+#endif
+
 int
     g_argc = 0;
 char
