@@ -1881,14 +1881,12 @@ void make_tables_go (void)
     }
 
     else {
-	if (Go) {
-	    // TODO
-	} else {
+	/* TODO
 	    indent_puts_go
 		("#define yymore() yymore_used_but_not_detected");
-	    indent_puts_go ("#define YY_MORE_ADJ 0");
-	    indent_puts_go ("#define YY_RESTORE_YY_MORE_OFFSET");
-	}
+	*/
+	indent_puts_go ("func yy_MORE_ADJ() int { return  0 }");
+	indent_puts_go ("func yy_RESTORE_YY_MORE_OFFSET() { }");
     }
 
     if (!C_plus_plus) {
@@ -1917,11 +1915,12 @@ void make_tables_go (void)
 
     skelout ();		/* %% [6.0] - break point in skel */
 
-    indent_puts_go ("func yy_RULE_SETUP(b *yy_buffer_state) {");
+    indent_puts_go ("func yy_RULE_SETUP() {");
     indent_up_go ();
     if (bol_needed) {
 	indent_puts_go ("if YYleng > 0 {");
 	indent_up_go ();
+	indent_puts_go ("b := yy_CURRENT_BUFFER()");
 	indent_puts_go ("if YYtext[YYleng-1] == '\\n' {");
 	indent_up_go ();
 	indent_puts_go ("b.yy_at_bol = 1");
@@ -1934,7 +1933,7 @@ void make_tables_go (void)
 	indent_down_go ();
 	indent_puts_go ("}");
     }
-    indent_puts_go ("//yy_USER_ACTION()");
+    indent_puts_go ("YY_USER_ACTION()");
     indent_down_go ();
     indent_puts_go ("}");
 

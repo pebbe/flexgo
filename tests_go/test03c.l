@@ -4,12 +4,33 @@
 #include <stdio.h>
 #include <string.h>
 
+int
+    toggle = 1;
+
+int
+    g_argc = 0;
+char
+    **g_argv;
+
 int yywrap()
 {
-    return 1;
-}
+    if (g_argc) {
+	fclose (yyin);
+	g_argc--;
+	g_argv++;
+    }
 
-int toggle = 1;
+    if (!g_argc)
+	return 1;
+
+    yyin = fopen(g_argv[0], "r");
+    if (yyin == NULL) {
+	fprintf(stderr, "Error opening file \"%s\": %s\n", g_argv[0], strerror(errno));
+	return 1;
+    }
+
+    return 0;
+}
 
 %}
 
@@ -29,22 +50,21 @@ foo	{
 %%
 
 int main(int argc, char *argv []) {
-    int
-	i;
+
     if (argc > 1) {
-	for (i = 1; i < argc; i++) {
-	    yyin = fopen(argv[i], "r");
-	    if (yyin == NULL) {
-		fprintf(stderr, "Error opening file \"%s\": %s\n", argv[i], strerror(errno));
-		return 1;
-	    }
-	    yyrestart(yyin);
-	    yylex();
-	    fclose(yyin);
+	g_argc = argc - 1;
+	g_argv = argv;
+	g_argv++;
+
+	yyin = fopen(g_argv[0], "r");
+	if (yyin == NULL) {
+	    fprintf(stderr, "Error opening file \"%s\": %s\n", g_argv[0], strerror(errno));
+	    return 1;
 	}
-    } else {
-	yylex();
     }
+    yylex();
+
     printf("Done\n");
     return 0;
+
 }

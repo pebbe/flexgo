@@ -4,12 +4,4 @@ vivamus quis bibendum dolor.
 nunc ultrices neque ligula, egestas placerat dolor auctor ut.
 morbi malesuada quam vitae nisl lacinia, id vulputate justo vulputate.
 fusce eleifend est quis purus auctor venenatis.
-nullam vitae faucibus felis, vitae mollis odio.
-in lobortis sollicitudin pulvinar.
-phasellus id tellus in felis molestie dignissim.
-vivamus ut condimentum justo, nec pellentesque eros.
-curabitur nec enim vitae mauris hendrerit accumsan nec at massa.
-duis egestas tempor sapien ut varius.
-vivamus id varius mi.
-duis in tortor ac purus fermentum pharetra.
-praesent risus tortor, pellentesque et risus ac, vehicula luctus odio.
+nullam vitae faucibus felis, 

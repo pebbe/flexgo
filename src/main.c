@@ -1683,7 +1683,7 @@ void readin ()
 	    if (!Go)
 		outn ("extern int yylineno;");
 	    OUT_BEGIN_CODE ();
-	    outn (Go ? "var yylineno = 1" : "int yylineno = 1;");
+	    outn (Go ? "var YYlineno = 1" : "int yylineno = 1;");
 	    OUT_END_CODE ();
 	}
 
