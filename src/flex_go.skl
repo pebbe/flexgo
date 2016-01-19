@@ -368,8 +368,9 @@ func yy_INPUT(offset, max_read int) int {
 
 var yy_current_state int
 var yy_cp int
+var yy_retval interface{}
 
-func YYlex() {
+func YYlex() interface{} {
 	var yy_bp int
 	var yy_act int
 
@@ -570,6 +571,7 @@ do_action: // This label is used only to access EOF actions.
 		} /* end of scanning one token */
 	} /* end of user's declarations */
 
+	return yy_retval
 } /* end of yylex */
 
 /* yy_get_previous_state - get the state just before the EOB char was reached */
@@ -638,7 +640,8 @@ func ECHO() {
 	YYout.Write(YYtext)
 }
 
-func YYterminate() {
+func YYterminate(r interface{}) {
+	yy_retval = r
 	yy_running = false
 }
 
@@ -666,7 +669,7 @@ func ifelse(b bool, i1, i2 int) int {
 	return i2
 }
 
-func YYmain(filenames ...string) {
+func YYmain(filenames ...string) interface{} {
 
 	in := YYin
 	wrap := YYwrap
@@ -695,7 +698,7 @@ func YYmain(filenames ...string) {
 		}
 	}
 
-	YYlex()
+	return YYlex()
 
 }
 

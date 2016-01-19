@@ -28,14 +28,15 @@ Keywords: flex, lex, go, golang
 
 C macro's are replaced by functions, sometimes with different behaviour.
 
-    C           Go         Go type
-    --------------------------------
-    yyin        YYin       io.Reader
-    yyout       YYout      io.Writer
-	yytext      YYtext     []byte
-    yylex()     YYlex()  
-    REJECT      REJECT()
-    BEGIN s     BEGIN(s)
+    C               Go                        Go type
+    ---------------------------------------------------
+    yyin            YYin                      io.Reader
+    yyout           YYout                     io.Writer
+	yytext          YYtext                    []byte
+    yylex()         YYlex()  
+	yyterminate()   YYterminate(interface{})
+    REJECT          REJECT()
+    BEGIN s         BEGIN(s)
 
 ### REJECT()
 
@@ -62,10 +63,11 @@ it will always be called:
                    }
                }       
 
-### YYterminate()
+### YYterminate(return_value)
 
 In C output, `yyterminate()` is a macro that ends with a `return` statement. In
-Go output, `YYterminate()` is a function that sets a flag variable.
+Go output, `YYterminate(return_value)` is a function that sets a flag
+variable. The type of `return_value` is `interface{}`.
 
 Example in C:
 
@@ -81,7 +83,7 @@ it will always be called:
 
     pattern    {
                    if foo {
-                       YYterminate()
+                       YYterminate(return_value)
                    } else {
                        bar()
                    }

@@ -2055,7 +2055,7 @@ void make_tables_go (void)
 
     if (did_eof_rule) {
 	indent_up_go ();
-	indent_puts_go ("YYterminate()");
+	indent_puts_go ("YYterminate(nil)");
 	indent_down_go ();
     }
 
