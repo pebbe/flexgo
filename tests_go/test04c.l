@@ -44,7 +44,8 @@ int yywrap()
 
 %%
 
-foo/bar	{ printf("FOO"); }
+foo/bar		{ printf("FOOB"); }
+fo+/[a-z]+	{ printf("FOOX"); }
 
 %%
 

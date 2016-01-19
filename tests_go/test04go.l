@@ -17,7 +17,14 @@ var toggle = true
 
 %%
 
-foo/bar	{ YYout.Write(bytes.ToUpper(YYtext)) }
+foo/bar		{
+			YYout.Write(bytes.ToUpper(YYtext))
+			YYout.Write([]byte{'B'})
+		}
+fo+/[a-z]+	{
+			YYout.Write(bytes.ToUpper(YYtext))
+			YYout.Write([]byte{'X'})
+		}
 
 %%
 

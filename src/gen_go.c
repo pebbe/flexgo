@@ -1798,9 +1798,9 @@ void make_tables_go (void)
 		outn ("var yy_full_state int");
 	    }
 
-	    out_hex ("const yy_TRAILING_MASK 0x%x = ",
+	    out_hex ("const yy_TRAILING_MASK = 0x%x\n",
 		     (unsigned int) YY_TRAILING_MASK);
-	    out_hex ("const yy_TRAILING_HEAD_MASK 0x%x = ",
+	    out_hex ("const yy_TRAILING_HEAD_MASK = 0x%x\n",
 		     (unsigned int) YY_TRAILING_HEAD_MASK);
 	}
 

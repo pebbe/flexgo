@@ -254,7 +254,9 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 			char   *scanner_bp = "yy_bp";
 
 			add_action
-				("*yy_cp = YY_G(yy_hold_char); /* undo effects of setting up yytext */\n");
+			    (Go ?
+			     "buffer.yy_ch_buf[yy_cp] = yy_hold_char // undo effects of setting up yytext\n" :
+			     "*yy_cp = YY_G(yy_hold_char); /* undo effects of setting up yytext */\n");
 
 			if (headcnt > 0) {
 				if (rule_has_nl[num_rules]) {
@@ -262,9 +264,17 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 						"YY_LINENO_REWIND_TO(%s + %d);\n", scanner_bp, headcnt);
 					add_action (action_text);
 				}
-				snprintf (action_text, sizeof(action_text), "%s = %s + %d;\n",
-					 scanner_cp, scanner_bp, headcnt);
-				add_action (action_text);
+				if (Go) {
+				    snprintf (action_text, sizeof(action_text), "yy_cp = yy_bp + %d\n",
+					      headcnt);
+				    add_action (action_text);
+				    snprintf (action_text, sizeof(action_text), "yy_c_buf_p = yy_cp\n");
+				    add_action (action_text);
+				} else {
+				    snprintf (action_text, sizeof(action_text), "%s = %s + %d;\n",
+					      scanner_cp, scanner_bp, headcnt);
+				    add_action (action_text);
+				}
 			}
 
 			else {
@@ -274,13 +284,21 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 					add_action (action_text);
 				}
 
-				snprintf (action_text, sizeof(action_text), "%s -= %d;\n",
-					 scanner_cp, trailcnt);
-				add_action (action_text);
+				if (Go) {
+				    snprintf (action_text, sizeof(action_text), "yy_cp -= %d\n",
+					      trailcnt);
+				    add_action (action_text);
+				    snprintf (action_text, sizeof(action_text), "yy_c_buf_p = yy_cp\n");
+				    add_action (action_text);
+				} else {
+				    snprintf (action_text, sizeof(action_text), "%s -= %d;\n",
+					      scanner_cp, trailcnt);
+				    add_action (action_text);
+				}
 			}
 
 			add_action
-			    (Go ? "yy_DO_BEFORE_ACTION() /* set up yytext again */\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
+			    (Go ? "yy_DO_BEFORE_ACTION(yy_cp, yy_bp) /* set up yytext again */\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
 		}
 	}
 
