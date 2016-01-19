@@ -60,6 +60,30 @@ it will always be called:
                        bar()
                    }
                }       
+### yyterminate()
+
+In C output, `yyterminate()` is a macro that ends with a `return` statement. In
+Go output, `YYterminate()` is a function that sets a flag variable.
+
+Example in C:
+
+    pattern    {
+                   if (foo) {
+                       yyterminate();
+                   }
+                   bar();
+               }
+               
+To get the same behaviour in Go, the `bar()` must be after an else, or
+it will always be called:
+
+    pattern    {
+                   if foo {
+                       YYterminate()
+                   } else {
+                       bar()
+                   }
+               }       
 
 ### YYwrap()
 
