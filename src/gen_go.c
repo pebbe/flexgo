@@ -528,49 +528,40 @@ void gen_find_action_go (void)
 	indent_puts_go ("yy_act = int(yy_accept[yy_current_state])");
 
     else if (reject) {
-	indent_puts_go ("yy_current_state = *--YY_G(yy_state_ptr);");
-	indent_puts_go ("YY_G(yy_lp) = yy_accept[yy_current_state];");
+	indent_puts_go ("sp := len(yy_state_buf) - 1");
+	indent_puts_go ("yy_current_state = yy_state_buf[sp]");
+	indent_puts_go ("yy_state_buf = yy_state_buf[:sp]");
+	indent_puts_go ("yy_lp = int(yy_accept[yy_current_state])");
 
 	if(reject_really_used)
-	    outn ("find_rule: /* we branch to this label when backing up */");
+	    indent_puts_go ("find_rule: // we branch to this label when backing up");
 
-	indent_puts_go
-	    ("for ( ; ; ) /* until we find what rule we matched */");
-
+	indent_puts_go ("for { // until we find what rule we matched");
 	indent_up_go ();
-
-	indent_puts_go ("{");
-
-	indent_puts_go
-	    ("if ( YY_G(yy_lp) && YY_G(yy_lp) < yy_accept[yy_current_state + 1] )");
+	indent_puts_go ("if yy_lp != 0 && yy_lp < int(yy_accept[yy_current_state+1]) {");
 	indent_up_go ();
-	indent_puts_go ("{");
-	indent_puts_go ("yy_act = yy_acclist[YY_G(yy_lp)];");
+	indent_puts_go ("yy_act = int(yy_acclist[yy_lp])");
 
 	if (variable_trailing_context_rules) {
 	    indent_puts_go
 		("if ( yy_act & YY_TRAILING_HEAD_MASK ||");
-	    indent_puts_go ("     YY_G(yy_looking_for_trail_begin) )");
+	    indent_puts_go ("     YY_G(yy_looking_for_trail_begin) ) {");
 	    indent_up_go ();
-	    indent_puts_go ("{");
 
 	    indent_puts_go
-		("if ( yy_act == YY_G(yy_looking_for_trail_begin) )");
+		("if ( yy_act == YY_G(yy_looking_for_trail_begin) ) {");
 	    indent_up_go ();
-	    indent_puts_go ("{");
 	    indent_puts_go ("YY_G(yy_looking_for_trail_begin) = 0;");
 	    indent_puts_go ("yy_act &= ~YY_TRAILING_HEAD_MASK;");
 	    indent_puts_go ("break;");
 	    indent_puts_go ("}");
 	    indent_down_go ();
 
-	    indent_puts_go ("}");
 	    indent_down_go ();
 
 	    indent_puts_go
-		("else if ( yy_act & YY_TRAILING_MASK )");
+		("} else if ( yy_act & YY_TRAILING_MASK ) {");
 	    indent_up_go ();
-	    indent_puts_go ("{");
 	    indent_puts_go
 		("YY_G(yy_looking_for_trail_begin) = yy_act & ~YY_TRAILING_MASK;");
 	    indent_puts_go
@@ -587,12 +578,10 @@ void gen_find_action_go (void)
 		indent_puts_go ("YY_G(yy_full_lp) = YY_G(yy_lp);");
 	    }
 
-	    indent_puts_go ("}");
 	    indent_down_go ();
 
-	    indent_puts_go ("else");
+	    indent_puts_go ("} else {");
 	    indent_up_go ();
-	    indent_puts_go ("{");
 	    indent_puts_go ("YY_G(yy_full_match) = yy_cp;");
 	    indent_puts_go
 		("YY_G(yy_full_state) = YY_G(yy_state_ptr);");
@@ -611,8 +600,8 @@ void gen_find_action_go (void)
 	     */
 	    indent_up_go ();
 	    indent_puts_go ("{");
-	    indent_puts_go ("YY_G(yy_full_match) = yy_cp;");
-	    indent_puts_go ("break;");
+	    indent_puts_go ("yy_full_match = yy_cp");
+	    indent_puts_go ("break");
 	    indent_puts_go ("}");
 	    indent_down_go ();
 	}
@@ -620,18 +609,22 @@ void gen_find_action_go (void)
 	indent_puts_go ("}");
 	indent_down_go ();
 
-	indent_puts_go ("--yy_cp;");
+	indent_puts_go ("yy_cp--");
 
 	/* We could consolidate the following two lines with those at
 	 * the beginning, but at the cost of complaints that we're
 	 * branching inside a loop.
 	 */
-	indent_puts_go ("yy_current_state = *--YY_G(yy_state_ptr);");
-	indent_puts_go ("YY_G(yy_lp) = yy_accept[yy_current_state];");
-
-	indent_puts_go ("}");
+	indent_puts_go ("sp := len(yy_state_buf) - 1");
+	indent_puts_go ("yy_current_state = yy_state_buf[sp]");
+	indent_puts_go ("yy_state_buf = yy_state_buf[:sp]");
+	indent_puts_go ("yy_lp = int(yy_accept[yy_current_state])");
 
 	indent_down_go ();
+	indent_puts_go ("}");
+	if(reject_really_used)
+	    indent_puts_go ("if false { goto find_rule }");
+
     }
 
     else {			/* compressed */
@@ -1014,11 +1007,12 @@ void gen_NUL_trans_go (void)
 	     * actually make.  If we stack it on a jam, then
 	     * the state stack and yy_c_buf_p get out of sync.
 	     */
-	    indent_puts_go ("if ( ! yy_is_jam )");
+	    indent_puts_go ("if ! yy_is_jam {");
 	    indent_up_go ();
 	    indent_puts_go
 		("yy_state_buf = append(yy_state_buf, yy_current_state)");
 	    indent_down_go ();
+	    indent_puts_go ("}");
 	}
     }
 

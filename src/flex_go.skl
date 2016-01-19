@@ -444,6 +444,7 @@ do_action: // This label is used only to access EOF actions.
 %% [12.0] debug code goes here
 // SKEL ----------------------------------------------------------------
 
+			yy_rejected = false
 			switch yy_act { // beginning of action switch
 // [13.0] actions go here ----------------------------------------------
 %% [13.0] actions go here
@@ -561,6 +562,9 @@ do_action: // This label is used only to access EOF actions.
 			default:
 				log.Panicln("fatal flex scanner internal error--no action found:", yy_act)
 			} /* end of action switch */
+			if yy_rejected {
+				goto find_rule
+			}
 		} /* end of scanning one token */
 	} /* end of user's declarations */
 
