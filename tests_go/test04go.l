@@ -1,4 +1,4 @@
-%{
+%top{
 
 package main
 
@@ -9,6 +9,10 @@ import (
 	"log"
 	"os"
 )
+
+}
+
+%{
 
 var toggle = true
 

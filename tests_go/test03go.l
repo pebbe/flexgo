@@ -1,4 +1,4 @@
-%{
+%top{
 
 package main
 
@@ -10,6 +10,10 @@ import (
 	"os"
 )
 
+}
+
+%{
+
 var toggle = true
 
 %}
@@ -19,7 +23,7 @@ var toggle = true
 
 ^.	YYout.Write(bytes.ToUpper(YYtext))
 
-foo	{
+foo/bar	{
 		toggle = !toggle
 		if (toggle) {
 			YYout.Write([]byte("FOO"))

@@ -193,25 +193,21 @@ void gen_bu_action_go (void)
 
     set_indent_go (3);
 
-    indent_puts_go ("case 0: /* must back up */");
+    indent_puts_go ("case 0: // must back up");
+    indent_puts_go ("// undo the effects of YY_DO_BEFORE_ACTION");
     indent_puts_go ("buffer.yy_ch_buf[yy_cp] = yy_hold_char");
-    indent_puts_go ("yy_cp = yy_last_accepting_cpos");
+
+    if (fullspd || fulltbl)
+	indent_puts_go ("yy_cp = yy_last_accepting_cpos + 1");
+    else
+	/* Backing-up info for compressed tables is taken \after/
+	 * yy_cp has been incremented for the next state.
+	 */
+	indent_puts_go ("yy_cp = yy_last_accepting_cpos");
+
     indent_puts_go ("yy_current_state = yy_last_accepting_state");
     indent_puts_go ("goto yy_find_action");
-
-    /*
-    if (fullspd || fulltbl)
-	indent_puts_go ("yy_cp = YY_G(yy_last_accepting_cpos) + 1;");
-    else
-        // Backing-up info for compressed tables is taken \after/
-	// yy_cp has been incremented for the next state.
-	indent_puts_go ("yy_cp = YY_G(yy_last_accepting_cpos);");
-
-    indent_puts_go ("yy_current_state = YY_G(yy_last_accepting_state);");
-    indent_puts_go ("goto yy_find_action;");
     outc ('\n');
-
-    */
 
     set_indent_go (0);
 }
@@ -636,7 +632,7 @@ void gen_find_action_go (void)
 	     */
 	    indent_puts_go ("if yy_act == 0 {");
 	    indent_up_go ();
-	    indent_puts_go ("/* have to back up */");
+	    indent_puts_go ("// have to back up");
 	    indent_puts_go ("yy_cp = yy_last_accepting_cpos");
 	    indent_puts_go ("yy_current_state = yy_last_accepting_state");
 	    indent_puts_go ("yy_act = int(yy_accept[yy_current_state])");
@@ -794,7 +790,7 @@ void gen_next_match_go (void)
 	    outc ('\n');
 	}
 
-	indent_puts_go ("++yy_cp;");
+	indent_puts_go ("yy_cp++");
 
 	if (num_backing_up > 0)
 
@@ -1533,7 +1529,7 @@ void make_tables_go (void)
      */
     set_indent_go (1);
 
-    /*
+    /* TODO
     if (yymore_used && !yytext_is_array) {
 	indent_puts_go ("YY_G(yytext_ptr) -= YY_G(yy_more_len); \\");
 	indent_puts_go
@@ -1577,8 +1573,6 @@ void make_tables_go (void)
     skelout ();		/* %% [4.0] - break point in skel */
 
     /* This is where we REALLY begin generating the tables. */
-
-    out_dec ("const yy_batch = %d // must by zero for interactive scanner\n", interactive ? 0 : 100);
 
     out_dec ("const yy_NUM_RULES = %d\n", num_rules);
     out_dec ("const yy_END_OF_BUFFER = %d\n", num_rules + 1);
@@ -1805,8 +1799,8 @@ void make_tables_go (void)
 		     (unsigned int) YY_TRAILING_HEAD_MASK);
 	}
 
-	outn ("func REJECT() {");
-      	outn (" b := yy_buffer_stack[yy_buffer_stack_top]");
+	outn ("func REJECT() {");	
+      	outn ("b := yy_buffer_stack[yy_buffer_stack_top]");
        	outn ("b.yy_ch_buf[yy_cp] = yy_hold_char // undo effects of setting up yytext");
 	outn ("yy_cp = yy_full_match             // restore poss. backed-over text");
 
@@ -1900,12 +1894,57 @@ void make_tables_go (void)
 	}
     }
 
-    if (!Go)
-	out (&action_array[defs1_offset]);
+    out (&action_array[defs1_offset]);
 
     line_directive_out (stdout, 0);
 
     skelout ();		/* %% [5.0] - break point in skel */
+
+    /* TODO
+		if (use_read) {
+			outn ("\terrno=0; \\");
+			outn ("\twhile ( (result = read( fileno(yyin), (char *) buf, max_size )) < 0 ) \\");
+			outn ("\t{ \\");
+			outn ("\t\tif( errno != EINTR) \\");
+			outn ("\t\t{ \\");
+			outn ("\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
+			outn ("\t\t\tbreak; \\");
+			outn ("\t\t} \\");
+			outn ("\t\terrno=0; \\");
+			outn ("\t\tclearerr(yyin); \\");
+			outn ("\t}\\");
+		}
+
+		else {
+			outn ("\tif ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \\");
+			outn ("\t\t{ \\");
+			outn ("\t\tint c = '*'; \\");
+			outn ("\t\tsize_t n; \\");
+			outn ("\t\tfor ( n = 0; n < max_size && \\");
+			outn ("\t\t\t     (c = getc( yyin )) != EOF && c != '\\n'; ++n ) \\");
+			outn ("\t\t\tbuf[n] = (char) c; \\");
+			outn ("\t\tif ( c == '\\n' ) \\");
+			outn ("\t\t\tbuf[n++] = (char) c; \\");
+			outn ("\t\tif ( c == EOF && ferror( yyin ) ) \\");
+			outn ("\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
+			outn ("\t\tresult = n; \\");
+			outn ("\t\t} \\");
+			outn ("\telse \\");
+			outn ("\t\t{ \\");
+			outn ("\t\terrno=0; \\");
+			outn ("\t\twhile ( (result = fread(buf, 1, max_size, yyin))==0 && ferror(yyin)) \\");
+			outn ("\t\t\t{ \\");
+			outn ("\t\t\tif( errno != EINTR) \\");
+			outn ("\t\t\t\t{ \\");
+			outn ("\t\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
+			outn ("\t\t\t\tbreak; \\");
+			outn ("\t\t\t\t} \\");
+			outn ("\t\t\terrno=0; \\");
+			outn ("\t\t\tclearerr(yyin); \\");
+			outn ("\t\t\t} \\");
+			outn ("\t\t}\\");
+		}
+     */
 
     skelout ();		/* %% [6.0] - break point in skel */
 

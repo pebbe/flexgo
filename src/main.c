@@ -455,7 +455,7 @@ void check_options ()
         struct Buf tmpbuf;
         buf_init(&tmpbuf, sizeof(char));
         for (i = 1; i <= lastsc; i++) {
-             char *str, *fmt = "#define %s %d\n";
+	    char *str, *fmt = Go ? "const %s = %d\n" : "#define %s %d\n";
              size_t strsz;
 
              str = (char*)flex_alloc(strsz = strlen(fmt) + strlen(scname[i]) + (int)(1 + log10(i)) + 2);
@@ -470,11 +470,6 @@ void check_options ()
     }
 
     /* This is where we begin writing to the file. */
-
-    if (Go) {
-	skelout();
-	out (&action_array[defs1_offset]);
-    }
 
     /* Dump the %top code. */
     if( top_buf.elts)
@@ -491,8 +486,7 @@ void check_options ()
 	if (userdef_buf.elts)
 		outn ((char *) (userdef_buf.elts));
 
-	if (!Go)
-	    skelout ();
+	skelout ();
 	/* %% [1.0] */
 }
 
@@ -1614,19 +1608,19 @@ void readin ()
 	if (ddebug)
 	    outn (Go ? "const cFLEX_DEBUG = true\n" : "\n#define FLEX_DEBUG");
 	else if (Go)
-	    outn (Go ? "const cFLEX_DEBUG = false\n" : "\n#define FLEX_DEBUG");
+	    outn ("const cFLEX_DEBUG = false\n");
 
 	if (Go)
 	    out_str ("var IsInteractive = func(file io.Reader) bool { return %s }", interactive ? "true" : "false");
 
-	OUT_BEGIN_CODE ();
 	if (!Go) {
+	    OUT_BEGIN_CODE ();
 	    if (csize == 256)
 		outn ("typedef unsigned char YY_CHAR;");
 	    else
 		outn ("typedef char YY_CHAR;");
+	    OUT_END_CODE ();
 	}
-	OUT_END_CODE ();
 
 	if (C_plus_plus) {
 		outn ("#define yytext_ptr yytext");
@@ -1707,6 +1701,7 @@ void readin ()
 	}
 
 	else if (!Go) {
+	    // TODO
 
 		/* Watch out: yytext_ptr is a variable when yytext is an array,
 		 * but it's a macro when yytext is a pointer.

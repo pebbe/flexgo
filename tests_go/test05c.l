@@ -42,7 +42,15 @@ int yywrap()
 %}
 
 
+%Start _str
+
 %%
+
+<INITIAL>{
+
+"\""    { printf("<<");
+          BEGIN _str;
+        }
 
 ^.	printf("%c", yytext[0] - ((yytext[0] >= 'a' && yytext[0] <= 'z') ? 32 : 0));
 
@@ -53,6 +61,20 @@ foo/bar	{
 		else
 			REJECT;
 	}
+
+}
+
+<_str>{
+
+[^\"\\]+  ECHO;
+
+"\""    { printf(">>");
+          BEGIN INITIAL;
+        }
+
+\\.   { printf("%c", yytext[1]); }
+
+}
 
 %%
 

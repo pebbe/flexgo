@@ -1,4 +1,4 @@
-%{
+%top{
 
 package main
 
@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-%}
+}
 
 
 %%
