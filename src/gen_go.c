@@ -858,7 +858,7 @@ void gen_next_match_go (void)
 	    /* Do the guaranteed-needed backing up to figure out
 	     * the match.
 	     */
-		    
+
 	    indent_puts_go ("yy_cp = yy_last_accepting_cpos");
 	    indent_puts_go ("yy_current_state = yy_last_accepting_state");
 
@@ -1102,7 +1102,7 @@ void gentabs_go (void)
 	out_str_dec (long_align ? get_int32_decl_go () :
 		     get_int16_decl_go (), "yy_acclist", MAX (numas,
 							      1) + 1);
-        
+
         buf_prints (&yydmap_buf,
 		    "\t{YYTD_ID_ACCLIST, (void**)&yy_acclist, sizeof(%s)},\n",
 		    long_align ? "flex_int32_t" : "flex_int16_t");
@@ -1110,7 +1110,7 @@ void gentabs_go (void)
         yyacclist_tbl = (struct yytbl_data*)calloc(1,sizeof(struct yytbl_data));
         yytbl_data_init (yyacclist_tbl, YYTD_ID_ACCLIST);
         yyacclist_tbl->td_lolen  = MAX(numas,1) + 1;
-        yyacclist_tbl->td_data = yyacclist_data = 
+        yyacclist_tbl->td_data = yyacclist_data =
             (flex_int32_t *) calloc (yyacclist_tbl->td_lolen, sizeof (flex_int32_t));
         yyacclist_curr = 1;
 
@@ -1799,7 +1799,7 @@ void make_tables_go (void)
 		     (unsigned int) YY_TRAILING_HEAD_MASK);
 	}
 
-	outn ("func REJECT() {");	
+	outn ("func REJECT() {");
       	outn ("b := yy_buffer_stack[yy_buffer_stack_top]");
        	outn ("b.yy_ch_buf[yy_cp] = yy_hold_char // undo effects of setting up yytext");
 	outn ("yy_cp = yy_full_match             // restore poss. backed-over text");
@@ -2087,12 +2087,14 @@ void make_tables_go (void)
     /* generate cases for any missing EOF rules */
     for (i = 1; i <= lastsc; ++i)
 	if (!sceof[i]) {
-	    do_indent_go ();
-	    out_str ("case yy_STATE_EOF(%s):\n", scname[i]);
+	    if ( ! did_eof_rule )
+		do_indent_go ();
+	    out_str (did_eof_rule ? ", yy_STATE_EOF(%s)" : "case yy_STATE_EOF(%s)", scname[i]);
 	    did_eof_rule = true;
 	}
 
     if (did_eof_rule) {
+	out (":\n");
 	indent_up_go ();
 	indent_puts_go ("YYterminate(nil)");
 	indent_down_go ();

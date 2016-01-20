@@ -42,7 +42,7 @@ int yywrap()
 %}
 
 
-%Start _str
+%x _str
 
 %%
 
@@ -72,7 +72,12 @@ foo/bar	{
           BEGIN INITIAL;
         }
 
-\\.   { printf("%c", yytext[1]); }
+\\.	printf("%c", yytext[1]);
+
+<<EOF>>	{
+	  printf("Closing quote is missing\n");
+	  yyterminate();
+	}
 
 }
 

@@ -11,11 +11,11 @@ Keywords: flex, lex, go, golang
  * ~~a simple pattern~~
  * ~~a simple pattern with ^~~
  * ~~trailing context~~
- * pattern with EOF
+ * ~~pattern with EOF~~
  * ~~YYwrap()~~
  * ~~REJECT()~~
- * REJECT() with trailing context
- * BEGIN(state)
+ * ~~REJECT() with trailing context~~
+ * ~~BEGIN(state)~~
  * YYless(n)
  * YYmore()
  * Unput(c)

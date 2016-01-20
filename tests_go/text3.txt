@@ -7,3 +7,4 @@ foobar foo bar foobar foo bar foobar foo bar
 foot fool fooble
 "foobar" "foo\"bar" "foo\
 bar"
+barf"barf

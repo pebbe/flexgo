@@ -18,7 +18,7 @@ var toggle = true
 
 %}
 
-%Start _str
+%x _str
 
 %%
 
@@ -53,11 +53,16 @@ foo/bar	{
 
 \\.	YYout.Write(YYtext[1:])
 
+<<EOF>> YYterminate(fmt.Errorf("Closing quote is missing"))
+
 }
 
 %%
 
 func main() {
-	YYmain(os.Args[1:]...)
+	result := YYmain(os.Args[1:]...)
+	if result != nil {
+		fmt.Println(result)
+	}
 	fmt.Println("Done")
 }
