@@ -2009,22 +2009,22 @@ void make_tables_go (void)
     skelout ();		/* %% [11.0] - break point in skel */
     outn ("m4_ifdef( [[M4_YY_USE_LINENO]],[[");
     indent_puts_go
-	("if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )");
+	("if yy_act != yy_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] != 0 {");
     indent_up_go ();
-    indent_puts_go ("{");
-    indent_puts_go ("yy_size_t yyl;");
     do_indent_go ();
-    out_str ("for ( yyl = %s; yyl < yyleng; ++yyl )\n",
-	     yymore_used ? (yytext_is_array ? "YY_G(yy_prev_more_offset)" :
-			    "YY_G(yy_more_len)") : "0");
+    out_str ("for yyl := %s; yyl < YYleng; yyl++ {\n",
+	     yymore_used ? (yytext_is_array ? "yy_prev_more_offset" :
+			    "yy_more_len") : "0");
     indent_up_go ();
-    indent_puts_go ("if ( yytext[yyl] == '\\n' )");
+    indent_puts_go ("if YYtext[yyl] == '\\n' {");
     indent_up_go ();
-    indent_puts_go ("M4_YY_INCR_LINENO();");
-    indent_down_go ();
+    indent_puts_go ("M4_YY_INCR_LINENO");
     indent_down_go ();
     indent_puts_go ("}");
     indent_down_go ();
+    indent_puts_go ("}");
+    indent_down_go ();
+    indent_puts_go ("}");
     outn ("]])");
 
     skelout ();		/* %% [12.0] - break point in skel */
