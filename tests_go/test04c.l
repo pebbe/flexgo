@@ -39,13 +39,21 @@ int yywrap()
     return 0;
 }
 
+char *upstring(char *s) {
+    int i;
+        for (i = 0; s[i]; i++)
+            if (s[i] >= 'a' && s[i] <= 'z')
+                s[i] -= 32;
+    return s;
+}
+
 %}
 
 
 %%
 
-foo/bar		{ printf("FOOB"); }
-fo+/[a-np-z]+	{ printf("FOOX"); }
+foo/bar		{ printf("%sB", upstring(yytext)); }
+fo+/[a-np-z]+	{ printf("%sX", upstring(yytext)); }
 
 %%
 

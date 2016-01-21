@@ -33,6 +33,12 @@ fo+/[a-np-z]+	{
 %%
 
 func main() {
-	YYmain(os.Args[1:]...)
+	result, err := YYmain(os.Args[1:]...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if result != nil {
+		fmt.Println(result)
+	}
 	fmt.Println("Done")
 }

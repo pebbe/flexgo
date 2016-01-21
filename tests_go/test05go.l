@@ -60,7 +60,10 @@ foo/bar	{
 %%
 
 func main() {
-	result := YYmain(os.Args[1:]...)
+	result, err := YYmain(os.Args[1:]...)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if result != nil {
 		fmt.Println(result)
 	}

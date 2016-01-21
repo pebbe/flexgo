@@ -33,6 +33,7 @@ var (
 	YYout                    io.Writer
 	YYleng                   int
 	YYwrap                   = func() bool { return true }
+	YYfilename		 string
 	YY_USER_INIT             = func() { }
 	YY_USER_ACTION           = func() { }
 	yy_buffer_stack          []*yy_buffer_state
@@ -677,20 +678,24 @@ func ifelse(b bool, i1, i2 int) int {
 	return i2
 }
 
-func YYmain(filenames ...string) interface{} {
+func YYmain(filenames ...string) (interface{}, error) {
+
+	var errval error
 
 	in := YYin
 	wrap := YYwrap
+	filename := YYfilename
 	defer func() {
 		YYin = in
 		YYwrap = wrap
+		YYfilename = filename
 	}()
 
 	if len(filenames) > 0 {
-		var err error
-		YYin, err = os.Open(filenames[0])
-		if err != nil {
-			log.Fatalln(err)
+		YYfilename = filenames[0]
+		YYin, errval = os.Open(YYfilename)
+		if errval != nil {
+			return nil, errval
 		}
 		YYwrap = func() bool {
 			YYin.(*os.File).Close()
@@ -698,15 +703,16 @@ func YYmain(filenames ...string) interface{} {
 			if len(filenames) == 0 {
 				return true
 			}
-			YYin, err = os.Open(filenames[0])
-			if err != nil {
-				log.Fatalln(err)
+			YYfilename = filenames[0]
+			YYin, errval = os.Open(YYfilename)
+			if errval != nil {
+				return true
 			}
 			return false
 		}
 	}
 
-	return YYlex()
+	return YYlex(), errval
 
 }
 

@@ -12,25 +12,12 @@ import (
 
 }
 
-%{
-
-var toggle = true
-
-%}
-
-
 %%
 
-^.	YYout.Write(bytes.ToUpper(YYtext))
-
-foo/bar	{
-		toggle = !toggle
-		if (toggle) {
-			YYout.Write([]byte("FOO"))
-		} else {
-			REJECT();
-		}
+fofo    { YYout.Write([]byte("[FOFO]")
+	  YYless(2)
 	}
+
 
 %%
 
