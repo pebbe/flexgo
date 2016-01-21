@@ -16,10 +16,11 @@ Keywords: flex, lex, go, golang
  * ~~REJECT()~~
  * ~~REJECT() with trailing context~~
  * ~~BEGIN(state)~~
- * YYless(n)
+ * ~~YYless(n)~~
  * YYmore()
  * Unput(c)
  * Input()
+ * --yylineno
  * non-default table compression
  * other functions, like yyrestart(), multiple buffers, etc...
  * copy and modify all tests from subdirectory `tests` to work with `flexgo`

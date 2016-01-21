@@ -304,7 +304,7 @@ func yy_load_buffer_state() {
 %% [1.5] DFA
 // SKEL ----------------------------------------------------------------
 
-func yy_DO_BEFORE_ACTION(yy_cp, yy_bp int) {
+func yy_DO_BEFORE_ACTION() {
 	buffer := yy_CURRENT_BUFFER()
 	yytext_ptr = yy_bp
 // [2.0] code to fiddle yytext and yyleng for yymore() goes here -------
@@ -372,11 +372,10 @@ func yy_INPUT(offset, max_read int) int {
 // SKEL ----------------------------------------------------------------
 
 var yy_current_state int
-var yy_cp int
+var yy_cp, yy_bp int
 var yy_retval interface{}
 
 func YYlex() interface{} {
-	var yy_bp int
 	var yy_act int
 
 	if !yy_init {
@@ -439,7 +438,7 @@ yy_find_action:
 %% [10.0] code to find the action number goes here
 // SKEL ----------------------------------------------------------------
 
-			yy_DO_BEFORE_ACTION(yy_cp, yy_bp)
+			yy_DO_BEFORE_ACTION()
 
 // [11.0] code for yylineno update goes here ---------------------------
 %% [11.0] code for yylineno update goes here
@@ -653,6 +652,51 @@ func YYterminate(r interface{}) {
 	yy_retval = r
 	yy_running = false
 }
+
+m4_ifdef( [[M4_YY_USE_LINENO]],
+[[
+/* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+ *       access to the local variable yy_act. Since yyless() is a macro, it would brea
+
+ *       existing scanners that call yyless() from OUTSIDE yylex.
+ *       One obvious solution it to make yy_act a global. I tried that, and saw
+ *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+ *       normally declared as a register variable-- so it is not worth it.
+ */
+#define  YY_LESS_LINENO(n) \
+        do { \
+            int yyl;\
+            for ( yyl = n; yyl < yyleng; ++yyl )\
+                if ( yytext[yyl] == '\n' )\
+                    --yylineno;\
+        }while(0)
+#define YY_LINENO_REWIND_TO(dst) \
+        do {\
+            const char *p;\
+            for ( p = yy_cp-1; p >= (dst); --p)\
+                if ( *p == '\n' )\
+                    --yylineno;\
+        }while(0)
+]],
+[[
+func yy_LESS_LINENO(n int) {}
+
+func yy_LINENO_REWIND_TO(ptr int) {}
+]])
+
+
+func YYless(n int) {
+	// Undo effects of setting up yytext.
+	buffer := yy_CURRENT_BUFFER()
+	yyless_macro_arg := n
+	yy_LESS_LINENO(yyless_macro_arg)
+	buffer.yy_ch_buf[yy_c_buf_p] = yy_hold_char
+	yy_RESTORE_YY_MORE_OFFSET()
+	yy_cp = yy_bp + yyless_macro_arg - yy_MORE_ADJ()
+	yy_c_buf_p = yy_cp
+	yy_DO_BEFORE_ACTION()
+}
+
 
 /** Immediately switch to a different input stream.
  * @param input_file A readable stream.

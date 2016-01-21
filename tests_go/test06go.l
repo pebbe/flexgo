@@ -3,7 +3,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -14,7 +13,7 @@ import (
 
 %%
 
-fofo    { YYout.Write([]byte("[FOFO]")
+fofo    { YYout.Write([]byte("[FOFO]"))
 	  YYless(2)
 	}
 

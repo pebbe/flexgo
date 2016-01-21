@@ -298,7 +298,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 			}
 
 			add_action
-			    (Go ? "yy_DO_BEFORE_ACTION(yy_cp, yy_bp) /* set up yytext again */\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
+			    (Go ? "yy_DO_BEFORE_ACTION() // set up yytext again\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
 		}
 	}
 
