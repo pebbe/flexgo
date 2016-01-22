@@ -13,15 +13,15 @@ import (
 
 %%
 
-fofo    { YYout.Write([]byte("[FOFO]"))
-	  YYless(2)
+fofo    { yyout.Write([]byte("[FOFO]"))
+	  yyless(2)
 	}
 
 
 %%
 
 func main() {
-	result, err := YYmain(os.Args[1:]...)
+	result, err := yymain(os.Args[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -14,7 +14,7 @@ import (
 
 %%
 
-^.	{ fmt.Fprintf(YYout, "%4d.\t%s", YYlineno, strings.ToUpper(string(YYtext))) }
+^.	{ fmt.Fprintf(yyout, "%4d.\t%s", yylineno, strings.ToUpper(string(yytext))) }
 
 \n      ECHO() // or yylineno won't get updated
 
@@ -22,7 +22,7 @@ import (
 %%
 
 func main() {
-	result, err := YYmain(os.Args[1:]...)
+	result, err := yymain(os.Args[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}

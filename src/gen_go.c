@@ -194,7 +194,7 @@ void gen_bu_action_go (void)
     set_indent_go (3);
 
     indent_puts_go ("case 0: // must back up");
-    indent_puts_go ("// undo the effects of YY_DO_BEFORE_ACTION");
+    indent_puts_go ("// undo the effects of yy_DO_BEFORE_ACTION");
     indent_puts_go ("buffer.yy_ch_buf[yy_cp] = yy_hold_char");
 
     if (fullspd || fulltbl)
@@ -1524,7 +1524,7 @@ void make_tables_go (void)
 
     skelout ();		/* %% [2.0] - break point in skel */
 
-    /* First, take care of YY_DO_BEFORE_ACTION depending on yymore
+    /* First, take care of yy_DO_BEFORE_ACTION depending on yymore
      * being used.
      */
     set_indent_go (1);
@@ -1545,9 +1545,9 @@ void make_tables_go (void)
     if (yytext_is_array) {
 	if (yymore_used)
 	    indent_puts_go
-		("if YYleng + yy_more_offset >= YYLMAX \\");
+		("if yyleng + yy_more_offset >= YYLMAX \\");
 	else
-	    indent_puts_go ("if YYleng >= YYLMAX \\");
+	    indent_puts_go ("if yyleng >= YYLMAX \\");
 
 	indent_up_go ();
 	indent_puts_go
@@ -1890,7 +1890,7 @@ void make_tables_go (void)
 
 	else {
 	    if(! reentrant)
-		outn (Go ? "var YYtext []byte" : "char *yytext;");
+		outn (Go ? "var yytext []byte" : "char *yytext;");
 	}
     }
 
@@ -1900,61 +1900,17 @@ void make_tables_go (void)
 
     skelout ();		/* %% [5.0] - break point in skel */
 
-    /* TODO
-		if (use_read) {
-			outn ("\terrno=0; \\");
-			outn ("\twhile ( (result = read( fileno(yyin), (char *) buf, max_size )) < 0 ) \\");
-			outn ("\t{ \\");
-			outn ("\t\tif( errno != EINTR) \\");
-			outn ("\t\t{ \\");
-			outn ("\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
-			outn ("\t\t\tbreak; \\");
-			outn ("\t\t} \\");
-			outn ("\t\terrno=0; \\");
-			outn ("\t\tclearerr(yyin); \\");
-			outn ("\t}\\");
-		}
-
-		else {
-			outn ("\tif ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \\");
-			outn ("\t\t{ \\");
-			outn ("\t\tint c = '*'; \\");
-			outn ("\t\tsize_t n; \\");
-			outn ("\t\tfor ( n = 0; n < max_size && \\");
-			outn ("\t\t\t     (c = getc( yyin )) != EOF && c != '\\n'; ++n ) \\");
-			outn ("\t\t\tbuf[n] = (char) c; \\");
-			outn ("\t\tif ( c == '\\n' ) \\");
-			outn ("\t\t\tbuf[n++] = (char) c; \\");
-			outn ("\t\tif ( c == EOF && ferror( yyin ) ) \\");
-			outn ("\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
-			outn ("\t\tresult = n; \\");
-			outn ("\t\t} \\");
-			outn ("\telse \\");
-			outn ("\t\t{ \\");
-			outn ("\t\terrno=0; \\");
-			outn ("\t\twhile ( (result = fread(buf, 1, max_size, yyin))==0 && ferror(yyin)) \\");
-			outn ("\t\t\t{ \\");
-			outn ("\t\t\tif( errno != EINTR) \\");
-			outn ("\t\t\t\t{ \\");
-			outn ("\t\t\t\tYY_FATAL_ERROR( \"input in flex scanner failed\" ); \\");
-			outn ("\t\t\t\tbreak; \\");
-			outn ("\t\t\t\t} \\");
-			outn ("\t\t\terrno=0; \\");
-			outn ("\t\t\tclearerr(yyin); \\");
-			outn ("\t\t\t} \\");
-			outn ("\t\t}\\");
-		}
-     */
+    outn ("// nothing here, all moved to skeleton");
 
     skelout ();		/* %% [6.0] - break point in skel */
 
     indent_puts_go ("func yy_RULE_SETUP() {");
     indent_up_go ();
     if (bol_needed) {
-	indent_puts_go ("if YYleng > 0 {");
+	indent_puts_go ("if yyleng > 0 {");
 	indent_up_go ();
 	indent_puts_go ("b := yy_CURRENT_BUFFER()");
-	indent_puts_go ("if YYtext[YYleng-1] == '\\n' {");
+	indent_puts_go ("if yytext[yyleng-1] == '\\n' {");
 	indent_up_go ();
 	indent_puts_go ("b.yy_at_bol = 1");
 	indent_down_go ();
@@ -1966,7 +1922,7 @@ void make_tables_go (void)
 	indent_down_go ();
 	indent_puts_go ("}");
     }
-    indent_puts_go ("YY_USER_ACTION()");
+    indent_puts_go ("yy_USER_ACTION()");
     indent_down_go ();
     indent_puts_go ("}");
 
@@ -2012,11 +1968,11 @@ void make_tables_go (void)
 	("if yy_act != yy_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] != 0 {");
     indent_up_go ();
     do_indent_go ();
-    out_str ("for yyl := %s; yyl < YYleng; yyl++ {\n",
+    out_str ("for yyl := %s; yyl < yyleng; yyl++ {\n",
 	     yymore_used ? (yytext_is_array ? "yy_prev_more_offset" :
 			    "yy_more_len") : "0");
     indent_up_go ();
-    indent_puts_go ("if YYtext[yyl] == '\\n' {");
+    indent_puts_go ("if yytext[yyl] == '\\n' {");
     indent_up_go ();
     indent_puts_go ("M4_YY_INCR_LINENO");
     indent_down_go ();
@@ -2042,7 +1998,7 @@ void make_tables_go (void)
 	indent_up_go ();
 
 	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting rule at line %d (%q)\\n\",");
-	indent_puts_go ("         yy_rule_linenum[yy_act], YYtext)");
+	indent_puts_go ("         yy_rule_linenum[yy_act], yytext)");
 
 	indent_down_go ();
 
@@ -2050,7 +2006,7 @@ void make_tables_go (void)
 	out_dec ("} else if yy_act == %d {\n", num_rules);
 	indent_up_go ();
 
-	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", YYtext)");
+	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yytext)");
 
 	indent_down_go ();
 
@@ -2096,7 +2052,7 @@ void make_tables_go (void)
     if (did_eof_rule) {
 	out (":\n");
 	indent_up_go ();
-	indent_puts_go ("YYterminate(nil)");
+	indent_puts_go ("yyterminate(nil)");
 	indent_down_go ();
     }
 
@@ -2152,10 +2108,10 @@ void make_tables_go (void)
     /* Update BOL and yylineno inside of input(). */
     if (bol_needed) {
 	indent_puts_go
-	    ("// TODO: YY_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\\n');");
+	    ("// TODO: yy_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\\n');");
 	if (do_yylineno) {
 	    indent_puts_go
-		("// TODO: if ( YY_CURRENT_BUFFER_LVALUE->yy_at_bol )");
+		("// TODO: if ( yy_CURRENT_BUFFER_LVALUE->yy_at_bol )");
 	    indent_up_go ();
 	    indent_puts_go ("// TODO: M4_YY_INCR_LINENO();");
 	    indent_down_go ();

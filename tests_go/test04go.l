@@ -22,18 +22,18 @@ var toggle = true
 %%
 
 foo/bar		{
-			YYout.Write(bytes.ToUpper(YYtext))
-			YYout.Write([]byte{'B'})
+			yyout.Write(bytes.ToUpper(yytext))
+			yyout.Write([]byte{'B'})
 		}
 fo+/[a-np-z]+	{
-			YYout.Write(bytes.ToUpper(YYtext))
-			YYout.Write([]byte{'X'})
+			yyout.Write(bytes.ToUpper(yytext))
+			yyout.Write([]byte{'X'})
 		}
 
 %%
 
 func main() {
-	result, err := YYmain(os.Args[1:]...)
+	result, err := yymain(os.Args[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}

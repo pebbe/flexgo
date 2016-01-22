@@ -15,12 +15,12 @@ import (
 
 %%
 
-^.	YYout.Write(bytes.ToUpper(YYtext))
+^.	yyout.Write(bytes.ToUpper(yytext))
 
 %%
 
 func main() {
-	result, err := YYmain(os.Args[1:]...)
+	result, err := yymain(os.Args[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}
