@@ -34,8 +34,8 @@
   glex: test06go.l
   opts: -B
   files: text3.txt
-#- name: test07
-#  clex: test07c.l
-#  glex: test07go.l
-#  opts: -B --yylineno
-#  files: text1.txt text2.txt
+- name: test07
+  clex: test07c.l
+  glex: test07go.l
+  opts: -B --yylineno
+  files: text1.txt text2.txt
