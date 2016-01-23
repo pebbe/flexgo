@@ -14,15 +14,15 @@ import (
 
 %%
 
-^.	{ fmt.Fprintf(yyout, "%4d.\t%s", yylineno, strings.ToUpper(string(yytext))) }
+^.	{ fmt.Fprintf(yy.Out, "%4d.\t%s", yylineno, strings.ToUpper(string(yy.Text))) }
 
-\n      ECHO() // or yylineno won't get updated
+\n      yy.Echo() // or yy.LineNo won't get updated
 
 
 %%
 
 func main() {
-	result, err := yymain(os.Args[1:]...)
+	result, err := YYmain(os.Args[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}

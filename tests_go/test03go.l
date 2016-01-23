@@ -21,21 +21,21 @@ var toggle = true
 
 %%
 
-^.	yyout.Write(bytes.ToUpper(yytext))
+^.	yy.Out.Write(bytes.ToUpper(yy.Text))
 
 foo/bar	{
 		toggle = !toggle
 		if (toggle) {
-			yyout.Write([]byte("FOO"))
+			yy.Out.Write([]byte("FOO"))
 		} else {
-			REJECT();
+			yy.Reject();
 		}
 	}
 
 %%
 
 func main() {
-	result, err := yymain(os.Args[1:]...)
+	result, err := YYmain(os.Args[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}

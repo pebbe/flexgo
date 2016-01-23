@@ -25,18 +25,18 @@ var toggle = true
 <INITIAL>{
 
 "\""    {
-		yyout.Write([]byte("<<"))
-		BEGIN(_str)
+		yy.Out.Write([]byte("<<"))
+		yy.Begin(_str)
         }
 
-^.	yyout.Write(bytes.ToUpper(yytext))
+^.	yy.Out.Write(bytes.ToUpper(yy.Text))
 
 foo/bar	{
 		toggle = !toggle
 		if toggle {
-			yyout.Write(bytes.ToUpper(yytext))
+			yy.Out.Write(bytes.ToUpper(yy.Text))
 		} else {
-			REJECT()
+			yy.Reject()
 		}
 	}
 
@@ -44,23 +44,23 @@ foo/bar	{
 
 <_str>{
 
-[^\"\\]+  ECHO()
+[^\"\\]+  yy.Echo()
 
 "\""    {
-		yyout.Write([]byte(">>"))
-		BEGIN(INITIAL)
+		yy.Out.Write([]byte(">>"))
+		yy.Begin(Initial)
         }
 
-\\.	yyout.Write(yytext[1:])
+\\.	yy.Out.Write(yy.Text[1:])
 
-<<EOF>> yyterminate(fmt.Errorf("Closing quote is missing"))
+<<EOF>> yy.Terminate(fmt.Errorf("Closing quote is missing"))
 
 }
 
 %%
 
 func main() {
-	result, err := yymain(os.Args[1:]...)
+	result, err := YYmain(os.Args[1:]...)
 	if err != nil {
 		log.Fatal(err)
 	}

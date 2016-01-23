@@ -1653,7 +1653,7 @@ yyreduce:
 				add_action(
 				"YY_FATAL_ERROR( \"flex scanner jammed\" )" );
 			else
-			    add_action( Go ? "ECHO()" : "ECHO" );
+			    add_action( Go ? "yy.Echo()" : "ECHO" );
 
 			add_action( Go ? "\n" : ";\n\tYY_BREAK\n" );
 			}
@@ -1666,7 +1666,7 @@ yyreduce:
     { /* initialize for processing rules */
 
 			/* Create default DFA start condition. */
-			scinstal( "INITIAL", false );
+			    scinstal( Go ? "Initial" : "INITIAL", false );
 			}
     break;
 
@@ -3050,9 +3050,9 @@ void build_eof_action()
 			sceof[scon_stk[i]] = true;
 
 			if (previous_continued_action /* && previous action was regular */)
-			    add_action(Go ? "yy_RULE_SETUP()\n" : "YY_RULE_SETUP\n");
+			    add_action(Go ? "yy.RuleSetup()\n" : "YY_RULE_SETUP\n");
 
-			snprintf( action_text, sizeof(action_text), Go ? "case yy_STATE_EOF(%s):\n" : "case YY_STATE_EOF(%s):\n",
+			snprintf( action_text, sizeof(action_text), Go ? "case yyStateEOF(%s):\n" : "case YY_STATE_EOF(%s):\n",
 				scname[scon_stk[i]] );
 			add_action( action_text );
 			}

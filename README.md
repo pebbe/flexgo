@@ -12,17 +12,17 @@ Keywords: flex, lex, go, golang
  * ~~a simple pattern with ^~~
  * ~~trailing context~~
  * ~~pattern with EOF~~
- * ~~YYwrap()~~
- * ~~REJECT()~~
- * ~~REJECT() with trailing context~~
- * ~~BEGIN(state)~~
- * ~~YYless(n)~~
- * YYmore()
- * Unput(c)
- * Input()
+ * ~~yy.Wrap()~~
+ * ~~yy.Reject()~~
+ * ~~yy.Reject() with trailing context~~
+ * ~~yy.Begin(state)~~
+ * ~~yy.Less(n)~~
+ * yy.More()
+ * yy.Unput(c)
+ * yy.Input()
  * --yylineno
  * non-default table compression
- * other functions, like yyrestart(), multiple buffers, etc...
+ * other functions, like yy.Restart(), ~~multiple buffers~~, etc...
  * copy and modify all tests from subdirectory `tests` to work with `flexgo`
 
 ## Difference between C output and Go output
@@ -33,18 +33,18 @@ C macro's are replaced by functions, sometimes with different behaviour.
 
     C               Go                        Go type
     ---------------------------------------------------
-    yyin            YYin                      io.Reader
-    yyout           YYout                     io.Writer
-	yytext          YYtext                    []byte
-    yylex()         YYlex()  
-	yyterminate()   YYterminate(interface{})
-    REJECT          REJECT()
-    BEGIN s         BEGIN(s)
+    yyin            yy.In                      io.Reader
+    yyout           yy.Out                     io.Writer
+	yytext          yy.Text                    []byte
+    yylex()         yy.Lex()  
+	yyterminate()   yy.Terminate(interface{})
+    REJECT          yy.Reject()
+    BEGIN s         yy.Begin(s)
 
-### REJECT()
+### yy.Reject()
 
 In C output, `REJECT` is a macro that ends with a `goto` statement. In
-Go output, `REJECT()` is a function that sets a flag variable.
+Go output, `yy.Reject()` is a function that sets a flag variable.
 
 Example in C:
 
@@ -60,16 +60,16 @@ it will always be called:
 
     pattern    {
                    if foo {
-                       REJECT()
+                       yy.Reject()
                    } else {
                        bar()
                    }
                }       
 
-### YYterminate(return_value)
+### yy.Terminate(return_value)
 
 In C output, `yyterminate()` is a macro that ends with a `return` statement. In
-Go output, `YYterminate(return_value)` is a function that sets a flag
+Go output, `yy.Terminate(return_value)` is a function that sets a flag
 variable. The type of `return_value` is `interface{}`.
 
 Example in C:
@@ -86,20 +86,20 @@ it will always be called:
 
     pattern    {
                    if foo {
-                       YYterminate(return_value)
+                       yy.Terminate(return_value)
                    } else {
                        bar()
                    }
                }       
 
-### YYwrap()
+### yy.Wrap()
 
-`YYwrap` is a variable containing a function that returns a bool. The
+`yy.Wrap` is a variable containing a function that returns a bool. The
 default returns `true`.
 
-### IsInteractive(io.Reader)
+### yy.IsInteractive(io.Reader)
 
-`IsInteractive(io.Reader)` is a variable to a function that returns a
+`yy.IsInteractive(io.Reader)` is a variable to a function that returns a
 bool. The default returns `true` is `flexgo` was called with option
 `-I`, and `false` with option `-B`. (TODO: default value with neither
 option?)

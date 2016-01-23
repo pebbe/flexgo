@@ -255,7 +255,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 
 			add_action
 			    (Go ?
-			     "buffer.yy_ch_buf[yy_cp] = yy_hold_char // undo effects of setting up yytext\n" :
+			     "yy.chBuf[yy.cp] = yy.holdChar // undo effects of setting up yy.Text\n" :
 			     "*yy_cp = YY_G(yy_hold_char); /* undo effects of setting up yytext */\n");
 
 			if (headcnt > 0) {
@@ -265,10 +265,10 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 					add_action (action_text);
 				}
 				if (Go) {
-				    snprintf (action_text, sizeof(action_text), "yy_cp = yy_bp + %d\n",
+				    snprintf (action_text, sizeof(action_text), "yy.cp = yy.bp + %d\n",
 					      headcnt);
 				    add_action (action_text);
-				    snprintf (action_text, sizeof(action_text), "yy_c_buf_p = yy_cp\n");
+				    snprintf (action_text, sizeof(action_text), "yy.cBufP = yy.cp\n");
 				    add_action (action_text);
 				} else {
 				    snprintf (action_text, sizeof(action_text), "%s = %s + %d;\n",
@@ -285,10 +285,10 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 				}
 
 				if (Go) {
-				    snprintf (action_text, sizeof(action_text), "yy_cp -= %d\n",
+				    snprintf (action_text, sizeof(action_text), "yy.cp -= %d\n",
 					      trailcnt);
 				    add_action (action_text);
-				    snprintf (action_text, sizeof(action_text), "yy_c_buf_p = yy_cp\n");
+				    snprintf (action_text, sizeof(action_text), "yy.cBufP = yy.cp\n");
 				    add_action (action_text);
 				} else {
 				    snprintf (action_text, sizeof(action_text), "%s -= %d;\n",
@@ -298,7 +298,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 			}
 
 			add_action
-			    (Go ? "yy_DO_BEFORE_ACTION() // set up yytext again\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
+			    (Go ? "yy.doBeforeAction() // set up yy.Text again\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
 		}
 	}
 
@@ -308,7 +308,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 	 * as that'll result in multiple YY_RULE_SETUP's.
 	 */
 	if (!continued_action)
-	    add_action (Go ? "yy_RULE_SETUP()\n" : "YY_RULE_SETUP\n");
+	    add_action (Go ? "yy.ruleSetup()\n" : "YY_RULE_SETUP\n");
 
 	line_directive_out ((FILE *) 0, 1);
 }

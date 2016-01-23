@@ -447,8 +447,9 @@ void check_options ()
 		buf_m4_define (&m4defs_buf, "M4_YY_USE_LINENO", NULL);
 
 	/* Create the alignment type. */
-	buf_strdefine (&userdef_buf, "YY_INT_ALIGNED",
-		       long_align ? (Go ? "\"int32\"" : "long int") : (Go ? "\"int16\"" : "short int"));
+	if (!Go)
+	    buf_strdefine (&userdef_buf, "YY_INT_ALIGNED",
+			   long_align ? "long int" : "short int");
 
     /* Define the start condition macros. */
     {
@@ -1445,8 +1446,12 @@ void flexinit (argc, argv)
 
 	scanopt_destroy (sopt);
 
-	if (Go)
+	if (Go) {
 	    skel = skel_go;
+	    reentrant = false;
+	    C_plus_plus = false;
+	    csize = 256;
+	}
 
 	num_input_files = argc - optind;
 	input_files = argv + optind;
@@ -1606,12 +1611,9 @@ void readin ()
 	}
 
 	if (ddebug)
-	    outn (Go ? "const cFLEX_DEBUG = true\n" : "\n#define FLEX_DEBUG");
+	    outn (Go ? "const yyFlexDebug = true\n" : "\n#define FLEX_DEBUG");
 	else if (Go)
-	    outn ("const cFLEX_DEBUG = false\n");
-
-	if (Go)
-	    out_str ("var IsInteractive = func(file io.Reader) bool { return %s }", interactive ? "true" : "false");
+	    outn ("const yyFlexDebug = false\n");
 
 	if (!Go) {
 	    OUT_BEGIN_CODE ();
@@ -1629,7 +1631,12 @@ void readin ()
 			outn ("#define YY_INTERACTIVE");
 	}
 
-	else if (!Go) {
+	else if (Go) {
+	    outn (interactive ? "const defaultInteractive = true" :
+		  "const defaultInteractive = false");
+	}
+
+	else  {
 		OUT_BEGIN_CODE ();
 		/* In reentrant scanner, stdinit is handled in flex.skl. */
 		if (do_stdinit) {
@@ -1661,23 +1668,22 @@ void readin ()
 		OUT_END_CODE ();
 	}
 
-	OUT_BEGIN_CODE ();
-	if (fullspd)
-	    outn (Go ? "type yy_state_type *yy_trans_info" : "typedef yyconst struct yy_trans_info *yy_state_type;");
-	else if (!C_plus_plus)
-	    outn (Go ? "type yy_state_type int" : "typedef int yy_state_type;");
-	OUT_END_CODE ();
-
-	if (lex_compat)
-	    outn (Go ? "const cYY_FLEX_LEX_COMPAT = true" : "#define YY_FLEX_LEX_COMPAT");
-	else if (Go)
-	    outn ("const cYY_FLEX_LEX_COMPAT = false");
-
-	if (!C_plus_plus && !reentrant) {
-	    if (!Go)
-		outn ("extern int yylineno;");
+	if (!Go) {
 	    OUT_BEGIN_CODE ();
-	    outn (Go ? "var YYlineno = 1" : "int yylineno = 1;");
+	    if (fullspd)
+		outn ("typedef yyconst struct yy_trans_info *yy_state_type;");
+	    else if (!C_plus_plus)
+		outn ("typedef int yy_state_type;");
+	    OUT_END_CODE ();
+	}
+
+	if (lex_compat && !Go)
+	    outn ("#define YY_FLEX_LEX_COMPAT");
+
+	if (!C_plus_plus && !reentrant && !Go) {
+	    outn ("extern int yylineno;");
+	    OUT_BEGIN_CODE ();
+	    outn ("int yylineno = 1;");
 	    OUT_END_CODE ();
 	}
 
