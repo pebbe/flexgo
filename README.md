@@ -35,9 +35,12 @@ Keywords: flex, lex, go, golang
         yyin               yy.In    io.Reader
         yyout              yy.Out   io.Writer
         yytext             yy.Text  []byte
-		yyleng             yy.Leng
+        yyleng             yy.Leng
     int yylex()            yy.Lex() interface()
         yyterminate(int)   yyterminate(interface{})
+
+Inside `yy.Lex()`, the usual names like `yyin`, `yyout`, `yytext`, and
+`yyleng` are also available.
 
 ### yy.Wrap()
 

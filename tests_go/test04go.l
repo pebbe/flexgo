@@ -22,12 +22,12 @@ var toggle = true
 %%
 
 foo/bar		{
-			yy.Out.Write(bytes.ToUpper(yy.Text))
-			yy.Out.Write([]byte{'B'})
+			yyout.Write(bytes.ToUpper(yytext))
+			yyout.Write([]byte{'B'})
 		}
 fo+/[a-np-z]+	{
-			yy.Out.Write(bytes.ToUpper(yy.Text))
-			yy.Out.Write([]byte{'X'})
+			yyout.Write(bytes.ToUpper(yytext))
+			yyout.Write([]byte{'X'})
 		}
 
 %%

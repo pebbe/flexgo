@@ -1875,7 +1875,7 @@ void make_tables_go (void)
 
     skelout ();		/* %% [6.0] - break point in skel */
 
-    indent_puts_go ("func (yy *Scanner) ruleSetup() {");
+    indent_puts_go ("m4_define( [[YY_RULE_SETUP]], [[");
     indent_up_go ();
     if (bol_needed) {
 	indent_puts_go ("if yy.Leng > 0 {");
@@ -1892,9 +1892,15 @@ void make_tables_go (void)
 	indent_down_go ();
 	indent_puts_go ("}");
     }
-    indent_puts_go ("yy.UserAction(yy)");
+    indent_puts_go ("YY_USER_ACTION");
+    indent_puts_go ("yytext = yy.Text");
+    indent_puts_go ("yyleng = yy.Leng");
+    if (do_yylineno) {
+	indent_puts_go ("yylineno = yy.Lineno");
+	indent_puts_go ("yycolumn = yy.Column");
+    }
     indent_down_go ();
-    indent_puts_go ("}");
+    indent_puts_go ("]])");
 
     skelout ();		/* %% [7.0] - break point in skel */
 

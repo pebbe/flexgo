@@ -44,7 +44,7 @@ func main() {
 	fmt.Fprintln(fp)
 
 	for _, test := range tests {
-		fmt.Fprintf(fp, "\n%s.ok: %s %s %s ../src/flex\n", test.Name, test.Clex, test.Glex, test.Files)
+		fmt.Fprintf(fp, "\n%s.ok: %s %s %s ../src/flex Make.yaml\n", test.Name, test.Clex, test.Glex, test.Files)
 		fmt.Fprintf(fp, "\t../src/flex -d --noline %s -o %s-c.c %s\n", test.Opts, test.Name, test.Clex)
 		fmt.Fprintf(fp, "\tgcc -s -Wall -o %s-c %s-c.c\n", test.Name, test.Name)
 		fmt.Fprintf(fp, "\t./%s-c %s > %s-c.out 2> /dev/null\n", test.Name, test.Files, test.Name)

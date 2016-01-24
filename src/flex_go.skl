@@ -25,6 +25,8 @@ m4_define( [[yyless]], [[yy.Less($1)]])
 m4_define( [[yyinput]], [[yy.Input()]])
 m4_define( [[yyunput]], [[yy.Unput($1)]])
 
+m4_define( [[YY_USER_ACTION]], [[yy.UserAction(yy)]] )
+
 type Scanner struct {
 	In   io.Reader
 	Out  io.Writer
@@ -249,12 +251,13 @@ func (yy *Scanner) input(offset, maxRead int) int {
 
 // TODO: The bison pure parser, flex.skl line 1231-1250
 
-// [6.0] yy_RULE_SETUP definition goes here ----------------------------
-%% [6.0] yy_RULE_SETUP definition goes here
+/* [6.0] YY_RULE_SETUP definition goes here --------------------------*/
+%% [6.0] YY_RULE_SETUP definition goes here
 // SKEL ----------------------------------------------------------------
 
 // The main scanner function which does all the work.
 func (yy *Scanner) Lex() interface{} {
+
 	if !yy.init {
 		yy.init = true
 		if yy.In == nil {
@@ -265,6 +268,13 @@ func (yy *Scanner) Lex() interface{} {
 		}
 		yy.initBuffer(yy.In)
 		yy.loadBufferState()
+	}
+
+	var yytext []byte
+	var yyleng, yylineno, yycolumn int
+	yyout := yy.Out
+	if false {
+		fmt.Print(yytext, yyleng, yylineno, yycolumn, yyout)
 	}
 
 // [7.0] user's declarations go here -----------------------------------

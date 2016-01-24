@@ -13,7 +13,7 @@ import (
 
 %%
 
-fofo    { yy.Out.Write([]byte("[FOFO]"))
+fofo    { yyout.Write([]byte("[FOFO]"))
 	  yyless(2)
 	}
 

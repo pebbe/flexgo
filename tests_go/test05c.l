@@ -56,10 +56,9 @@ int yywrap()
 
 foo/bar	{
 		toggle = 1 - toggle;
-		if (toggle)
-			printf("FOO");
-		else
+		if (!toggle)
 			REJECT;
+		printf("FOO");
 	}
 
 }

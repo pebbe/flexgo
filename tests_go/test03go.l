@@ -21,12 +21,12 @@ var toggle = true
 
 %%
 
-^.	yy.Out.Write(bytes.ToUpper(yy.Text))
+^.	yyout.Write(bytes.ToUpper(yytext))
 
 foo/bar	{
 		toggle = !toggle
 		if (toggle) {
-			yy.Out.Write([]byte("FOO"))
+			yyout.Write([]byte("FOO"))
 		} else {
 			REJECT
 		}

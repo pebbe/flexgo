@@ -14,7 +14,7 @@ import (
 
 %%
 
-^.	{ fmt.Fprintf(yy.Out, "%4d.\t%s", yy.Lineno, strings.ToUpper(string(yy.Text))) }
+^.	{ fmt.Fprintf(yyout, "%4d.\t%s", yy.Lineno, strings.ToUpper(string(yytext))) }
 
 \n      ECHO // or yy.Lineno won't get updated
 

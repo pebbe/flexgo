@@ -15,7 +15,7 @@ import (
 
 %%
 
-^.	yy.Out.Write(bytes.ToUpper(yy.Text))
+^.	yyout.Write(bytes.ToUpper(yytext))
 
 %%
 
