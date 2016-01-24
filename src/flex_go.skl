@@ -25,8 +25,6 @@ m4_define( [[yyless]], [[yy.Less($1)]])
 m4_define( [[yyinput]], [[yy.Input()]])
 m4_define( [[yyunput]], [[yy.Unput($1)]])
 
-m4_define( [[YY_USER_ACTION]], [[yy.UserAction(yy)]] )
-
 type Scanner struct {
 	In   io.Reader
 	Out  io.Writer
@@ -41,7 +39,6 @@ type Scanner struct {
 	Wrap          func(*Scanner) bool
 	Unput         func(*Scanner, int, int)
 	IsInteractive func(io.Reader) bool
-	UserAction    func(*Scanner)
 
 	lastAcceptingState   int
 	lastAcceptingCpos    int
@@ -88,7 +85,6 @@ func NewScanner() *Scanner {
 		atBol:         1,
 		debug:         yyFlexDebug,
 		fillBuffer:    true,
-		UserAction:    func(yyy *Scanner) {},
 	}
 	return &yy
 }
