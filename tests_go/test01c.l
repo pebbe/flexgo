@@ -41,7 +41,10 @@ int yywrap()
 
 %%
 
-foo|bar if (!strcmp (yytext, "foo")) { printf("FOO"); } else { printf("BAR"); }
+foo     |
+
+bar     if (!strcmp (yytext, "foo")) { printf("FOO"); } else { printf("BAR"); }
+
 C	printf("Go");
 
 %%

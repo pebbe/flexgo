@@ -14,7 +14,10 @@ import (
 
 %%
 
-foo|bar	yyout.Write(bytes.ToUpper(yytext))
+foo     |
+
+bar	yyout.Write(bytes.ToUpper(yytext))
+
 C	yyout.Write([]byte("Go"))
 
 %%

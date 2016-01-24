@@ -222,6 +222,9 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 	if (pcont_act && rule_has_nl[num_rules - 1])
 		rule_has_nl[num_rules] = true;
 
+	if (Go && pcont_act)
+	    add_action("fallthrough\n");
+
 	snprintf (action_text, sizeof(action_text), "case %d:\n", num_rules);
 	add_action (action_text);
 	if (rule_has_nl[num_rules]) {
