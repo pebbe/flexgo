@@ -48,7 +48,7 @@ int yywrap()
 
 <INITIAL>{
 
-"\""    { printf("<<");
+\"      { printf("<<");
           BEGIN _str;
         }
 
@@ -67,11 +67,11 @@ foo/bar	{
 
 [^\"\\]+  ECHO;
 
-"\""    { printf(">>");
+\\.	printf("%c", yytext[1]);
+
+\"      { printf(">>");
           BEGIN INITIAL;
         }
-
-\\.	printf("%c", yytext[1]);
 
 <<EOF>>	{
 	  printf("Closing quote is missing\n");

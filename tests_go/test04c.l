@@ -12,9 +12,6 @@
 #endif
 
 int
-    toggle = 1;
-
-int
     g_argc = 0;
 char
     **g_argv;

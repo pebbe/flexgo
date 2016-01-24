@@ -12,7 +12,6 @@ import (
 
 }
 
-
 %%
 
 ^.	yyout.Write(bytes.ToUpper(yytext))

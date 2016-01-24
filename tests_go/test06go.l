@@ -17,7 +17,6 @@ fofo    { yyout.Write([]byte("[FOFO]"))
 	  yyless(2)
 	}
 
-
 %%
 
 func main() {

@@ -12,13 +12,6 @@ import (
 
 }
 
-%{
-
-var toggle = true
-
-%}
-
-
 %%
 
 foo/bar		{

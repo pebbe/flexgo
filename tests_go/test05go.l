@@ -24,7 +24,7 @@ var toggle = true
 
 <INITIAL>{
 
-"\""    {
+\"    {
 		yyout.Write([]byte("<<"))
 		BEGIN _str
         }
@@ -45,12 +45,12 @@ foo/bar	{
 
 [^\"\\]+  ECHO
 
-"\""    {
+\\.	yyout.Write(yytext[1:])
+
+\"      {
 		yyout.Write([]byte(">>"))
 		BEGIN INITIAL
         }
-
-\\.	yyout.Write(yytext[1:])
 
 <<EOF>> yyterminate(fmt.Errorf("Closing quote is missing"))
 

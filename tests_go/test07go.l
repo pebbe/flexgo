@@ -18,7 +18,6 @@ import (
 
 \n      ECHO // or yy.Lineno won't get updated
 
-
 %%
 
 func main() {
