@@ -138,7 +138,7 @@ goal		:  initlex sect1 sect1end sect2 initforrule
 				add_action(
 				"YY_FATAL_ERROR( \"flex scanner jammed\" )" );
 			else
-			    add_action( Go ? "yy.Echo()" : "ECHO" );
+			    add_action( "ECHO" );
 
 			add_action( Go ? "\n" : ";\n\tYY_BREAK\n" );
 			}
@@ -148,7 +148,7 @@ initlex		:
 			{ /* initialize for processing rules */
 
 			/* Create default DFA start condition. */
-			    scinstal( Go ? "Initial" : "INITIAL", false );
+			    scinstal( "INITIAL", false );
 			}
 		;
 
@@ -968,9 +968,9 @@ void build_eof_action()
 			sceof[scon_stk[i]] = true;
 
 			if (previous_continued_action /* && previous action was regular */)
-			    add_action(Go ? "yy.RuleSetup()\n" : "YY_RULE_SETUP\n");
+			    add_action("YY_RULE_SETUP\n");
 
-			snprintf( action_text, sizeof(action_text), Go ? "case yyStateEOF(%s):\n" : "case YY_STATE_EOF(%s):\n",
+			snprintf( action_text, sizeof(action_text), "case YY_STATE_EOF(%s):\n",
 				scname[scon_stk[i]] );
 			add_action( action_text );
 			}

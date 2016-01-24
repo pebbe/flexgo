@@ -13,13 +13,13 @@ Keywords: flex, lex, go, golang
  * ~~trailing context~~
  * ~~pattern with EOF~~
  * ~~yy.Wrap()~~
- * ~~yy.Reject()~~
- * ~~yy.Reject() with trailing context~~
- * ~~yy.Begin(state)~~
- * ~~yy.Less(n)~~
- * yy.More()
- * yy.Unput(c)
- * yy.Input()
+ * ~~REJECT~~
+ * ~~REJECT with trailing context~~
+ * ~~BEGIN(state)~~
+ * ~~yyless(n)~~
+ * yymore()
+ * yyunput(c)
+ * yyinput()
  * yy.UserAction()
  * ~~--yylineno~~
  * non-default table compression
@@ -30,68 +30,14 @@ Keywords: flex, lex, go, golang
 
 ### Functions and variables
 
-C macro's are replaced by functions, sometimes with different behaviour.
-
-    C               Go                        Go type
-    ---------------------------------------------------
-    yyin            yy.In                      io.Reader
-    yyout           yy.Out                     io.Writer
-	yytext          yy.Text                    []byte
-    yylex()         yy.Lex()  
-	yyterminate()   yy.Terminate(interface{})
-    REJECT          yy.Reject()
-    BEGIN s         yy.Begin(s)
-
-### yy.Reject()
-
-In C output, `REJECT` is a macro that ends with a `goto` statement. In
-Go output, `yy.Reject()` is a function that sets a flag variable.
-
-Example in C:
-
-    pattern    {
-                   if (foo) {
-                       REJECT;
-                   }
-                   bar();
-               }
-               
-To get the same behaviour in Go, the `bar()` must be after an else, or
-it will always be called:
-
-    pattern    {
-                   if foo {
-                       yy.Reject()
-                   } else {
-                       bar()
-                   }
-               }       
-
-### yy.Terminate(return_value)
-
-In C output, `yyterminate()` is a macro that ends with a `return` statement. In
-Go output, `yy.Terminate(return_value)` is a function that sets a flag
-variable. The type of `return_value` is `interface{}`.
-
-Example in C:
-
-    pattern    {
-                   if (foo) {
-                       yyterminate();
-                   }
-                   bar();
-               }
-               
-To get the same behaviour in Go, the `bar()` must be after an else, or
-it will always be called:
-
-    pattern    {
-                   if foo {
-                       yy.Terminate(return_value)
-                   } else {
-                       bar()
-                   }
-               }       
+        C                  Go
+    -----------------------------------------------
+        yyin               yy.In    io.Reader
+        yyout              yy.Out   io.Writer
+        yytext             yy.Text  []byte
+		yyleng             yy.Leng
+    int yylex()            yy.Lex() interface()
+        yyterminate(int)   yyterminate(interface{})
 
 ### yy.Wrap()
 

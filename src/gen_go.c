@@ -520,12 +520,10 @@ void gen_find_action_go (void)
 {
     if (fullspd) {
 	indent_puts_go ("yy.act = yy.currentState[-1].yy_nxt");
-	indent_puts_go ("findRule: // not actually used");
     }
 
     else if (fulltbl) {
 	indent_puts_go ("yy.act = int(yyAccept[yy.currentState])");
-	indent_puts_go ("findRule: // not actually used");
     }
 
     else if (reject) {
@@ -640,7 +638,6 @@ void gen_find_action_go (void)
 	    indent_down_go ();
 	    indent_puts_go ("}");
 	}
-	indent_puts_go ("findRule: // not actually used");
     }
 }
 
@@ -1773,7 +1770,7 @@ void make_tables_go (void)
 		     (unsigned int) YY_TRAILING_HEAD_MASK);
 	}
 
-	outn ("func (yy *Scanner) Reject() {");
+	outn ("m4_define( [[REJECT]], [[");
        	outn ("yy.chBuf[yy.cp] = yy.holdChar // undo effects of setting up yytext");
 	outn ("yy.cp = yy.fullMatch          // restore poss. backed-over text");
 
@@ -1784,8 +1781,8 @@ void make_tables_go (void)
 	}
 
        	outn ("yy.lp++");
-       	outn ("yy.rejected = true");
-	outn ("}");
+       	outn ("goto findRule");
+	outn ("]])");
 
 	outn ("]])\n");
     }
@@ -2024,7 +2021,7 @@ void make_tables_go (void)
     if (did_eof_rule) {
 	out (":\n");
 	indent_up_go ();
-	indent_puts_go ("yy.Terminate(nil)");
+	indent_puts_go ("yyterminate(nil)");
 	indent_down_go ();
     }
 

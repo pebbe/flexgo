@@ -28,7 +28,7 @@ foo/bar	{
 		if (toggle) {
 			yy.Out.Write([]byte("FOO"))
 		} else {
-			yy.Reject();
+			REJECT
 		}
 	}
 

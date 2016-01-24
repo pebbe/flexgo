@@ -26,7 +26,7 @@ var toggle = true
 
 "\""    {
 		yy.Out.Write([]byte("<<"))
-		yy.Begin(_str)
+		BEGIN _str
         }
 
 ^.	yy.Out.Write(bytes.ToUpper(yy.Text))
@@ -36,7 +36,7 @@ foo/bar	{
 		if toggle {
 			yy.Out.Write(bytes.ToUpper(yy.Text))
 		} else {
-			yy.Reject()
+			REJECT
 		}
 	}
 
@@ -44,16 +44,16 @@ foo/bar	{
 
 <_str>{
 
-[^\"\\]+  yy.Echo()
+[^\"\\]+  ECHO
 
 "\""    {
 		yy.Out.Write([]byte(">>"))
-		yy.Begin(Initial)
+		BEGIN INITIAL
         }
 
 \\.	yy.Out.Write(yy.Text[1:])
 
-<<EOF>> yy.Terminate(fmt.Errorf("Closing quote is missing"))
+<<EOF>> yyterminate(fmt.Errorf("Closing quote is missing"))
 
 }
 

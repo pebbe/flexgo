@@ -85,11 +85,6 @@ extern const char *escaped_qstart, *escaped_qend;
 	if ( all_upper( str ) ) \
 		reject = true;
 
-#define CHECK_REJECT_GO(str) \
-    if ( ! strcmp (str, "yy.Reject") ) \
-	reject = true;
-
-
 #define CHECK_YYMORE(str) \
 	if ( all_lower( str ) ) \
 		yymore_used = true;
@@ -882,10 +877,6 @@ nmstr[yyleng - 2 - end_is_ws] = '\0';  /* chop trailing brace */
 			ACTION_ECHO;
 			CHECK_REJECT(yytext);
 			}
-                "yy.reject" {
-			ACTION_ECHO;
-			CHECK_REJECT_GO(yytext);
-                        }
 		"yymore"	{
 			ACTION_ECHO;
 			CHECK_YYMORE(yytext);

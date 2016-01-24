@@ -14,7 +14,7 @@ import (
 %%
 
 fofo    { yy.Out.Write([]byte("[FOFO]"))
-	  yy.Less(2)
+	  yyless(2)
 	}
 
 
