@@ -1515,7 +1515,6 @@ void indent_puts_go (const char *str)
 void make_tables_go (void)
 {
     int i;
-    int did_eof_rule = false;
     struct yytbl_data *yynultrans_tbl = NULL;
 
 
@@ -2017,19 +2016,12 @@ void make_tables_go (void)
     /* generate cases for any missing EOF rules */
     for (i = 1; i <= lastsc; ++i)
 	if (!sceof[i]) {
-	    if ( ! did_eof_rule )
-		do_indent_go ();
-	    out_str (did_eof_rule ? ", yyStateEOF(%s)" : "case yyStateEOF(%s)", scname[i]);
-	    did_eof_rule = true;
+	    do_indent_go ();
+	    out_str ("case yyStateEOF(%s):\n", scname[i]);
+	    indent_up_go ();
+	    indent_puts_go ("yyterminate(nil)");
+	    indent_down_go ();
 	}
-
-    if (did_eof_rule) {
-	out (":\n");
-	indent_up_go ();
-	indent_puts_go ("yyterminate(nil)");
-	indent_down_go ();
-    }
-
 
     /* Generate code for handling NUL's, if needed. */
 

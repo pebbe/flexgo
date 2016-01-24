@@ -20,7 +20,7 @@ Keywords: flex, lex, go, golang
  * yymore()
  * yyunput(c)
  * yyinput()
- * yy.UserAction()
+ * `YY_USER_ACTION`
  * ~~--yylineno~~
  * non-default table compression
  * other functions, like yy.Restart(), ~~multiple buffers~~, etc...
@@ -36,7 +36,7 @@ Keywords: flex, lex, go, golang
         yyout              yy.Out   io.Writer
         yytext             yy.Text  []byte
         yyleng             yy.Leng
-    int yylex()            yy.Lex() interface()
+    int yylex(void)        yy.Lex() interface()
         yyterminate(int)   yyterminate(interface{})
 
 Inside `yy.Lex()`, the usual names like `yyin`, `yyout`, `yytext`, and
