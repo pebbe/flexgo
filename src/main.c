@@ -1632,8 +1632,8 @@ void readin ()
 	}
 
 	else if (Go) {
-	    outn (interactive ? "const defaultInteractive = true" :
-		  "const defaultInteractive = false");
+	    outn (interactive ? "const yyInteractiveDefault = true" :
+		  "const yyInteractiveDefault = false");
 	}
 
 	else  {

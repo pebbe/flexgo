@@ -878,11 +878,11 @@ void gen_next_state_go (int worry_about_NULs)
     if (worry_about_NULs && !nultrans) {
 	if (useecs)
 	    snprintf (char_map, sizeof(char_map),
-		      "ifelse(yy.chBuf[yy.cp] != 0, int(yyEc[yy.chBuf[yy.cp]]), %d)",
+		      "yyIfElse(yy.chBuf[yy.cp] != 0, int(yyEc[yy.chBuf[yy.cp]]), %d)",
 		      NUL_ec);
 	else
             snprintf (char_map, sizeof(char_map),
-		      "ifelse(yy.chBuf[yy.cp] != 0, int(yy.chBuf[yy.cp]), %d)",
+		      "yyIfElse(yy.chBuf[yy.cp] != 0, int(yy.chBuf[yy.cp]), %d)",
 		      NUL_ec);
     }
 
@@ -1937,14 +1937,14 @@ void make_tables_go (void)
     skelout ();		/* %% [11.0] - break point in skel */
     outn ("m4_ifdef( [[M4_YY_USE_LINENO]],[[");
     indent_puts_go
-	("if yy.act != yy_END_OF_BUFFER && yy_rule_can_match_eol[yy.act] != 0 {");
+	("if yy.act != yyEndOfBuffer && yy_rule_can_match_eol[yy.act] != 0 {");
     indent_up_go ();
     do_indent_go ();
-    out_str ("for yyl := %s; yyl < yyleng; yyl++ {\n",
+    out_str ("for yyl := %s; yyl < yy.Leng; yyl++ {\n",
 	     yymore_used ? (yytext_is_array ? "yy_prev_more_offset" :
 			    "yy_more_len") : "0");
     indent_up_go ();
-    indent_puts_go ("if yytext[yyl] == '\\n' {");
+    indent_puts_go ("if yy.Text[yyl] == '\\n' {");
     indent_up_go ();
     indent_puts_go ("M4_YY_INCR_LINENO");
     indent_down_go ();
@@ -2091,10 +2091,11 @@ void make_tables_go (void)
     }
 
     else if (do_yylineno) {
-	indent_puts_go ("if ( c == '\\n' )");
+	indent_puts_go ("if  c == '\\n' {");
 	indent_up_go ();
 	indent_puts_go ("M4_YY_INCR_LINENO();");
 	indent_down_go ();
+	indent_puts_go ("}");
     }
 
     skelout ();

@@ -20,7 +20,8 @@ Keywords: flex, lex, go, golang
  * yy.More()
  * yy.Unput(c)
  * yy.Input()
- * --yylineno
+ * yy.UserAction()
+ * ~~--yylineno~~
  * non-default table compression
  * other functions, like yy.Restart(), ~~multiple buffers~~, etc...
  * copy and modify all tests from subdirectory `tests` to work with `flexgo`

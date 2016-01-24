@@ -10,20 +10,26 @@ m4_changecom
 m4_changequote
 m4_changequote([[, ]])
 
+m4_define( [[M4_YY_INCR_LINENO]],
+[[
+    yy.Lineno++
+    yy.Column = 0
+]])
+
 type Scanner struct {
 	In   io.Reader
 	Out  io.Writer
 	Text []byte
 	Leng int
 
-	LineNo int
+	Lineno int
+	Column int
 
 	Filename string
 
 	Wrap          func(*Scanner) bool
 	Unput         func(*Scanner, int, int)
 	IsInteractive func(io.Reader) bool
-	UserInit      func(*Scanner)
 	UserAction    func(*Scanner)
 
 	lastAcceptingState   int
@@ -63,10 +69,10 @@ type Scanner struct {
 
 func NewScanner() *Scanner {
 	yy := Scanner{
-		LineNo:        1,
+		Lineno:        1,
 		Wrap:          func(yyy *Scanner) bool { return true },
 		Unput:         unputDefault,
-		IsInteractive: func(file io.Reader) bool { return defaultInteractive },
+		IsInteractive: func(file io.Reader) bool { return yyInteractiveDefault },
 		bufSize:       yyBufSize,
 		chBuf:         make([]byte, yyBufSize+2),
 		start:         1,
@@ -118,24 +124,24 @@ const (
 
 m4_ifdef( [[M4_YY_USE_LINENO]],
 [[
-func (yy *Scanner) lessLineNo(n int) {
+func (yy *Scanner) lessLineno(n int) {
 	for yyl := n; yyl < yy.Leng; yyl++ {
 		if yy.Text[yyl] == '\n' {
-			yy.LineNo--
+			yy.Lineno--
 		}
 	}
 }
 
-func (yy *Scanner) linenoRewindTo(ptr int) {
+func (yy *Scanner) linenoRewindTo(dst int) {
 	for p := yy.cp - 1; p >= dst; p-- {
-		if yy_chBuf[p] == '\n' {
+		if yy.chBuf[p] == '\n' {
 			yy.Lineno--
 		}
 	}
 }
 ]],
 [[
-func (yy *Scanner) lessLineNo(n int) {}
+func (yy *Scanner) lessLineno(n int) {}
 
 func (yy *Scanner) linenoRewindTo(ptr int) {}
 ]])
@@ -143,7 +149,7 @@ func (yy *Scanner) linenoRewindTo(ptr int) {}
 func (yy *Scanner) Less(n int) {
 	// Undo effects of setting up yytext.
 	yyless_macro_arg := n
-	yy.lessLineNo(yyless_macro_arg)
+	yy.lessLineno(yyless_macro_arg)
 	yy.chBuf[yy.cBufP] = yy.holdChar
 	yy.restoreYyMoreOffset()
 	yy.cp = yy.bp + yyless_macro_arg - yy.moreAdj()
@@ -595,14 +601,16 @@ func unputDefault(yy *Scanner, c int, yy_bp int) {
 
 }
 
-func Input() int {
+func (yy *Scanner) Input() byte {
 //TODO: input(), flex.skl line 1924-1998
+
+	var c byte
 
 // [19.0] update BOL and yylineno --------------------------------------
 %% [19.0] update BOL and yylineno
 // SKEL ----------------------------------------------------------------
 
-	return 0
+	return c
 }
 
 /** Immediately switch to a different input stream.
@@ -662,7 +670,7 @@ func (yy *Scanner) flushBuffer() {
 	yy.loadBufferState()
 }
 
-func ifelse(b bool, i1, i2 int) int {
+func yyIfElse(b bool, i1, i2 int) int {
 	if b {
 		return i1
 	}
