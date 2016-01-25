@@ -18,7 +18,6 @@ m4_define( [[BEGIN]], [[yy.start = 1 + 2*]] )
 m4_define( [[ECHO]], [[yy.Echo()]] )
 m4_define( [[REJECT]], [[yy.Reject()]] )
 m4_define( [[yyterminate]], [[return $1]] )
-m4_define( [[yymore]], [[yy.More()]] )
 m4_define( [[yyless]], [[yy.Less($1)]] )
 m4_define( [[yyinput]], [[yy.Input()]] )
 m4_define( [[yyunput]], [[yy.Unput($1)]] )
@@ -59,6 +58,8 @@ type Scanner struct {
 	textPtr              int
 	nChars               int
 	init                 bool
+	moreFlag             bool
+    moreLen              int
 
 	// buffer
 	inputFile    io.Reader
@@ -122,17 +123,6 @@ func (yy *Scanner) linenoRewindTo(dst int) {
 }
 ]])
 
-func (yy *Scanner) Less(n int) {
-	// Undo effects of setting up yytext.
-	yyless_macro_arg := n
-	m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yyless_macro_arg)]])
-	yy.chBuf[yy.cBufP] = yy.holdChar
-	yy.restoreYyMoreOffset()
-	yy.cp = yy.bp + yyless_macro_arg - yy.moreAdj()
-	yy.cBufP = yy.cp
-	yy.doBeforeAction()
-}
-
 const (
 	yyBufferNew        = 0
 	yyBufferNormal     = 1
@@ -150,11 +140,10 @@ const (
 func (yy *Scanner) doBeforeAction() {
 	yy.textPtr = yy.bp
 
-// [2.0] code to fiddle yytext and yyleng for yymore() goes here -------
-%% [2.0] code to fiddle yytext and yyleng for yymore() goes here
+// [2.0] code to fiddle yytext and yyleng for yy''more() goes here -------
+%% [2.0] code to fiddle yytext and yyleng for yy''more() goes here
 // SKEL ----------------------------------------------------------------
 
-	yy.Leng = yy.cp - yy.bp
 	yy.holdChar = yy.chBuf[yy.cp]
 	yy.chBuf[yy.cp] = 0
 
@@ -163,7 +152,7 @@ func (yy *Scanner) doBeforeAction() {
 // SKEL ----------------------------------------------------------------
 
 	yy.cBufP = yy.cp
-	yy.Text = yy.chBuf[yy.bp:yy.cp]
+	yy.Text = yy.chBuf[yy.textPtr:yy.cp]
 }
 
 // [4.0] data tables for the DFA go here -------------------------------
@@ -228,6 +217,17 @@ func (yy *Scanner) input(offset, maxRead int) int {
 %% [6.0] YY_RULE_SETUP definition goes here
 // SKEL ----------------------------------------------------------------
 
+func (yy *Scanner) Less(n int) {
+	// Undo effects of setting up yytext.
+	yyless_macro_arg := n
+	m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yyless_macro_arg)]])
+	yy.chBuf[yy.cBufP] = yy.holdChar
+	YY_RESTORE_YY_MORE_OFFSET
+	yy.cp = yy.bp + yyless_macro_arg - YY_MORE_ADJ
+	yy.cBufP = yy.cp
+	yy.doBeforeAction()
+}
+
 // The main scanner function which does all the work.
 func (yy *Scanner) Lex() YYtype {
 
@@ -257,8 +257,8 @@ func (yy *Scanner) Lex() YYtype {
 
 	for { // loops until end-of-file is reached
 
-// [8.0] yymore()-related code goes here -------------------------------
-%% [8.0] yymore()-related code goes here
+// [8.0] yy''more-related code goes here -------------------------------
+%% [8.0] yy''more-related code goes here
 // SKEL ----------------------------------------------------------------
 
 		yy.cp = yy.cBufP
@@ -304,7 +304,7 @@ func (yy *Scanner) Lex() YYtype {
 
 			/* Undo the effects of yy_DO_BEFORE_ACTION. */
 			yy.chBuf[yy.cp] = yy.holdChar
-			yy.restoreYyMoreOffset()
+			YY_RESTORE_YY_MORE_OFFSET
 
 			if yy.bufferStatus == yyBufferNew {
 				/* We're scanning a new file or input source.  It's
@@ -347,7 +347,7 @@ func (yy *Scanner) Lex() YYtype {
 
 				yyNextState = yy.tryNulTrans(yy.currentState)
 
-				yy.bp = yy.textPtr + yy.moreAdj()
+				yy.bp = yy.textPtr + YY_MORE_ADJ
 
 				if yyNextState != 0 {
 					/* Consume the NUL. */
@@ -379,7 +379,7 @@ func (yy *Scanner) Lex() YYtype {
 						// call the scanner after we return the
 						// yy_NULL, it'll still work - another
 						// yy_NULL will get returned.
-						yy.cBufP = yy.textPtr + yy.moreAdj()
+						yy.cBufP = yy.textPtr + YY_MORE_ADJ
 
 						yy.act = YY_STATE_EOF(YY_START)
 						goto doAction
@@ -394,7 +394,7 @@ func (yy *Scanner) Lex() YYtype {
 					yy.currentState = yy.getPreviousState()
 
 					yy.cp = yy.cBufP
-					yy.bp = yy.textPtr + yy.moreAdj()
+					yy.bp = yy.textPtr + YY_MORE_ADJ
 					goto yyMatch
 				case eobActLastMatch:
 					yy.cBufP = yy.nChars
@@ -402,7 +402,7 @@ func (yy *Scanner) Lex() YYtype {
 					yy.currentState = yy.getPreviousState()
 
 					yy.cp = yy.cBufP
-					yy.bp = yy.textPtr + yy.moreAdj()
+					yy.bp = yy.textPtr + YY_MORE_ADJ
 					goto yyFindAction
 				}
 			}
@@ -432,7 +432,7 @@ func (yy *Scanner) getNextBuffer() int {
 
 	if !yy.fillBuffer {
 		// Don't try to fill the buffer, so this is an EOF.
-		if yy.cBufP-yy.textPtr-yy.moreAdj() == 1 {
+		if yy.cBufP-yy.textPtr-YY_MORE_ADJ == 1 {
 			// We matched a single character, the EOB, so
 			// treat this as a final EOF.
 			return eobActEndOfFile
@@ -491,7 +491,7 @@ func (yy *Scanner) getNextBuffer() int {
 	}
 
 	if yy.nChars == 0 {
-		if numberToMove == yy.moreAdj() {
+		if numberToMove == YY_MORE_ADJ {
 			retval = eobActEndOfFile
 			yy.Restart(yy.In)
 		} else {
@@ -531,7 +531,7 @@ func (yy *Scanner) getPreviousState() int {
 %% [15.0] code to get the start state into yy_current_state goes here
 // SKEL ----------------------------------------------------------------
 
-	for yy.cp = yy.textPtr + yy.moreAdj(); yy.cp < yy.cBufP; yy.cp++ {
+	for yy.cp = yy.textPtr + YY_MORE_ADJ; yy.cp < yy.cBufP; yy.cp++ {
 
 // [16.0] code to find the next state goes here ------------------------
 %% [16.0] code to find the next state goes here

@@ -1451,6 +1451,7 @@ void flexinit (argc, argv)
 	    reentrant = false;
 	    C_plus_plus = false;
 	    csize = 256;
+	    yytext_is_array = false;
 	}
 
 	num_input_files = argc - optind;

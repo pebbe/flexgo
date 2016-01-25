@@ -17,9 +17,9 @@ Keywords: flex, lex, go, golang
  * ~~REJECT with trailing context~~
  * ~~BEGIN(state)~~
  * ~~yyless(n)~~
- * yymore()
- * yyunput(c)
+ * ~~yymore()~~
  * yyinput()
+ * yyunput(c)
  * ~~yy.UserData~~
  * ~~yy.UserAction~~
  * ~~--yylineno~~

@@ -39,3 +39,8 @@
   glex: test07go.l
   opts: -B --yylineno
   files: text1.txt text2.txt
+- name: test08
+  clex: test08c.l
+  glex: test08go.l
+  opts: -B --yylineno
+  files: text3.txt

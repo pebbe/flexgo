@@ -1525,16 +1525,14 @@ void make_tables_go (void)
      */
     set_indent_go (1);
 
-    /* TODO
-    if (yymore_used && !yytext_is_array) {
-	indent_puts_go ("YY_G(yytext_ptr) -= YY_G(yy_more_len); \\");
+    if (yymore_used) {
+	indent_puts_go ("yy.textPtr -= yy.moreLen");
 	indent_puts_go
-	    ("yyleng = (size_t) (yy_cp - YY_G(yytext_ptr)); \\");
+	    ("yy.Leng = yy.cp - yy.textPtr");
     }
 
     else
-	indent_puts_go ("yyleng = (size_t) (yy_cp - yy_bp); \\");
-    */
+	indent_puts_go ("yy.Leng = yy.cp - yy.bp");
 
     /* Now also deal with copying yytext_ptr to yytext if needed. */
     skelout ();		/* %% [3.0] - break point in skel */
@@ -1805,12 +1803,6 @@ void make_tables_go (void)
                     indent_puts_go ("static int yy_prev_more_offset = 0;");
                 }
 	    }
-	    else if (!reentrant) {
-		indent_puts_go
-		    ("static int yy_more_flag = 0;");
-		indent_puts_go
-		    ("static int yy_more_len = 0;");
-	    }
 	}
 
 	if (yytext_is_array) {
@@ -1830,10 +1822,11 @@ void make_tables_go (void)
 	}
 	else {
 	    indent_puts_go
-		("#define yymore() (YY_G(yy_more_flag) = 1)");
+		("m4_define( [[yymore]], [[yy.moreFlag = true]] )");
 	    indent_puts_go
-		("#define YY_MORE_ADJ YY_G(yy_more_len)");
-	    indent_puts_go ("#define YY_RESTORE_YY_MORE_OFFSET");
+		("m4_define( [[YY_MORE_ADJ]], [[yy.moreLen]] )");
+	    indent_puts_go
+		("m4_define( [[YY_RESTORE_YY_MORE_OFFSET]], [[]] )");
 	}
     }
 
@@ -1842,9 +1835,9 @@ void make_tables_go (void)
 	    indent_puts_go
 		("#define yymore() yymore_used_but_not_detected");
 	*/
-	indent_puts_go ("func (yy *Scanner) moreAdj() int { return 0 }");
+	indent_puts_go ("m4_define( [[YY_MORE_ADJ]], [[0]] )");
 	indent_puts_go ("");
-	indent_puts_go ("func (yy *Scanner) restoreYyMoreOffset() {}");
+	indent_puts_go ("m4_define( [[YY_RESTORE_YY_MORE_OFFSET]], [[]] )");
     }
 
     if (!C_plus_plus) {
@@ -1915,16 +1908,15 @@ void make_tables_go (void)
 
     set_indent_go (2);
 
-    if (yymore_used && !yytext_is_array) {
-	indent_puts_go ("YY_G(yy_more_len) = 0;");
-	indent_puts_go ("if ( YY_G(yy_more_flag) )");
+    if (yymore_used) {
+	indent_puts_go ("yy.moreLen = 0");
+	indent_puts_go ("if yy.moreFlag {");
 	indent_up_go ();
-	indent_puts_go ("{");
 	indent_puts_go
-	    ("YY_G(yy_more_len) = YY_G(yy_c_buf_p) - YY_G(yytext_ptr);");
-	indent_puts_go ("YY_G(yy_more_flag) = 0;");
-	indent_puts_go ("}");
+	    ("yy.moreLen = yy.cBufP - yy.textPtr");
+	indent_puts_go ("yy.moreFlag = false");
 	indent_down_go ();
+	indent_puts_go ("}");
     }
 
     skelout ();		/* %% [9.0] - break point in skel */
@@ -1947,7 +1939,7 @@ void make_tables_go (void)
     do_indent_go ();
     out_str ("for yyl := %s; yyl < yy.Leng; yyl++ {\n",
 	     yymore_used ? (yytext_is_array ? "yy_prev_more_offset" :
-			    "yy_more_len") : "0");
+			    "yy.moreLen") : "0");
     indent_up_go ();
     indent_puts_go ("if yy.Text[yyl] == '\\n' {");
     indent_up_go ();
