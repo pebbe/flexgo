@@ -42,7 +42,9 @@ int yywrap()
 
 %%
 
-^.	printf("%c", yytext[0] - ((yytext[0] >= 'a' && yytext[0] <= 'z') ? 32 : 0));
+^.	fprintf(yyout, "%4i.\t%c", yylineno, yytext[0] - ((yytext[0] >= 'a' && yytext[0] <= 'z') ? 32 : 0));
+
+.|\n    ECHO; /* or yylineno won't get updated */
 
 %%
 

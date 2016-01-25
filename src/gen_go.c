@@ -1745,7 +1745,7 @@ void make_tables_go (void)
 
     if (ddebug) {		/* Spit out table mapping rules to line numbers. */
 	out_str_dec (long_align ? get_int32_decl_go () :
-		     get_int16_decl_go (), "yy_rule_linenum",
+		     get_int16_decl_go (), "yyRuleLinenum",
 		     num_rules);
 	for (i = 1; i < num_rules; ++i)
 	    mkdata (rule_linenum[i]);
@@ -1962,7 +1962,7 @@ void make_tables_go (void)
 
     skelout ();		/* %% [12.0] - break point in skel */
     if (ddebug) {
-	indent_puts_go ("if yy_flex_debug {");
+	indent_puts_go ("if yyFlexDebug {");
 	indent_up_go ();
 
 	indent_puts_go ("if yy.act == 0 {");
@@ -1975,7 +1975,7 @@ void make_tables_go (void)
 	indent_up_go ();
 
 	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting rule at line %d (%q)\\n\",");
-	indent_puts_go ("         yy_rule_linenum[yy.act], yytext)");
+	indent_puts_go ("         yyRuleLinenum[yy.act], yy.Text)");
 
 	indent_down_go ();
 
@@ -1983,7 +1983,7 @@ void make_tables_go (void)
 	out_dec ("} else if yy.act == %d {\n", num_rules);
 	indent_up_go ();
 
-	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yytext)");
+	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yy.Text)");
 
 	indent_down_go ();
 
@@ -2000,7 +2000,7 @@ void make_tables_go (void)
 	indent_up_go ();
 
 	indent_puts_go
-	    ("fmt.Fprintf(os.Stderr, \"--EOF (start condition %d)\\n\", yy_START())");
+	    ("fmt.Fprintf(os.Stderr, \"--EOF (start condition %d)\\n\", YY_START)");
 
 	indent_down_go ();
 	indent_puts_go ("}");
@@ -2021,7 +2021,7 @@ void make_tables_go (void)
     for (i = 1; i <= lastsc; ++i)
 	if (!sceof[i]) {
 	    do_indent_go ();
-	    out_str ("case yyStateEOF(%s):\n", scname[i]);
+	    out_str ("case YY_STATE_EOF(%s):\n", scname[i]);
 	    indent_up_go ();
 	    indent_puts_go ("yyterminate(YYnull)");
 	    indent_down_go ();

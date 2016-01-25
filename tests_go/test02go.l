@@ -20,7 +20,9 @@ var YYnull YYtype = nil
 
 %%
 
-^.	yyout.Write(bytes.ToUpper(yytext))
+^.	fmt.Fprintf(yyout, "%4d.\t%c", yylineno, bytes.ToUpper(yytext)[0])
+
+.|\n    ECHO // or yylineno won't get updated
 
 %%
 

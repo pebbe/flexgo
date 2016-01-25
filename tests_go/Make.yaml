@@ -13,7 +13,7 @@
   clex: test02c.l
   glex: test02go.l
   opts: -B --yylineno
-  files: text1.txt text2.txt text3.txt text4.txt
+  files: text1.txt text2.txt
 - name: test03
   clex: test03c.l
   glex: test03go.l
