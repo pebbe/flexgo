@@ -18,29 +18,42 @@ Keywords: flex, lex, go, golang
  * ~~BEGIN(state)~~
  * ~~yyless(n)~~
  * ~~yymore()~~
- * ~~yyinput()~~
- * ~~yyunput(c)~~
+ * ~~yy.Input()~~
+ * ~~yy.Unput(c)~~
  * ~~yy.UserData~~
  * ~~yy.UserAction~~
  * ~~--yylineno~~
  * non-default table compression
- * other functions, like yy.Restart(), ~~multiple buffers~~, etc...
  * copy and modify all tests from subdirectory `tests` to work with `flexgo`
+
+## Not implemented
+
+Multiple buffers are not supported. If you want to switch input sources
+temporarily, just start another scanner. There are no global variables.
+
+Ignored options:
+
+ * --7bit
+ * --array
+ * --c++
+ * --reentrant
 
 ## Difference between C output and Go output
 
 ### Functions and variables
 
         C                  Go
-    -----------------------------------------------
+    ------------------------------------------------------------
         yyin               yy.In    io.Reader
         yyout              yy.Out   io.Writer
         yytext             yy.Text  []byte
         yyleng             yy.Leng
     int yylex(void)        yy.Lex() interface()
         yyterminate(int)   yyterminate(interface{})
-        input()            yyinput() (byte, error)
-        unput(c)           yyunput(c)
+        input()            yy.Input() (byte, error)
+        unput(c)           yy.Unput(c)
+        YY_USER_ACTION     yy.UserAction() // can be assigned to
+		                   yy.UserData
 
 Inside actions, the names `yyout`, `yytext`, and `yyleng` are also
 available.

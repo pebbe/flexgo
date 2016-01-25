@@ -26,7 +26,7 @@ foo     {
 
 bar     {
           ECHO
-          c, err := yyinput()
+          c, err := yy.Input()
 	  if err != nil {
 	      log.Fatalln(err)
 	  }
@@ -39,12 +39,12 @@ bar     {
        }
 
 baz    {
-	 yycopy := string(yytext) // Copy yytext because yyunput() trashes yytext
-         yyunput('>')
+	 yycopy := string(yytext) // Copy yytext because yy.Unput() trashes yytext
+         yy.Unput('>')
          for i := yyleng - 1; i >= 0; i-- {
-             yyunput(yycopy[i])
+             yy.Unput(yycopy[i])
          }
-         yyunput('<')
+         yy.Unput('<')
        }
 
 
