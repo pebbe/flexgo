@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define YY_NO_UNPUT
 #define YY_SKIP_YYWRAP
 #ifdef yywrap
 #  undef yywrap
@@ -49,6 +48,22 @@ bar     {
           int c = input();
           fprintf(yyout, "%c%c%c", c, c, c);
         }
+
+\<baz\> {
+          ECHO;
+          ECHO;
+        }
+
+baz    {
+         int i;
+         /* Copy yytext because unput() trashes yytext */
+         char *yycopy = strdup( yytext );
+         unput( '>' );
+         for ( i = yyleng - 1; i >= 0; --i )
+             unput( yycopy[i] );
+         unput( '<' );
+         free( yycopy );
+       }
 
 %%
 

@@ -36,7 +36,6 @@ type Scanner struct {
 	UserData      interface{}
 	UserAction    func(*Scanner)
 	Wrap          func(*Scanner) bool
-	Unput         func(*Scanner, int, int)
 	IsInteractive func(io.Reader) bool
 
 	lastAcceptingState   int
@@ -77,7 +76,6 @@ func NewScanner() *Scanner {
 	yy := Scanner{
 		m4_ifdef( [[M4_YY_USE_LINENO]], [[Lineno: 1,]])
 		Wrap:          func(yyy *Scanner) bool { return true },
-		Unput:         unputDefault,
 		IsInteractive: func(file io.Reader) bool { return yyInteractiveDefault },
 		bufSize:       yyBufSize,
 		chBuf:         make([]byte, yyBufSize+2),
@@ -572,16 +570,57 @@ func (yy *Scanner) tryNulTrans(yyCurrentState int) int {
 	return newCurrentState
 }
 
-func unputDefault(yy *Scanner, c int, yy_bp int) {
-// TODO: flex.skel line 1861-1917
+m4_ifdef( [[M4_YY_NO_UNPUT]],,[[
+func (yy *Scanner) Unput(c byte) {
+
+	yy_bp := yy.textPtr
+    yy_cp := yy.cBufP
+
+	// undo effects of setting up yytext
+	yy.chBuf[yy_cp] = yy.holdChar
+
+	if yy_cp < 2 {
+		// need to shift things up to make room
+		// +2 for EOB chars.
+
+		for yy.nChars + 2 < yy.bufSize {
+			yy.chBuf = append(yy.chBuf, yyEndOfBufferChar)
+			yy.bufSize++
+		}
+
+		numberToMove := yy.nChars + 2
+		moveTo := yy.bufSize + 2 - numberToMove
+		copy(yy.chBuf[moveTo:], yy.chBuf[:numberToMove])
+
+		yy_cp += moveTo
+		yy_bp += moveTo
+
+		yy.nChars += numberToMove
+		yy.bufNChars += numberToMove
+	}
+
+	yy_cp--
+	yy.chBuf[yy_cp] = c
+
 
 // [18.0] update yylineno here -----------------------------------------
 %% [18.0] update yylineno here
 // SKEL ----------------------------------------------------------------
+m4_ifdef( [[M4_YY_USE_LINENO]],
+[[
+    if c == '\n' {
+        yy.Lineno--
+    }
+]])
 
+	yy.textPtr = yy_bp
+	yy.holdChar = yy.chBuf[yy_cp]
+	yy.cBufP = yy_cp
 }
+]])
 
-func (yy *Scanner) Input() byte {
+
+func (yy *Scanner) Input() (byte, error) {
 
 	yy.chBuf[yy.cBufP] = yy.holdChar
 
@@ -616,7 +655,7 @@ func (yy *Scanner) Input() byte {
 
 			case eobActEndOfFile:
 				if yy.Wrap(yy) {
-					return 0
+					return 0, io.EOF
 				}
 
 				if !yy.didBufferSwitchOnEof {
@@ -640,7 +679,7 @@ func (yy *Scanner) Input() byte {
 %% [19.0] update BOL and yylineno
 // SKEL ----------------------------------------------------------------
 
-	return c
+return c, nil
 }
 
 /** Immediately switch to a different input stream.

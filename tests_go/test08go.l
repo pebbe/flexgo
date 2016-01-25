@@ -26,9 +26,27 @@ foo     {
 
 bar     {
           ECHO
-          c := yyinput()
+          c, err := yyinput()
+	  if err != nil {
+	      log.Fatalln(err)
+	  }
           yyout.Write([]byte{c,c,c})
         }
+
+\<baz\> {
+          ECHO
+          ECHO
+       }
+
+baz    {
+	 yycopy := string(yytext) // Copy yytext because yyunput() trashes yytext
+         yyunput('>')
+         for i := yyleng - 1; i >= 0; i-- {
+             yyunput(yycopy[i])
+         }
+         yyunput('<')
+       }
+
 
 %%
 

@@ -19,7 +19,7 @@ Keywords: flex, lex, go, golang
  * ~~yyless(n)~~
  * ~~yymore()~~
  * ~~yyinput()~~
- * yyunput(c)
+ * ~~yyunput(c)~~
  * ~~yy.UserData~~
  * ~~yy.UserAction~~
  * ~~--yylineno~~
@@ -39,9 +39,10 @@ Keywords: flex, lex, go, golang
         yyleng             yy.Leng
     int yylex(void)        yy.Lex() interface()
         yyterminate(int)   yyterminate(interface{})
-        input()            yyinput()
+        input()            yyinput() (byte, error)
+        unput(c)           yyunput(c)
 
-Inside actions, the usual names `yyout`, `yytext`, and `yyleng` are also
+Inside actions, the names `yyout`, `yytext`, and `yyleng` are also
 available.
 
 ### yy.Wrap()

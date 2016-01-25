@@ -1448,9 +1448,9 @@ void flexinit (argc, argv)
 
 	if (Go) {
 	    skel = skel_go;
+	    csize = 256;
 	    reentrant = false;
 	    C_plus_plus = false;
-	    csize = 256;
 	    yytext_is_array = false;
 	}
 
