@@ -52,7 +52,7 @@ Ignored options:
         yyterminate(int)   yyterminate(interface{})
         input()            yy.Input() (byte, error)
         unput(c)           yy.Unput(c)
-        YY_USER_ACTION     yy.UserAction() // can be assigned to
+        YY_USER_ACTION     yy.UserAction(yy) // can be assigned to
 		                   yy.UserData
 
 Inside actions, the names `yyout`, `yytext`, and `yyleng` are also
