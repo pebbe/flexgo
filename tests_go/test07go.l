@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+// return type of yy.Flex()
+type YYtype interface{}
+
+// returned on end of file
+var YYnull YYtype = nil
+
 }
 
 %%

@@ -20,7 +20,8 @@ Keywords: flex, lex, go, golang
  * yymore()
  * yyunput(c)
  * yyinput()
- * `YY_USER_ACTION`
+ * ~~yy.UserData~~
+ * ~~yy.UserAction~~
  * ~~--yylineno~~
  * non-default table compression
  * other functions, like yy.Restart(), ~~multiple buffers~~, etc...

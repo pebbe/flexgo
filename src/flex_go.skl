@@ -12,7 +12,6 @@ m4_changequote([[, ]])
 
 m4_define( [[M4_YY_INCR_LINENO]], [[
     yy.Lineno++
-    yy.Column = 0
 ]])
 m4_define( [[INITIAL]], [[yyInitial]])
 m4_define( [[BEGIN]], [[yy.start = 1 + 2*]])
@@ -30,12 +29,11 @@ type Scanner struct {
 	Out  io.Writer
 	Text []byte
 	Leng int
+	m4_ifdef( [[M4_YY_USE_LINENO]], [[Lineno int]])
 
-	Lineno int
-	Column int
-
-	Filename string
-
+	Filename      string
+	UserData      interface{}
+	UserAction    func(*Scanner)
 	Wrap          func(*Scanner) bool
 	Unput         func(*Scanner, int, int)
 	IsInteractive func(io.Reader) bool
@@ -74,7 +72,7 @@ type Scanner struct {
 
 func NewScanner() *Scanner {
 	yy := Scanner{
-		Lineno:        1,
+		m4_ifdef( [[M4_YY_USE_LINENO]], [[Lineno: 1,]])
 		Wrap:          func(yyy *Scanner) bool { return true },
 		Unput:         unputDefault,
 		IsInteractive: func(file io.Reader) bool { return yyInteractiveDefault },
@@ -88,9 +86,6 @@ func NewScanner() *Scanner {
 	}
 	return &yy
 }
-
-// Returned upon end-of-file. -- flex.skl line 267
-const yyNull = 0
 
 // Translate the current start state into a value that can be later handed
 // to Begin to return to the state.
@@ -138,17 +133,12 @@ func (yy *Scanner) linenoRewindTo(dst int) {
 		}
 	}
 }
-]],
-[[
-func (yy *Scanner) lessLineno(n int) {}
-
-func (yy *Scanner) linenoRewindTo(ptr int) {}
 ]])
 
 func (yy *Scanner) Less(n int) {
 	// Undo effects of setting up yytext.
 	yyless_macro_arg := n
-	yy.lessLineno(yyless_macro_arg)
+	m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yyless_macro_arg)]])
 	yy.chBuf[yy.cBufP] = yy.holdChar
 	yy.restoreYyMoreOffset()
 	yy.cp = yy.bp + yyless_macro_arg - yy.moreAdj()
@@ -252,7 +242,7 @@ func (yy *Scanner) input(offset, maxRead int) int {
 // SKEL ----------------------------------------------------------------
 
 // The main scanner function which does all the work.
-func (yy *Scanner) Lex() interface{} {
+func (yy *Scanner) Lex() YYtype {
 
 	if !yy.init {
 		yy.init = true
@@ -267,10 +257,11 @@ func (yy *Scanner) Lex() interface{} {
 	}
 
 	var yytext []byte
-	var yyleng, yylineno, yycolumn int
+	var yyleng int
+	m4_ifdef( [[M4_YY_USE_LINENO]], [[var yylineno int]])
 	yyout := yy.Out
 	if false {
-		fmt.Print(yytext, yyleng, yylineno, yycolumn, yyout)
+		fmt.Print(yytext, yyleng, yyout m4_ifdef( [[M4_YY_USE_LINENO]], [[, yylineno]]))
 	}
 
 // [7.0] user's declarations go here -----------------------------------

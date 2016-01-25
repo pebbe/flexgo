@@ -1891,11 +1891,15 @@ void make_tables_go (void)
 	indent_down_go ();
 	indent_puts_go ("}");
     }
+    indent_puts_go ("if yy.UserAction != nil {");
+    indent_up_go ();
+    indent_puts_go ("yy.UserAction(yy)");
+    indent_down_go ();
+    indent_puts_go ("}");
     indent_puts_go ("yytext = yy.Text");
     indent_puts_go ("yyleng = yy.Leng");
     if (do_yylineno) {
 	indent_puts_go ("yylineno = yy.Lineno");
-	indent_puts_go ("yycolumn = yy.Column");
     }
     indent_down_go ();
     indent_puts_go ("]])");
@@ -2019,7 +2023,7 @@ void make_tables_go (void)
 	    do_indent_go ();
 	    out_str ("case yyStateEOF(%s):\n", scname[i]);
 	    indent_up_go ();
-	    indent_puts_go ("yyterminate(nil)");
+	    indent_puts_go ("yyterminate(YYnull)");
 	    indent_down_go ();
 	}
 
