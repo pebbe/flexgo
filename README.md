@@ -25,6 +25,7 @@ Keywords: flex, lex, go, golang
  * ~~--yylineno~~
  * non-default table compression
  * copy and modify all tests from subdirectory `tests` to work with `flexgo`
+ * documentation
 
 ## Not implemented
 
