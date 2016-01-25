@@ -43,7 +43,7 @@ int yywrap()
 
 %%
 
-fofo    { printf("[FOFO]");
+fofo    { fprintf(yyout, "[FOFO]");
 	  yyless(2);
 	}
 

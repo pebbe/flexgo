@@ -49,8 +49,8 @@ char *upstring(char *s) {
 
 %%
 
-foo/bar		{ printf("%sB", upstring(yytext)); }
-fo+/[a-np-z]+	{ printf("%sX", upstring(yytext)); }
+foo/bar		{ fprintf(yyout, "%sB", upstring(yytext)); }
+fo+/[a-np-z]+	{ fprintf(yyout, "%sX", upstring(yytext)); }
 
 %%
 

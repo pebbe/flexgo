@@ -49,7 +49,7 @@ char *upstring(char *s) {
 
 %%
 
-^.	{ fprintf(yyout, "%4d.\t%s", yylineno, upstring(yytext)); }
+^.	fprintf(yyout, "%4d.\t%s", yylineno, upstring(yytext));
 
 \n      ECHO; /* or yylineno won't get updated */
 

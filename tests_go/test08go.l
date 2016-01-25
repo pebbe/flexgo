@@ -24,7 +24,11 @@ foo     {
           yymore()
         }
 
-bar     ECHO
+bar     {
+          ECHO
+          c := yyinput()
+          yyout.Write([]byte{c,c,c})
+        }
 
 %%
 

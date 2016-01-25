@@ -43,9 +43,9 @@ int yywrap()
 
 foo     |
 
-bar     if (!strcmp (yytext, "foo")) { printf("FOO"); } else { printf("BAR"); }
+bar     fprintf(yyout, strcmp (yytext, "foo") ? "BAR" : "FOO");
 
-C	printf("Go");
+C	fprintf(yyout, "Go");
 
 %%
 

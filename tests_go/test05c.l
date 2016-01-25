@@ -48,17 +48,17 @@ int yywrap()
 
 <INITIAL>{
 
-\"      { printf("<<");
+\"      { fprintf(yyout, "<<");
           BEGIN _str;
         }
 
-^.	printf("%c", yytext[0] - ((yytext[0] >= 'a' && yytext[0] <= 'z') ? 32 : 0));
+^.	fprintf(yyout, "%c", yytext[0] - ((yytext[0] >= 'a' && yytext[0] <= 'z') ? 32 : 0));
 
 foo/bar	{
 		toggle = 1 - toggle;
 		if (!toggle)
 			REJECT;
-		printf("FOO");
+		fprintf(yyout, "FOO");
 	}
 
 }
@@ -67,9 +67,9 @@ foo/bar	{
 
 [^\"\\]+  ECHO;
 
-\\.	printf("%c", yytext[1]);
+\\.	fprintf(yyout, "%c", yytext[1]);
 
-\"      { printf(">>");
+\"      { fprintf(yyout, ">>");
           BEGIN INITIAL;
         }
 

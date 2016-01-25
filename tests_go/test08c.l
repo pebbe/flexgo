@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define YY_NO_INPUT
 #define YY_NO_UNPUT
 #define YY_SKIP_YYWRAP
 #ifdef yywrap
@@ -45,7 +44,11 @@ foo     {
           yymore();
         }
 
-bar     ECHO;
+bar     {
+          ECHO;
+          int c = input();
+          fprintf(yyout, "%c%c%c", c, c, c);
+        }
 
 %%
 

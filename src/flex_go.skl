@@ -582,9 +582,59 @@ func unputDefault(yy *Scanner, c int, yy_bp int) {
 }
 
 func (yy *Scanner) Input() byte {
-//TODO: input(), flex.skl line 1924-1998
 
-	var c byte
+	yy.chBuf[yy.cBufP] = yy.holdChar
+
+	if yy.chBuf[yy.cBufP] == yyEndOfBufferChar {
+		// yy_c_buf_p now points to the character we want to return.
+		// If this occurs *before* the EOB characters, then it's a
+		// valid NUL; if not, then we've hit the end of the buffer.
+		if yy.cBufP < yy.nChars {
+			// This was really a NUL.
+			yy.chBuf[yy.cBufP] = 0
+		} else {
+			// need more input
+			offset := yy.cBufP - yy.textPtr
+			yy.cBufP++
+
+			switch yy.getNextBuffer() {
+			case eobActLastMatch:
+					/* This happens because yy_g_n_b()
+					 * sees that we've accumulated a
+					 * token and flags that we need to
+					 * try matching the token before
+					 * proceeding.  But for input(),
+					 * there's no matching to consider.
+					 * So convert the EOB_ACT_LAST_MATCH
+					 * to EOB_ACT_END_OF_FILE.
+					 */
+
+					/* Reset buffer status. */
+				yy.Restart(yy.In)
+
+				fallthrough
+
+			case eobActEndOfFile:
+				if yy.Wrap(yy) {
+					return 0
+				}
+
+				if !yy.didBufferSwitchOnEof {
+					yy.Restart(yy.In)
+				}
+
+				return yy.Input()
+
+			case eobActContinueScan:
+				yy.cBufP = yy.textPtr + offset
+			}
+		}
+	}
+
+	c := yy.chBuf[yy.cBufP]
+	yy.chBuf[yy.cBufP] = 0	// preserve yytext
+	yy.cBufP++
+	yy.holdChar = yy.chBuf[yy.cBufP]
 
 // [19.0] update BOL and yylineno --------------------------------------
 %% [19.0] update BOL and yylineno
