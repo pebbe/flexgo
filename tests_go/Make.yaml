@@ -179,3 +179,93 @@
   glex: test08go.l
   opts: -B --yylineno -Cm
   files: text3.txt
+- name: test01f
+  clex: test01c.l
+  glex: test01go.l
+  opts: -B -Cf
+  files: text1.txt text2.txt text3.txt text4.txt
+- name: test01if
+  clex: test01c.l
+  glex: test01go.l
+  opts: -I --yylineno -Cf
+  files: text1.txt text2.txt text3.txt text4.txt
+- name: test02f
+  clex: test02c.l
+  glex: test02go.l
+  opts: -B --yylineno -Cf
+  files: text1.txt text2.txt
+- name: test03f
+  clex: test03c.l
+  glex: test03go.l
+  opts: -B --yylineno -Cf
+  files: text1.txt text2.txt text3.txt text4.txt
+- name: test04f
+  clex: test04c.l
+  glex: test04go.l
+  opts: -B --yylineno -Cf
+  files: text3.txt
+- name: test05f
+  clex: test05c.l
+  glex: test05go.l
+  opts: -B --yylineno -Cf
+  files: text3.txt
+- name: test06f
+  clex: test06c.l
+  glex: test06go.l
+  opts: -B --yylineno -Cf
+  files: text3.txt
+- name: test07f
+  clex: test07c.l
+  glex: test07go.l
+  opts: -B --yylineno -Cf
+  files: text1.txt text2.txt
+- name: test08f
+  clex: test08c.l
+  glex: test08go.l
+  opts: -B --yylineno -Cf
+  files: text3.txt
+- name: test01F
+  clex: test01c.l
+  glex: test01go.l
+  opts: -B -CF
+  files: text1.txt text2.txt text3.txt text4.txt
+- name: test01iF
+  clex: test01c.l
+  glex: test01go.l
+  opts: -I --yylineno -CF
+  files: text1.txt text2.txt text3.txt text4.txt
+- name: test02F
+  clex: test02c.l
+  glex: test02go.l
+  opts: -B --yylineno -CF
+  files: text1.txt text2.txt
+- name: test03F
+  clex: test03c.l
+  glex: test03go.l
+  opts: -B --yylineno -CF
+  files: text1.txt text2.txt text3.txt text4.txt
+- name: test04F
+  clex: test04c.l
+  glex: test04go.l
+  opts: -B --yylineno -CF
+  files: text3.txt
+- name: test05F
+  clex: test05c.l
+  glex: test05go.l
+  opts: -B --yylineno -CF
+  files: text3.txt
+- name: test06F
+  clex: test06c.l
+  glex: test06go.l
+  opts: -B --yylineno -CF
+  files: text3.txt
+- name: test07F
+  clex: test07c.l
+  glex: test07go.l
+  opts: -B --yylineno -CF
+  files: text1.txt text2.txt
+- name: test08F
+  clex: test08c.l
+  glex: test08go.l
+  opts: -B --yylineno -CF
+  files: text3.txt

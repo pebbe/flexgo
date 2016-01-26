@@ -498,21 +498,37 @@ void mk2data (value)
 	if (!gentables)
 		return;
 
-	if (datapos >= NUMDATAITEMS) {
-		outc (',');
+	if (Go) {
+	    if (datapos >= NUMDATAITEMS) {
 		dataflush ();
-	}
+	    }
 
-	if (datapos == 0)
+	    if (datapos == 0)
 		/* Indent. */
 		out ("    ");
 
-	else
+	    ++datapos;
+
+	    out_dec ("%5d,", value);
+
+	} else {
+
+	    if (datapos >= NUMDATAITEMS) {
+		outc (',');
+		dataflush ();
+	    }
+
+	    if (datapos == 0)
+		/* Indent. */
+		out ("    ");
+
+	    else
 		outc (',');
 
-	++datapos;
+	    ++datapos;
 
-	out_dec ("%5d", value);
+	    out_dec ("%5d", value);
+	}
 }
 
 
