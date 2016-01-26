@@ -893,9 +893,8 @@ void gen_next_state_go (int worry_about_NULs)
 	    /* Compressed tables back up *before* they match. */
 	    gen_backing_up_go ();
 
-	indent_puts_go ("if ( *yy_cp )");
+	indent_puts_go ("if yy.chBuf[yy.cp] != 0 {");
 	indent_up_go ();
-	indent_puts_go ("{");
     }
 
     if (fulltbl) {
@@ -919,13 +918,12 @@ void gen_next_state_go (int worry_about_NULs)
 
     if (worry_about_NULs && nultrans) {
 
-	indent_puts_go ("}");
-	indent_down_go ();
-	indent_puts_go ("else");
+	indent_puts_go ("} else {");
 	indent_up_go ();
 	indent_puts_go
-	    ("yy.currentState = yy_NUL_trans[yy.currentState];");
+	    ("yy.currentState = int(yyNulTrans[yy.currentState])");
 	indent_down_go ();
+	indent_puts_go ("}");
     }
 
     if (fullspd || fulltbl)

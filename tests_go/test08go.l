@@ -26,7 +26,7 @@ foo     {
 
 bar     {
           ECHO
-          c, err := yy.Input()
+          c, err := yyinput()
 	  if err != nil {
 	      log.Fatalln(err)
 	  }
