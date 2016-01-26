@@ -173,7 +173,7 @@ void gen_backing_up_go ()
 
     do_indent_go ();
     if (fullspd)
-	indent_puts_go ("if yy.currentState[-1].yyNxt {");
+	indent_puts_go ("if yyTransition[yy.currentState-1].yyNxt != 0 {");
     else
 	indent_puts_go ("if yyAccept[yy.currentState] != 0 {");
 
@@ -432,14 +432,14 @@ void genctbl_go (void)
 
     /* Table of pointers to start states. */
     if (gentables)
-	out_dec ("var yyStartStateList = [%d][]yyTransInfo{\n", lastsc * 2 + 1);
+	out_dec ("var yyStartStateList = [%d]int{\n", lastsc * 2 + 1);
     else
-	outn ("var yyStartStateList [][]yyTransInfo\n");
+	outn ("var yyStartStateList []int\n");
 
     if (gentables) {
 
 	for (i = 0; i <= lastsc * 2; ++i)
-	    out_dec ("yyTransition[%d:],\n", base[i]);
+	    out_dec ("%d,\n", base[i]);
 
 	dataend ();
     }
@@ -518,7 +518,7 @@ void genecs_go (void)
 void gen_find_action_go (void)
 {
     if (fullspd) {
-	indent_puts_go ("yy.act = yy.currentState[-1].yy_nxt");
+	indent_puts_go ("yy.act = int(yyTransition[yy.currentState-1].yyNxt)");
     }
 
     else if (fulltbl) {
@@ -810,8 +810,8 @@ void gen_next_match_go (void)
 	indent_puts_go ("yyC := yy.chBuf[yy.cp]");
 	indent_puts_go ("for {");
 	indent_up_go ();
-	indent_puts_go ("transInfo := yy.currentState[yyC]");
-	indent_puts_go ("if transInfo.yy_verify != yyC {");
+	indent_puts_go ("transInfo := yyTransition[yy.currentState+int(yyC)]");
+	indent_puts_go ("if int(transInfo.yyVerify) != int(yyC) {");
 	indent_up_go ();
 	indent_puts_go ("break");
 	indent_down_go ();
@@ -819,7 +819,7 @@ void gen_next_match_go (void)
 	indent_puts_go ("yy.cp++");
 	indent_puts_go ("yyC = yy.chBuf[yy.cp]");
 
-	indent_puts_go ("yy.currentState += yy.transInfo.yyNxt");
+	indent_puts_go ("yy.currentState += int(transInfo.yyNxt)");
 
 	if (num_backing_up > 0)
 	    gen_backing_up_go ();
@@ -910,7 +910,7 @@ void gen_next_state_go (int worry_about_NULs)
 
     else if (fullspd)
 	indent_put2s_go
-	    ("yy.currentState += yy.currentState[%s].yy_nxt;",
+	    ("yy.currentState += int(yyTransition[yy.currentState+%s].yyNxt)",
 	     char_map);
 
     else
@@ -969,14 +969,14 @@ void gen_NUL_trans_go (void)
 
     else if (fullspd) {
 	do_indent_go ();
-	out_dec ("yy_c := %d\n", NUL_ec);
+	out_dec ("yyC := %d\n", NUL_ec);
 
 	indent_puts_go
-	    ("transInfo = yy.currentState[yy_c]");
-	indent_puts_go ("yy.currentState += transInfo.yyNxt;");
+	    ("transInfo := yyTransition[yy.currentState+int(yyC)]");
+	indent_puts_go ("yy.currentState += int(transInfo.yyNxt)");
 
 	indent_puts_go
-	    ("yyIsJam = trans_Info.yy_Verify != yy_c");
+	    ("yyIsJam = int(transInfo.yyVerify) != int(yyC)");
     }
 
     else {
@@ -1028,11 +1028,11 @@ void gen_start_state_go (void)
     if (fullspd) {
 	if (bol_needed) {
 	    indent_puts_go
-		("yy.currentState = yy_start_state_list[yy_start + buffer.yy_at_bol]");
+		("yy.currentState = yyStartStateList[yy.start + yy.atBol]");
 	}
 	else
 	    indent_puts_go
-		("yy.currentState = yy_start_state_list[yy_start]");
+		("yy.currentState = yyStartStateList[yy.start]");
     }
 
     else {
@@ -1601,17 +1601,19 @@ void make_tables_go (void)
 	 * This is so we can compile "sizeof(struct yy_trans_info)"
 	 * in any scanner.
 	 */
-	indent_puts_go
-	    ("/* This struct is not used in this scanner,");
-	indent_puts_go ("   but its presence is necessary. */");
+	if (0) {
+	    indent_puts_go
+		("/* This struct is not used in this scanner,");
+	    indent_puts_go ("   but its presence is necessary. */");
 
-	indent_puts_go("type yyTransInfo struct {");
-	indent_up_go();
-	indent_puts_go ("yyVerify int32");
-	indent_puts_go ("yyNxt    int32");
-	indent_puts_go ("}");
+	    indent_puts_go("type yyTransInfo struct {");
+	    indent_up_go();
+	    indent_puts_go ("yyVerify int32");
+	    indent_puts_go ("yyNxt    int32");
+	    indent_puts_go ("}");
 
-	indent_down_go ();
+	    indent_down_go ();
+	}
     }
 
     if (fullspd) {

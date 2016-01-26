@@ -4,7 +4,7 @@ Based on flex version 2.6.0, see: http://flex.sourceforge.net/
 
 Keywords: flex, lex, go, golang
 
-**Work in progress**
+**Needs more testing**
 
 ## To do
 
@@ -23,7 +23,7 @@ Keywords: flex, lex, go, golang
  * ~~yy.UserData~~
  * ~~yy.UserAction~~
  * ~~--yylineno~~
- * non-default table compression
+ * ~~non-default table compression~~
  * copy and modify all tests from subdirectory `tests` to work with `flexgo`
  * documentation
 
