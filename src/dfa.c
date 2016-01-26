@@ -544,10 +544,10 @@ void ntod ()
 		if (Go) {
 		    if (gentables) {
 			out_dec
-			    ("var yyNxt = [][%d]",
+			    ("var yyNxt = [...][%d]",
 			     num_full_table_rows);
 			out_str
-			    ("%s",
+			    ("%s{",
 			     long_align ? "int32" : "int16");
 		    } else {
 			out_dec ("const yyNxtLolen = %d\n", num_full_table_rows);
@@ -568,7 +568,7 @@ void ntod ()
 		}
 
 		if (gentables)
-		    outn (Go ? "{{" : "    {");
+		    outn ("    {");
 
 		/* Generate 0 entries for state #0. */
 		for (i = 0; i < num_full_table_rows; ++i) {

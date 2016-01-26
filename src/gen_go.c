@@ -358,9 +358,9 @@ void genctbl_go (void)
 
     /* Table of verify for transition and offset to next state. */
     if (gentables)
-	out_dec ("static yyconst struct yy_trans_info yy_transition[%d] =\n    {\n", tblend + numecs + 1);
+	out_dec ("var yyTransition = [%d]yyTransInfo{\n", tblend + numecs + 1);
     else
-	outn ("static yyconst struct yy_trans_info *yy_transition = 0;");
+	outn ("var yyTransition []yyTransInfo");
 
     /* We want the transition to be represented as the offset to the
      * next state, not the actual state number, which is what it currently
@@ -432,15 +432,14 @@ void genctbl_go (void)
 
     /* Table of pointers to start states. */
     if (gentables)
-	out_dec ("static yyconst struct yy_trans_info *yy_start_state_list[%d] =\n", lastsc * 2 + 1);
+	out_dec ("var yyStartStateList = [%d][]yyTransInfo{\n", lastsc * 2 + 1);
     else
-	outn ("static yyconst struct yy_trans_info **yy_start_state_list =0;");
+	outn ("var yyStartStateList [][]yyTransInfo\n");
 
     if (gentables) {
-	outn ("    {");
 
 	for (i = 0; i <= lastsc * 2; ++i)
-	    out_dec ("    &yy_transition[%d],\n", base[i]);
+	    out_dec ("yyTransition[%d:],\n", base[i]);
 
 	dataend ();
     }
@@ -765,16 +764,25 @@ void gen_next_match_go (void)
      * gen_NUL_trans().
      */
     char   *char_map = useecs ?
-	"int(yyEc[curbyte])" : "int(curbyte)";
+	"yyEc[yy.chBuf[yy.cp]]" : "yy.chBuf[yy.cp]";
 
     char   *char_map_2 = useecs ?
 	"yy_ec[YY_SC_TO_UI(*++yy_cp)] " : "YY_SC_TO_UI(*++yy_cp)";
 
     if (fulltbl) {
-	if (gentables)
-	    indent_put2s_go
-		("while ( (yy.currentState = yy_nxt[yy.currentState][ %s ]) > 0 )",
-		 char_map);
+	if (gentables) {
+	    indent_puts_go ("for {");
+	    indent_up_go ();
+	    indent_put2s_go (
+			     "yy.currentState = int(yyNxt[yy.currentState][%s])",
+			     char_map);
+	    indent_puts_go ("if yy.currentState <= 0 {");
+	    indent_up_go ();
+	    indent_puts_go ("break");
+	    indent_down_go ();
+	    indent_puts_go ("}");
+	    indent_down_go ();
+	}
 	else
 	    indent_put2s_go
 		("while ( (yy.currentState = yy_nxt[yy.currentState*YY_NXT_LOLEN +  %s ]) > 0 )",
@@ -783,46 +791,38 @@ void gen_next_match_go (void)
 	indent_up_go ();
 
 	if (num_backing_up > 0) {
-	    indent_puts_go ("{");
-	    gen_backing_up_go ();
+		    gen_backing_up_go ();
 	    outc ('\n');
 	}
 
 	indent_puts_go ("yy.cp++");
 
-	if (num_backing_up > 0)
-
-	    indent_puts_go ("}");
-
 	indent_down_go ();
+	indent_puts_go ("}");
+
 
 	outc ('\n');
-	indent_puts_go ("yy.currentState = -yy.currentState;");
+	indent_puts_go ("yy.currentState = -yy.currentState");
     }
 
     else if (fullspd) {
-	indent_puts_go ("{");
-	indent_puts_go
-	    ("yyconst struct yy_trans_info *yy_trans_info;\n");
-	indent_puts_go ("YY_CHAR yy_c;\n");
-	indent_put2s_go ("for ( yy_c = %s;", char_map);
-	indent_puts_go
-	    ("      (yy_trans_info = &yy_current_state[(unsigned int) yy_c])->");
-	indent_puts_go ("yy_verify == yy_c;");
-	indent_put2s_go ("      yy_c = %s )", char_map_2);
 
+	indent_puts_go ("yyC := yy.chBuf[yy.cp]");
+	indent_puts_go ("for {");
 	indent_up_go ();
+	indent_puts_go ("transInfo := yy.currentState[yyC]");
+	indent_puts_go ("if transInfo.yy_verify != yyC {");
+	indent_up_go ();
+	indent_puts_go ("break");
+	indent_down_go ();
+	indent_puts_go ("}");
+	indent_puts_go ("yy.cp++");
+	indent_puts_go ("yyC = yy.chBuf[yy.cp]");
+
+	indent_puts_go ("yy.currentState += yy.transInfo.yyNxt");
 
 	if (num_backing_up > 0)
-	    indent_puts_go ("{");
-
-	indent_puts_go ("yy.currentState += yy.transInfo.yyNxt;");
-
-	if (num_backing_up > 0) {
-	    outc ('\n');
 	    gen_backing_up_go ();
-	    indent_puts_go ("}");
-	}
 
 	indent_down_go ();
 	indent_puts_go ("}");
@@ -900,11 +900,11 @@ void gen_next_state_go (int worry_about_NULs)
     if (fulltbl) {
 	if (gentables)
 	    indent_put2s_go
-		("yy.currentState = yyNxt[yy.currentState][%s];",
+		("yy.currentState = int(yyNxt[yy.currentState][%s])",
 		 char_map);
 	else
 	    indent_put2s_go
-		("yy.currentState = yyNxt[yy.currentState*YY_NXT_LOLEN + %s];",
+		("yy.currentState = int(yyNxt[yy.currentState*YY_NXT_LOLEN + %s])",
 		 char_map);
     }
 
@@ -954,7 +954,7 @@ void gen_NUL_trans_go (void)
 
     if (nultrans) {
 	indent_puts_go
-	    ("yyCurrentState = yyNulTrans[yyCurrentState]");
+	    ("yyCurrentState = int(yyNulTrans[yyCurrentState])");
 	indent_puts_go ("yyIsJam = (yyCurrentState == 0)");
     }
 
@@ -964,21 +964,19 @@ void gen_NUL_trans_go (void)
 	    out_dec ("yy.currentState = yy_nxt[yy.currentState][%d];\n", NUL_ec);
 	else
 	    out_dec ("yy.currentState = yy_nxt[yy.currentState*YY_NXT_LOLEN + %d];\n", NUL_ec);
-	indent_puts_go ("yy_is_jam = (yy.currentState <= 0);");
+	indent_puts_go ("yyIsJam = (yy.currentState <= 0)");
     }
 
     else if (fullspd) {
 	do_indent_go ();
-	out_dec ("int yy_c = %d;\n", NUL_ec);
+	out_dec ("yy_c := %d\n", NUL_ec);
 
 	indent_puts_go
-	    ("yyconst struct yy_trans_info *yy_trans_info;\n");
-	indent_puts_go
-	    ("yy_trans_info = &yy.currentState[(unsigned int) yy_c];");
-	indent_puts_go ("yy.currentState += yy_trans_info->yy_nxt;");
+	    ("transInfo = yy.currentState[yy_c]");
+	indent_puts_go ("yy.currentState += transInfo.yyNxt;");
 
 	indent_puts_go
-	    ("yy_is_jam = (yy_trans_info->yy_verify != yy_c);");
+	    ("yyIsJam = trans_Info.yy_Verify != yy_c");
     }
 
     else {
@@ -1576,10 +1574,10 @@ void make_tables_go (void)
 	int     total_table_size = tblend + numecs + 1;
 	char   *trans_offset_type =
 	    (total_table_size >= INT16_MAX || long_align) ?
-	    "flex_int32_t" : "flex_int16_t";
+	    "int32" : "int16";
 
 	set_indent_go (0);
-	indent_puts_go ("struct yyTransInfo {");
+	indent_puts_go ("type yyTransInfo struct {");
 	indent_up_go ();
 
 	/* We require that yy_verify and yy_nxt must be of the same size int. */
@@ -2026,7 +2024,7 @@ void make_tables_go (void)
     set_indent_go (4);
 
     if (fullspd || fulltbl)
-	indent_puts_go ("yy_cp = YY_G(yy_c_buf_p);");
+	indent_puts_go ("yy.cp = yy.cBufP");
 
     else {			/* compressed table */
 	if (!reject && !interactive) {
