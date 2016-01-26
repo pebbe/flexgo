@@ -49,7 +49,7 @@ bar     {
           fprintf(yyout, "%c%c%c", c, c, c);
         }
 
-\<baz\> {
+\[baz\] {
           ECHO;
           ECHO;
         }
@@ -58,10 +58,10 @@ baz    {
          int i;
          /* Copy yytext because unput() trashes yytext */
          char *yycopy = strdup( yytext );
-         unput( '>' );
+         unput( ']' );
          for ( i = yyleng - 1; i >= 0; --i )
              unput( yycopy[i] );
-         unput( '<' );
+         unput( '[' );
          free( yycopy );
        }
 

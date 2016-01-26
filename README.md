@@ -18,8 +18,8 @@ Keywords: flex, lex, go, golang
  * ~~BEGIN(state)~~
  * ~~yyless(n)~~
  * ~~yymore()~~
- * ~~yy.Input()~~
- * ~~yy.Unput(c)~~
+ * ~~yyinput()~~
+ * ~~yyunput(c)~~
  * ~~yy.UserData~~
  * ~~yy.UserAction~~
  * ~~--yylineno~~
@@ -43,18 +43,18 @@ Ignored options:
 
 ### Functions and variables
 
-        C                  Go
-    ------------------------------------------------------------
-        yyin               yy.In    io.Reader
-        yyout              yy.Out   io.Writer
-        yytext             yy.Text  []byte
-        yyleng             yy.Leng
-    int yylex(void)        yy.Lex() interface()
-        yyterminate(int)   yyterminate(interface{})
-        input()            yy.Input() (byte, error)
-        unput(c)           yy.Unput(c)
-        YY_USER_ACTION     yy.UserAction(yy) // can be assigned to
-		                   yy.UserData
+            C                  Go
+    ----------------------------------------------------------------
+            yyin               yy.In    io.Reader
+            yyout              yy.Out   io.Writer
+            yytext             yy.Text  []byte
+            yyleng             yy.Leng
+    YY_DECL yylex(void)        yy.Lex() interface()
+            yyterminate(int)   yyterminate(interface{})
+        int input(void)        yyinput() (byte, error)
+            unput(int)         yyunput(byte)
+            YY_USER_ACTION     yy.UserAction(yy) // can be assigned to
+		                       yy.UserData
 
 Inside actions, the names `yyout`, `yytext`, and `yyleng` are also
 available.

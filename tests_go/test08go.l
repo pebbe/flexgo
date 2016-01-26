@@ -33,18 +33,18 @@ bar     {
           yyout.Write([]byte{c,c,c})
         }
 
-\<baz\> {
+\[baz\] {
           ECHO
           ECHO
        }
 
 baz    {
 	 yycopy := string(yytext) // Copy yytext because yy.Unput() trashes yytext
-         yy.Unput('>')
+         yyunput(']')
          for i := yyleng - 1; i >= 0; i-- {
-             yy.Unput(yycopy[i])
+             yyunput(yycopy[i])
          }
-         yy.Unput('<')
+         yyunput('[')
        }
 
 
