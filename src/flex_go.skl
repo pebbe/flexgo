@@ -581,15 +581,12 @@ func (yy *Scanner) Unput(c byte) {
 		// +2 for EOB chars.
 
 		numberToMove := yy.nChars + 2
+		moveTo := yy.bufSize - yy.nChars
 
-		dest := yy.nChars + 2
-		source := numberToMove
-
-		moveTo := yy.bufSize + 2 - numberToMove
 		copy(yy.chBuf[moveTo:], yy.chBuf[:numberToMove])
 
-		yy_cp += dest - source
-		yy_bp += dest - source
+		yy_cp += moveTo
+		yy_bp += moveTo
 
 		yy.nChars = yy.bufSize
 		yy.bufNChars = yy.bufSize
