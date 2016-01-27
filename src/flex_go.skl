@@ -49,6 +49,7 @@ type Scanner struct {
 	fullMatch            int
 	fullLp               int
 	lp                   int
+	lookingForTrailBegin int
 	cp, bp               int
 	act                  int
 	holdChar             byte
@@ -456,7 +457,7 @@ func (yy *Scanner) getNextBuffer() int {
 m4_ifdef( [[M4_YY_USES_REJECT]],
 [[
 			log.Fatalln(
-"input buffer overflow, can't enlarge buffer because scanner uses REJECT" )
+"input buffer overflow, can't enlarge buffer because scanner uses [[REJECT]]" )
 ]],
 [[
 

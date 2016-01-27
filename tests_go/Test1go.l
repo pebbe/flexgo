@@ -35,7 +35,7 @@ bar			fmt.Fprint(yyout, "BAR")
 (.|\n){4}	{
 				fmt.Fprintf(yyout, "{1:%s}", string(yytext))
 				for i := 0; i < 10000; i++ {
-					yyunput(byte(32 + i % 96))
+			    	    yyunput(byte(32 + i % 96))
 				}
 				BEGIN f1
 			}
@@ -48,8 +48,14 @@ Foo		|
 
 foo		yyout.Write([]byte("FOO"))
 
-^[a-z]		yyout.Write(bytes.ToUpper(yytext))
+^[a-z]		|
 
+[aeiou]+/[0-9]+	{
+		    if yytext[0] == 'a' {
+		       REJECT
+		    }
+		    yyout.Write(bytes.ToUpper(yytext))
+		}
 }
 
 %%

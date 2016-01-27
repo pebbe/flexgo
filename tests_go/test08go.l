@@ -17,7 +17,23 @@ var YYnull YYtype = nil
 
 }
 
+%s f1
+
 %%
+
+<INITIAL>{
+
+(.|\n){4}	{
+				fmt.Fprintf(yyout, "{1:%s}", string(yytext))
+				for i := 0; i < 10000; i++ {
+					yyunput(byte(32 + i % 96))
+				}
+				BEGIN f1
+			}
+
+}
+
+<f1>{
 
 foo     {
           ECHO
@@ -47,6 +63,23 @@ baz    {
          yyunput('[')
        }
 
+"FINAL PART" {
+		ECHO
+		yyout.Write([]byte("\n>>>"))
+		b := make([]byte, 1)
+		for {
+		    c, err := yyinput()
+		    if err != nil {
+		       break
+		    }
+		    b[0] = c
+		    yyout.Write(b)
+		}
+		yyterminate(nil)
+		yyout.Write([]byte("<<<\n"))
+	}
+
+}
 
 %%
 

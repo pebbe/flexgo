@@ -537,32 +537,32 @@ void gen_find_action_go (void)
 	indent_up_go ();
 	indent_puts_go ("if yy.lp != 0 && yy.lp < int(yyAccept[yy.currentState+1]) {");
 	indent_up_go ();
-	indent_puts_go ("yy.act = int(yy_acclist[yy.lp])");
+	indent_puts_go ("yy.act = int(yyAcclist[yy.lp])");
 
 	if (variable_trailing_context_rules) {
 	    indent_puts_go
-		("if yy.act & yy_TRAILING_HEAD_MASK != 0 ||");
-	    indent_puts_go ("     yy_looking_for_trail_begin != 0 {");
+		("if yy.act & yyTrailingHeadMask != 0 ||");
+	    indent_puts_go ("     yy.lookingForTrailBegin != 0 {");
 	    indent_up_go ();
 
 	    indent_puts_go
-		("if yy.act == yy_looking_for_trail_begin {");
+		("if yy.act == yy.lookingForTrailBegin {");
 	    indent_up_go ();
-	    indent_puts_go ("yy_looking_for_trail_begin = 0");
-	    indent_puts_go ("yy.act &= ^yy_TRAILING_HEAD_MASK");
-	    indent_puts_go ("break;");
+	    indent_puts_go ("yy.lookingForTrailBegin = 0");
+	    indent_puts_go ("yy.act &= ^yyTrailingHeadMask");
+	    indent_puts_go ("break");
 	    indent_puts_go ("}");
 	    indent_down_go ();
 
 	    indent_down_go ();
 
 	    indent_puts_go
-		("} else if yy.act & yy_TRAILING_MASK != 0 {");
+		("} else if yy.act & yyTrailingMask != 0 {");
 	    indent_up_go ();
 	    indent_puts_go
-		("yy_looking_for_trail_begin = yy.act & ^yy_TRAILING_MASK;");
+		("yy.lookingForTrailBegin = yy.act & ^yyTrailingMask");
 	    indent_puts_go
-		("yy_looking_for_trail_begin |= yy_TRAILING_HEAD_MASK;");
+		("yy.lookingForTrailBegin |= yyTrailingHeadMask");
 
 	    if (real_reject) {
 		/* Remember matched text in case we back up
@@ -571,8 +571,8 @@ void gen_find_action_go (void)
 		indent_puts_go
 		    ("yy.fullMatch = yy.cp");
 		indent_puts_go
-		    ("yy_full_state = yy_state_ptr");
-		indent_puts_go ("yy_full_lp = yy.lp");
+		    ("yy.fullState = yy.statePtr");
+		indent_puts_go ("yy.fullLp = yy.lp");
 	    }
 
 	    indent_down_go ();
@@ -581,8 +581,8 @@ void gen_find_action_go (void)
 	    indent_up_go ();
 	    indent_puts_go ("yy.fullMatch = yy.cp");
 	    indent_puts_go
-		("yy_full_state = yy_state_ptr");
-	    indent_puts_go ("yy_full_lp = yy.lp");
+		("yy.fullState = yy.statePtr");
+	    indent_puts_go ("yy.fullLp = yy.lp");
 	    indent_puts_go ("break");
 	    indent_down_go ();
 	    indent_puts_go ("}");
@@ -1093,7 +1093,7 @@ void gentabs_go (void)
 	    EOB_accepting_list;
 
 	out_str_dec (long_align ? get_int32_decl_go () :
-		     get_int16_decl_go (), "yy_acclist", MAX (numas,
+		     get_int16_decl_go (), "yyAcclist", MAX (numas,
 							      1) + 1);
 
         buf_prints (&yydmap_buf,
@@ -1752,16 +1752,10 @@ void make_tables_go (void)
 	outn ("m4_ifdef( [[M4_YY_USES_REJECT]],\n[[");
 
 	if (variable_trailing_context_rules) {
-	    if (!C_plus_plus && !reentrant) {
-		outn ("var yy_looking_for_trail_begin = 0");
-		outn ("var yy_full_lp int");
-		outn ("var yy_full_state int");
-		outn ("var yy_state_ptr int");
-	    }
 
-	    out_hex ("const yy_TRAILING_MASK = 0x%x\n",
+	    out_hex ("const yyTrailingMask = 0x%x\n",
 		     (unsigned int) YY_TRAILING_MASK);
-	    out_hex ("const yy_TRAILING_HEAD_MASK = 0x%x\n",
+	    out_hex ("const yyTrailingHeadMask = 0x%x\n",
 		     (unsigned int) YY_TRAILING_HEAD_MASK);
 	}
 
@@ -1797,8 +1791,8 @@ void make_tables_go (void)
 	if (!C_plus_plus) {
 	    if (yytext_is_array) {
 		if (!reentrant){
-		    indent_puts_go ("static int yy_more_offset = 0;");
-                    indent_puts_go ("static int yy_prev_more_offset = 0;");
+		    indent_puts_go ("static int yy_more_offset = 0");
+                    indent_puts_go ("static int yy_prev_more_offset = 0");
                 }
 	    }
 	}
@@ -1844,8 +1838,8 @@ void make_tables_go (void)
 	    outn ("#define YYLMAX 8192");
 	    outn ("#endif\n");
 	    if (!reentrant){
-                outn ("char yytext[YYLMAX];");
-                outn ("char *yytext_ptr;");
+                outn ("char yytext[YYLMAX]");
+                outn ("char *yytext_ptr");
             }
 	}
 
@@ -2068,12 +2062,12 @@ void make_tables_go (void)
     /* Update BOL and yylineno inside of input(). */
     if (bol_needed) {
 	indent_puts_go
-	    ("// TODO: yy_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\\n');");
+	    ("// TODO: yy_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\\n')");
 	if (do_yylineno) {
 	    indent_puts_go
 		("// TODO: if ( yy_CURRENT_BUFFER_LVALUE->yy_at_bol )");
 	    indent_up_go ();
-	    indent_puts_go ("// TODO: M4_YY_INCR_LINENO();");
+	    indent_puts_go ("// TODO: M4_YY_INCR_LINENO()");
 	    indent_down_go ();
 	}
     }
@@ -2081,7 +2075,7 @@ void make_tables_go (void)
     else if (do_yylineno) {
 	indent_puts_go ("if  c == '\\n' {");
 	indent_up_go ();
-	indent_puts_go ("M4_YY_INCR_LINENO();");
+	indent_puts_go ("M4_YY_INCR_LINENO()");
 	indent_down_go ();
 	indent_puts_go ("}");
     }

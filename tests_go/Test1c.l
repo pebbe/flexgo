@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define YY_NO_INPUT
 #define YY_SKIP_YYWRAP
 #ifdef yywrap
 #  undef yywrap
@@ -64,14 +63,12 @@ int
 
 bar			fprintf(yyout, "BAR");
 
-
 <INITIAL>{
 
 (.|\n){4}	{
 			fprintf(yyout, "{1:%s}", yytext);
-			for (i = 0; i < 10000; i++) {
+			for (i = 0; i < 10000; i++)
 			    unput (32 + i % 96);
-			}
 			BEGIN f1;
 		}
 
@@ -83,8 +80,13 @@ Foo             |
 
 foo		fprintf(yyout, "FOO");
 
-^[a-z]		fprintf(yyout, upstring(yytext));
+^[a-z]		|
 
+[aeiou]+/[0-9]+	{
+		    if (yytext[0] == 'a')
+		       REJECT;
+		    fprintf(yyout, upstring(yytext));
+		}
 }
 
 %%

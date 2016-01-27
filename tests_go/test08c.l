@@ -10,6 +10,7 @@
 #endif
 
 int
+    i,
     g_argc = 0;
 char
     **g_argv;
@@ -36,7 +37,22 @@ int yywrap()
 
 %}
 
+%s f1
+
 %%
+
+<INITIAL>{
+
+(.|\n){4}	{
+			fprintf(yyout, "{1:%s}", yytext);
+			for (i = 0; i < 10000; i++) {
+			    unput (32 + i % 96);
+			}
+			BEGIN f1;
+		}
+}
+
+<f1>{
 
 foo     {
           ECHO;
@@ -64,6 +80,17 @@ baz    {
          unput( '[' );
          free( yycopy );
        }
+
+"FINAL PART" {
+		ECHO;
+		fprintf(yyout, "\n>>>");
+		while ((i = input()) != EOF)
+			fputc(i, yyout);
+		yyterminate();
+		fprintf(yyout, "<<<\n");
+	}
+
+}
 
 %%
 
