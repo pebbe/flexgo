@@ -1873,7 +1873,7 @@ yyreduce:
     {
 			if ( scon_stk_ptr > 0 )
 				build_eof_action();
-	
+
 			else
 				{
 				/* This EOF applies to all start conditions
@@ -2027,7 +2027,7 @@ yyreduce:
 					num_rules | YY_TRAILING_HEAD_MASK );
 				variable_trail_rule = true;
 				}
-			
+
 			else
 				trailcnt = rulelen;
 
@@ -2540,7 +2540,7 @@ yyreduce:
                 if (sf_case_ins() && has_case((yyvsp[(2) - (4)])) && has_case((yyvsp[(4) - (4)]))){
                     (yyvsp[(2) - (4)]) = reverse_case ((yyvsp[(2) - (4)]));
                     (yyvsp[(4) - (4)]) = reverse_case ((yyvsp[(4) - (4)]));
-                    
+
                     for ( i = (yyvsp[(2) - (4)]); i <= (yyvsp[(4) - (4)]); ++i )
                         ccladd( (yyvsp[(1) - (4)]), i );
 
@@ -2644,7 +2644,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 889 "parse.y"
-    { 
+    {
                           CCL_EXPR(islower);
                           if (sf_case_ins())
                               CCL_EXPR(isupper);
@@ -2764,7 +2764,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 914 "parse.y"
-    { 
+    {
 				if ( sf_case_ins() )
 					warn(_("[:^lower:] is ambiguous in case insensitive scanner"));
 				else
@@ -3048,7 +3048,7 @@ void build_eof_action()
 
 		else
 			{
-			    
+
 			sceof[scon_stk[i]] = true;
 
 			if (previous_continued_action /* && previous action was regular */)

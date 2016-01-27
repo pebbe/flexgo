@@ -6,13 +6,13 @@
 #include <string.h>
 
 #define YY_NO_INPUT
-#define YY_NO_UNPUT
 #define YY_SKIP_YYWRAP
 #ifdef yywrap
 #  undef yywrap
 #endif
 
 int
+    i,
     g_argc = 0;
 char
     **g_argv;
@@ -61,6 +61,9 @@ bar			fprintf(yyout, "BAR");
 
 (.|\n){4}	{
 			fprintf(yyout, "{1:%s}", yytext);
+			for (i = 0; i < 10000; i++) {
+			    unput (32 + i % 96);
+			}
 			BEGIN f1;
 		}
 
