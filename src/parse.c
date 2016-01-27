@@ -3035,9 +3035,10 @@ yyreturn:
 
 void build_eof_action()
 	{
-	int i;
+	    int i, ft;
 	char action_text[MAXLINE];
 
+	ft = 0;
 	for ( i = 1; i <= scon_stk_ptr; ++i )
 		{
 		if ( sceof[scon_stk[i]] )
@@ -3047,14 +3048,20 @@ void build_eof_action()
 
 		else
 			{
+			    
 			sceof[scon_stk[i]] = true;
 
 			if (previous_continued_action /* && previous action was regular */)
 			    add_action("YY_RULE_SETUP\n");
 
+			if ( ft )
+			    add_action( "\tfallthrough\n" );
+
 			snprintf( action_text, sizeof(action_text), "case YY_STATE_EOF(%s):\n",
 				scname[scon_stk[i]] );
 			add_action( action_text );
+			if ( Go )
+			    ft = 1;
 			}
 		}
 

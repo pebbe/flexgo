@@ -45,13 +45,13 @@ func main() {
 
 	for _, test := range tests {
 		fmt.Fprintf(fp, "\n%s.ok: %s %s %s ../src/flex Make.yaml\n", test.Name, test.Clex, test.Glex, test.Files)
-		fmt.Fprintf(fp, "\t../src/flex -d --noline %s -o %s-c.c %s\n", test.Opts, test.Name, test.Clex)
+		fmt.Fprintf(fp, "\t../src/flex --noline %s -o %s-c.c %s\n", test.Opts, test.Name, test.Clex)
 		fmt.Fprintf(fp, "\tgcc -s -Wall -o %s-c %s-c.c\n", test.Name, test.Name)
-		fmt.Fprintf(fp, "\t./%s-c %s > %s-c.out 2> /dev/null\n", test.Name, test.Files, test.Name)
-		fmt.Fprintf(fp, "\t../src/flex --go -d --noline %s -o %s-go.go %s\n", test.Opts, test.Name, test.Glex)
+		fmt.Fprintf(fp, "\t./%s-c %s > %s-c.out\n", test.Name, test.Files, test.Name)
+		fmt.Fprintf(fp, "\t../src/flex --go --noline %s -o %s-go.go %s\n", test.Opts, test.Name, test.Glex)
 		fmt.Fprintf(fp, "\tgofmt -w %s-go.go\n", test.Name)
 		fmt.Fprintf(fp, "\tgo build %s-go.go\n", test.Name)
-		fmt.Fprintf(fp, "\t./%s-go %s > %s-go.out 2> /dev/null\n", test.Name, test.Files, test.Name)
+		fmt.Fprintf(fp, "\t./%s-go %s > %s-go.out\n", test.Name, test.Files, test.Name)
 		fmt.Fprintf(fp, "\tdiff -q %s-c.out %s-go.out\n", test.Name, test.Name)
 		fmt.Fprintf(fp, "\ttouch %s.ok\n", test.Name)
 	}

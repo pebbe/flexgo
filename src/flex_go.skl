@@ -176,10 +176,10 @@ func (yy *Scanner) input(offset, maxRead int) int {
 		var n int
 		for n = 0; n < maxRead; n++ {
 			nn, err := yy.inputFile.Read(b)
+			if err != nil && err != io.EOF {
+				log.Panicln("Reading 1 byte:", err)
+			}
 			if nn < 1 {
-				if err != nil && err != io.EOF {
-					log.Panicln("input in flex scanner failed:", err)
-				}
 				break
 			}
 			yy.chBuf[offset+n] = b[0]
@@ -193,13 +193,10 @@ func (yy *Scanner) input(offset, maxRead int) int {
 
 	b := make([]byte, maxRead)
 	n, err := yy.inputFile.Read(b)
-	if err != nil && err != io.EOF {
-		log.Panicln("input in flex scanner failed:", err)
+	if err != nil  && err != io.EOF {
+		log.Panicf("Reading %d bytes: %v\n", maxRead, err)
 	}
 	copy(yy.chBuf[offset:], b[:n])
-	//for i := 0; i < n; i++ {
-	//	yy.chBuf[offset+i] = b[i]
-	//}
 	return n
 }
 
@@ -759,6 +756,10 @@ func YYmain(filenames ...string) (interface{}, error) {
 			return nil, errval
 		}
 		yy.Wrap = func(yyy *Scanner) bool {
+			if len(filenames) == 0 {
+				// should not happen
+				return true
+			}
 			yyy.In.(*os.File).Close()
 			filenames = filenames[1:]
 			if len(filenames) == 0 {

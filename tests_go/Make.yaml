@@ -1,4 +1,14 @@
 ---
+- name: Test1-B
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -B
+  files: txt??
+- name: Test1-I
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -I
+  files: txt??
 - name: test01
   clex: test01c.l
   glex: test01go.l
