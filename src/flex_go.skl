@@ -67,7 +67,7 @@ type Scanner struct {
 	bufSize      int
 	bufNChars    int
 	Interactive  bool
-	atBol        int // 0 (falase) or 1 (true)
+	atBol        int // 0 (false) or 1 (true)
 	fillBuffer   bool
 	bufferStatus int
 }
@@ -191,12 +191,10 @@ func (yy *Scanner) input(offset, maxRead int) int {
 		return n
 	}
 
-	b := make([]byte, maxRead)
-	n, err := yy.inputFile.Read(b)
+	n, err := yy.inputFile.Read(yy.chBuf[offset:offset+maxRead])
 	if err != nil  && err != io.EOF {
 		log.Panicf("Reading %d bytes: %v\n", maxRead, err)
 	}
-	copy(yy.chBuf[offset:], b[:n])
 	return n
 }
 
@@ -455,6 +453,12 @@ func (yy *Scanner) getNextBuffer() int {
 
 		for numToRead <= 0 {
 			// Not enough room in the buffer - grow it.
+m4_ifdef( [[M4_YY_USES_REJECT]],
+[[
+			log.Fatalln(
+"input buffer overflow, can't enlarge buffer because scanner uses REJECT" )
+]],
+[[
 
 			yyCBufPOffset := yy.cBufP
 
@@ -473,7 +477,7 @@ func (yy *Scanner) getNextBuffer() int {
 			yy.cBufP = yyCBufPOffset
 
 			numToRead = yy.bufSize - numberToMove - 1
-
+]])
 		}
 
 		if numToRead > yyReadBufSize {
@@ -507,7 +511,7 @@ func (yy *Scanner) getNextBuffer() int {
 	}
 
 	yy.nChars += numberToMove
-	yy.bufNChars += numberToMove // TODO: missing in C skel, bug?
+	//yy.bufNChars += numberToMove // TODO: missing in C skel, bug?
 	yy.chBuf[yy.nChars] = yyEndOfBufferChar
 	yy.chBuf[yy.nChars+1] = yyEndOfBufferChar
 

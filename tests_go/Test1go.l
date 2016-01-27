@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -34,7 +35,7 @@ bar			fmt.Fprint(yyout, "BAR")
 (.|\n){4}	{
 				fmt.Fprintf(yyout, "{1:%s}", string(yytext))
 				for i := 0; i < 10000; i++ {
-					yyunput(byte(32 + i % 96));
+					yyunput(byte(32 + i % 96))
 				}
 				BEGIN f1
 			}
@@ -43,9 +44,11 @@ bar			fmt.Fprint(yyout, "BAR")
 
 <f1,f2>{
 
-Foo     |
+Foo		|
 
-foo		fmt.Fprint(yyout, "FOO")
+foo		yyout.Write([]byte("FOO"))
+
+^[a-z]		yyout.Write(bytes.ToUpper(yytext))
 
 }
 

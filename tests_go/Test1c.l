@@ -37,6 +37,14 @@ int yywrap()
     return 0;
 }
 
+char *upstring(char *s) {
+    int i;
+        for (i = 0; s[i]; i++)
+            if (s[i] >= 'a' && s[i] <= 'z')
+                s[i] -= 32;
+    return s;
+}
+
 int
     count[YY_NUM_RULES+1];
 
@@ -44,7 +52,7 @@ int
 
 %}
 
-%s f1
+%s f1 f2
 
 %%
 
@@ -74,6 +82,8 @@ bar			fprintf(yyout, "BAR");
 Foo             |
 
 foo		fprintf(yyout, "FOO");
+
+^[a-z]		fprintf(yyout, upstring(yytext));
 
 }
 
