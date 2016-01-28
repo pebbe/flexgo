@@ -41,37 +41,37 @@ Ignored options:
 
 ## Minimal scanner
 
-	%top{
+    %top{
 
-	package main
+    package main
 
-	import (
-	    "fmt"
-	    "io"
-	    "log"
-	    "os"
-	)
+    import (
+        "fmt"
+        "io"
+        "log"
+        "os"
+    )
 
-	// return type of yy.Flex()
-	type YYtype interface{}
+    // return type of yy.Flex()
+    type YYtype interface{}
 
-	// returned on end of file
-	var YYnull YYtype = nil
+    // returned on end of file
+    var YYnull YYtype = nil
 
-	}
+    }
 
-	    /* no definitions. */
+        /* no definitions. */
 
-	%%
+    %%
 
-	    /* No rules so default action of copying each input character to the output is performed. */
+        /* No rules so default action of copying each input character to the output is performed. */
 
-	%%
+    %%
 
-	func main() {
-	    // runs the scanner on files given as arguments, or stdin if there are no arguments
-	    YYmain(os.Args[1:]...)
-	}
+    func main() {
+        // runs the scanner on files given as arguments, or stdin if there are no arguments
+        YYmain(os.Args[1:]...)
+    }
 
 ## Difference between C output and Go output
 
@@ -83,14 +83,15 @@ Ignored options:
             yyout              yy.Out   io.Writer
             yytext             yy.Text  []byte
             yyleng             yy.Leng
+            yylineno           yy.Lineno
     YY_DECL yylex(void)        yy.Lex() interface()
         int input(void)        yyinput() (byte, error)
             unput(int)         yyunput(byte)
             YY_USER_ACTION     yy.UserAction(yy) // can be assigned to
                                yy.UserData
 
-Inside actions, the names `yyout`, `yytext`, and `yyleng` are also
-available.
+Inside actions, the names `yyout`, `yytext`, `yyleng`, and `yylineno`
+are also available.
 
 ### yy.Wrap()
 
