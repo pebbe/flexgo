@@ -16,8 +16,6 @@ int yywrap(void) {
 %%
 
 int main (int argc, char *argv []) { 
-    FILE
-        *fp;
     yyin = fopen(argv[1], "r");
     yylex(); 
     fclose(yyin);

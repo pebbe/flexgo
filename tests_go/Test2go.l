@@ -19,12 +19,6 @@ var YYnull YYtype = nil
 
 }
 
-%{
-
-var toggle = false
-
-%}
-
 %s f1 f2
 
 %%
@@ -52,9 +46,9 @@ bar			fmt.Fprint(yyout, "BAR")
 
 <f1,f2>{
 
-zx		|
+foo		|
 
-[zZ][xX] { yyout.Write([]byte("FOO"))
+Foo { yyout.Write([]byte("FOO"))
 		  yymore()
         }
 
@@ -62,20 +56,7 @@ de[0-9]+ { ECHO
 		  yyless(yyleng-2)
        }
 
-^.		{
-			fmt.Fprintf(yyout, "%5d\t", yylineno)
-			REJECT
-		}
-
-^[a-z]		|
-
-[aeiou]+/[0-9]+	|
-
-qt		{
-			toggle = !toggle
-		    if toggle {
-		       REJECT
-		    }
+[aeiou]/0 {
 		    yyout.Write(bytes.ToUpper(yytext))
 		}
 

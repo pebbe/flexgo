@@ -148,7 +148,7 @@ static void geneoltbl_go (void)
 
     outn ("m4_ifdef( [[M4_YY_USE_LINENO]],[[");
     outn ("/* Table of booleans, true if rule could match eol. */");
-    out_str_dec (get_int32_decl_go (), "yy_rule_can_match_eol",
+    out_str_dec (get_int32_decl_go (), "yyRuleCanMatchEol",
 		 num_rules + 1);
 
     if (gentables) {
@@ -814,14 +814,14 @@ void gen_next_match_go (void)
 	indent_puts_go ("break");
 	indent_down_go ();
 	indent_puts_go ("}");
-	indent_puts_go ("yy.cp++");
-	indent_puts_go ("yyC = yy.chBuf[yy.cp]");
 
 	indent_puts_go ("yy.currentState += int(transInfo.yyNxt)");
 
 	if (num_backing_up > 0)
 	    gen_backing_up_go ();
 
+	indent_puts_go ("yy.cp++");
+	indent_puts_go ("yyC = yy.chBuf[yy.cp]");
 	indent_down_go ();
 	indent_puts_go ("}");
     }
@@ -1928,7 +1928,7 @@ void make_tables_go (void)
     skelout ();		/* %% [11.0] - break point in skel */
     outn ("m4_ifdef( [[M4_YY_USE_LINENO]],[[");
     indent_puts_go
-	("if yy.act != yyEndOfBuffer && yy_rule_can_match_eol[yy.act] != 0 {");
+	("if yy.act != yyEndOfBuffer && yyRuleCanMatchEol[yy.act] != 0 {");
     indent_up_go ();
     do_indent_go ();
     out_str ("for yyl := %s; yyl < yy.Leng; yyl++ {\n",

@@ -12,7 +12,6 @@
 
 int
     i,
-    toggle = 0,
     g_argc = 0;
 char
     **g_argv;
@@ -39,9 +38,9 @@ int yywrap()
 
 char *upstring(char *s) {
     int i;
-        for (i = 0; s[i]; i++)
-            if (s[i] >= 'a' && s[i] <= 'z')
-                s[i] -= 32;
+    for (i = 0; s[i]; i++)
+        if (s[i] >= 'a' && s[i] <= 'z')
+            s[i] -= 32;
     return s;
 }
 
@@ -80,9 +79,9 @@ bar			fprintf(yyout, "BAR");
 
 <f1,f2>{
 
-zx             |
+foo             |
 
-[zZ][xX]	{ fprintf(yyout, "FOO");
+Foo	{ fprintf(yyout, "FOO");
 		  yymore();
                 }
 
@@ -90,20 +89,7 @@ de[0-9]+        { ECHO;
 		  yyless(yyleng-2);
                 }
 
-
-^.		{
-			fprintf(yyout, "%5i\t", yylineno);
-			REJECT;
-		}
-
-^[a-z]		|
-
-[aeiou]+/[0-9]+	|
-
-qt		{
-		    toggle = 1 - toggle;
-		    if (toggle)
-		       REJECT;
+[aeiou]/0 {
 		    fprintf(yyout, upstring(yytext));
 		}
 
