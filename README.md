@@ -39,6 +39,40 @@ Ignored options:
  * --c++
  * --reentrant
 
+## Minimal scanner
+
+	%top{
+
+	package main
+
+	import (
+	    "fmt"
+	    "io"
+	    "log"
+	    "os"
+	)
+
+	// return type of yy.Flex()
+	type YYtype interface{}
+
+	// returned on end of file
+	var YYnull YYtype = nil
+
+	}
+
+	    /* no definitions. */
+
+	%%
+
+	    /* No rules so default action of copying each input character to the output is performed. */
+
+	%%
+
+	func main() {
+	    // runs the scanner on files given as arguments, or stdin if there are no arguments
+	    YYmain(os.Args[1:]...)
+	}
+
 ## Difference between C output and Go output
 
 ### Functions and variables
@@ -50,11 +84,10 @@ Ignored options:
             yytext             yy.Text  []byte
             yyleng             yy.Leng
     YY_DECL yylex(void)        yy.Lex() interface()
-            yyterminate(int)   yyterminate(interface{})
         int input(void)        yyinput() (byte, error)
             unput(int)         yyunput(byte)
             YY_USER_ACTION     yy.UserAction(yy) // can be assigned to
-		                       yy.UserData
+                               yy.UserData
 
 Inside actions, the names `yyout`, `yytext`, and `yyleng` are also
 available.

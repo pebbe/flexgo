@@ -1,8 +1,13 @@
 ---
+- name: minimal
+  clex: minimal-c.l
+  glex: minimal-go.l
+  opts: -B
+  files: text3.txt
 - name: Test1-B
   clex: Test1c.l
   glex: Test1go.l
-  opts: -B
+  opts: -B --yylineno
   files: txt*
 - name: test01
   clex: test01c.l

@@ -22,7 +22,7 @@ const char *skel1_go[] = {
   "m4_define( [[BEGIN]], [[yy.start = 1 + 2*]] )",
   "m4_define( [[ECHO]], [[yy.Echo()]] )",
   "m4_define( [[REJECT]], [[yy.Reject()]] )",
-  "m4_define( [[yyterminate]], [[return $1]] )",
+  "m4_define( [[yyterminate]], [[return YYnull]] )",
   "m4_define( [[yyless]], [[yy.Less($1)]] )",
   "m4_define( [[yyinput]], [[yy.Input()]] )",
   "m4_define( [[yyunput]], [[yy.Unput($1)]] )",

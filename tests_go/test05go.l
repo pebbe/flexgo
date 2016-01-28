@@ -58,7 +58,7 @@ foo/bar	{
 		BEGIN INITIAL
         }
 
-<<EOF>> yyterminate(fmt.Errorf("Closing quote is missing"))
+<<EOF>> return fmt.Errorf("Closing quote is missing")
 
 }
 

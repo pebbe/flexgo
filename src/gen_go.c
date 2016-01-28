@@ -2009,7 +2009,7 @@ void make_tables_go (void)
 	    do_indent_go ();
 	    out_str ("case YY_STATE_EOF(%s):\n", scname[i]);
 	    indent_up_go ();
-	    indent_puts_go ("yyterminate(YYnull)");
+	    indent_puts_go ("yyterminate()");
 	    indent_down_go ();
 	}
 
@@ -2063,19 +2063,21 @@ void make_tables_go (void)
     skelout ();		/* %% [19.0] - break point in skel */
     /* Update BOL and yylineno inside of input(). */
     if (bol_needed) {
-	indent_puts_go
-	    ("// TODO: yy_CURRENT_BUFFER_LVALUE->yy_at_bol = (c == '\\n')");
-	if (do_yylineno) {
-	    indent_puts_go
-		("// TODO: if ( yy_CURRENT_BUFFER_LVALUE->yy_at_bol )");
-	    indent_up_go ();
-	    indent_puts_go ("// TODO: M4_YY_INCR_LINENO()");
-	    indent_down_go ();
-	}
+	indent_puts_go ("if c == '\\n' {");
+	indent_up_go ();
+	indent_puts_go ("yy.atBol = 1");
+	if (do_yylineno)
+	    indent_puts_go ("M4_YY_INCR_LINENO()");
+	indent_down_go ();
+	indent_puts_go ("} else {");
+	indent_up_go ();
+	indent_puts_go ("yy.atBol = 0");
+	indent_down_go ();
+	indent_puts_go ("}");
     }
 
     else if (do_yylineno) {
-	indent_puts_go ("if  c == '\\n' {");
+	indent_puts_go ("if c == '\\n' {");
 	indent_up_go ();
 	indent_puts_go ("M4_YY_INCR_LINENO()");
 	indent_down_go ();

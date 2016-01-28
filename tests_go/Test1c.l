@@ -63,6 +63,9 @@ int
 
 bar			fprintf(yyout, "BAR");
 
+\n			ECHO;
+
+
 <INITIAL>{
 
 (.|\n){4}	{
@@ -80,12 +83,24 @@ Foo             |
 
 foo		fprintf(yyout, "FOO");
 
+^.		{
+			fprintf(yyout, "%5i\t", yylineno);
+			REJECT;
+		}
+
 ^[a-z]		|
 
 [aeiou]+/[0-9]+	{
 		    if (yytext[0] == 'a')
 		       REJECT;
 		    fprintf(yyout, upstring(yytext));
+		}
+
+q[0-9]+		{
+			for (i = 0; i < 100; i++) {
+			    if (input() == EOF)
+			       yyterminate();
+			}
 		}
 
 "FINAL PART" {

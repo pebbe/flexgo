@@ -30,6 +30,8 @@ var YYnull YYtype = nil
 
 bar			fmt.Fprint(yyout, "BAR")
 
+\n			ECHO
+
 <INITIAL>{
 
 (.|\n){4}	{
@@ -48,6 +50,11 @@ Foo		|
 
 foo		yyout.Write([]byte("FOO"))
 
+^.		{
+			fmt.Fprintf(yyout, "%5d\t", yylineno)
+			REJECT
+		}
+
 ^[a-z]		|
 
 [aeiou]+/[0-9]+	{
@@ -55,6 +62,15 @@ foo		yyout.Write([]byte("FOO"))
 		       REJECT
 		    }
 		    yyout.Write(bytes.ToUpper(yytext))
+		}
+
+q[0-9]+		{
+			for i := 0; i < 100; i++ {
+			    _, err := yyinput()
+			    if err != nil {
+			       yyterminate()
+			    }
+			}
 		}
 
 "FINAL PART" {
@@ -70,7 +86,7 @@ foo		yyout.Write([]byte("FOO"))
 		    yyout.Write(b)
 		}
 		yyout.Write([]byte("<<<\n"))
-		yyterminate(nil)
+		yyterminate()
 	}
 
 }
