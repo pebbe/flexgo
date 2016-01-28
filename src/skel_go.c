@@ -759,6 +759,8 @@ const char *skel1_go[] = {
   "",
   "	yy := NewScanner()",
   "",
+  "	yy.Filename = \"<stdin>\"",
+  "",
   "	if len(filenames) > 0 {",
   "		yy.Filename = filenames[0]",
   "		yy.In, errval = os.Open(yy.Filename)",
