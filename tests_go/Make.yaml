@@ -1,4 +1,49 @@
 ---
+- name: nul-B
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -B
+  files: nul.txt
+- name: nul-I
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -I --yylineno
+  files: nul.txt
+- name: nul-Ca
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -Ca
+  files: nul.txt
+- name: nul-Ce
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -Ce
+  files: nul.txt
+- name: nul-Cf
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -Cf
+  files: nul.txt
+- name: nul-CF
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -CF
+  files: nul.txt
+- name: nul-Cm
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -Cm
+  files: nul.txt
+- name: nul-Cr
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -Cr
+  files: nul.txt
+- name: nul-Cem
+  clex: nul-c.l
+  glex: nul-go.l
+  opts: -Cem
+  files: nul.txt
 - name: minimal
   clex: minimal-c.l
   glex: minimal-go.l

@@ -954,8 +954,8 @@ void gen_NUL_trans_go (void)
 
     if (nultrans) {
 	indent_puts_go
-	    ("yyCurrentState = int(yyNulTrans[yyCurrentState])");
-	indent_puts_go ("yyIsJam = (yyCurrentState == 0)");
+	    ("yy.currentState = int(yyNulTrans[yy.currentState])");
+	indent_puts_go ("yyIsJam = (yy.currentState == 0)");
     }
 
     else if (fulltbl) {
