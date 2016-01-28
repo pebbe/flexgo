@@ -56,6 +56,23 @@ foo		yyout.Write([]byte("FOO"))
 		    }
 		    yyout.Write(bytes.ToUpper(yytext))
 		}
+
+"FINAL PART" {
+		ECHO
+		yyout.Write([]byte("\n>>>"))
+		b := make([]byte, 1)
+		for {
+		    c, err := yyinput()
+		    if err != nil {
+		       break
+		    }
+		    b[0] = c
+		    yyout.Write(b)
+		}
+		yyout.Write([]byte("<<<\n"))
+		yyterminate(nil)
+	}
+
 }
 
 %%

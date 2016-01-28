@@ -75,8 +75,8 @@ baz    {
 		    b[0] = c
 		    yyout.Write(b)
 		}
-		yyterminate(nil)
 		yyout.Write([]byte("<<<\n"))
+		yyterminate(nil)
 	}
 
 }

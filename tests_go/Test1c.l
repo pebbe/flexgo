@@ -87,6 +87,15 @@ foo		fprintf(yyout, "FOO");
 		       REJECT;
 		    fprintf(yyout, upstring(yytext));
 		}
+
+"FINAL PART" {
+		ECHO;
+		fprintf(yyout, "\n>>>");
+		while ((i = input()) != EOF)
+			fputc(i, yyout);
+		fprintf(yyout, "<<<\n");
+		yyterminate();
+	}
 }
 
 %%

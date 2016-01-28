@@ -526,9 +526,8 @@ void gen_find_action_go (void)
     }
 
     else if (reject) {
-	indent_puts_go ("sp := len(yy.stateBuf) - 1");
-	indent_puts_go ("yy.currentState = yy.stateBuf[sp]");
-	indent_puts_go ("yy.stateBuf = yy.stateBuf[:sp]");
+	indent_puts_go ("yy.statePtr--");
+	indent_puts_go ("yy.currentState = yy.stateBuf[yy.statePtr]");
 	indent_puts_go ("yy.lp = int(yyAccept[yy.currentState])");
 
 	indent_puts_go ("findRule: // we branch to this label when backing up");
@@ -612,9 +611,8 @@ void gen_find_action_go (void)
 	 * the beginning, but at the cost of complaints that we're
 	 * branching inside a loop.
 	 */
-	indent_puts_go ("sp := len(yy.stateBuf) - 1");
-	indent_puts_go ("yy.currentState = yy.stateBuf[sp]");
-	indent_puts_go ("yy.stateBuf = yy.stateBuf[:sp]");
+	indent_puts_go ("yy.statePtr--");
+	indent_puts_go ("yy.currentState = yy.stateBuf[yy.statePtr]");
 	indent_puts_go ("yy.lp = int(yyAccept[yy.currentState])");
 
 	indent_down_go ();
@@ -929,8 +927,10 @@ void gen_next_state_go (int worry_about_NULs)
     if (fullspd || fulltbl)
 	gen_backing_up_go ();
 
-    if (reject)
-	indent_puts_go ("yy.stateBuf = append(yy.stateBuf, yy.currentState)");
+    if (reject) {
+	indent_puts_go ("yy.stateBuf[yy.statePtr] = yy.currentState");
+	indent_puts_go ("yy.statePtr++");
+    }
 }
 
 
@@ -1000,7 +1000,9 @@ void gen_NUL_trans_go (void)
 	    indent_puts_go ("if ! yyIsJam {");
 	    indent_up_go ();
 	    indent_puts_go
-		("yy.stateBuf = append(yy.stateBuf, yyCurrentState)");
+		("yy.stateBuf[yy.statePtr] = yyCurrentState");
+	    indent_puts_go
+		("yy.statePtr++");
 	    indent_down_go ();
 	    indent_puts_go ("}");
 	}
@@ -1045,9 +1047,9 @@ void gen_start_state_go (void)
 	    /* Set up for storing up states. */
 	    outn ("m4_ifdef( [[M4_YY_USES_REJECT]],\n[[");
 	    indent_puts_go
-		("yy.stateBuf = yy.stateBuf[0:0]");
+		("yy.stateBuf[0] = yy.currentState");
 	    indent_puts_go
-		("yy.stateBuf = append(yy.stateBuf, yy.currentState)");
+		("yy.statePtr = 1");
 	    outn ("]])");
 	}
     }
@@ -1766,7 +1768,7 @@ void make_tables_go (void)
 	if (variable_trailing_context_rules) {
 	    outn ("yy.lp = yy.fullLp // restore orig. accepting pos.");
 	    outn ("yy.statePtr = yy.fullState // restore orig. state");
-	    outn ("yy.currentState = yy.statePtr // restore curr. state");
+	    outn ("yy.currentState = yy.stateBuf[yy.statePtr] // restore curr. state");
 	}
 
        	outn ("yy.lp++");

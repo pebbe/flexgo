@@ -81,7 +81,7 @@ func NewScanner() *Scanner {
 		bufSize:       yyBufSize,
 		chBuf:         make([]byte, yyBufSize+2),
 		start:         1,
-		stateBuf:      make([]int, 0),
+		stateBuf:      make([]int, yyBufSize+2),
 		atBol:         1,
 		debug:         yyFlexDebug,
 		fillBuffer:    true,
@@ -215,7 +215,7 @@ func (yy *Scanner) Less(n int) {
 	// Undo effects of setting up yytext.
 	yyless_macro_arg := n
 	m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yyless_macro_arg)]])
-	yy.chBuf[yy.cBufP] = yy.holdChar
+	yy.chBuf[yy.cp] = yy.holdChar
 	YY_RESTORE_YY_MORE_OFFSET
 	yy.cp = yy.bp + yyless_macro_arg - YY_MORE_ADJ
 	yy.cBufP = yy.cp

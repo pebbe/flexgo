@@ -86,8 +86,8 @@ baz    {
 		fprintf(yyout, "\n>>>");
 		while ((i = input()) != EOF)
 			fputc(i, yyout);
-		yyterminate();
 		fprintf(yyout, "<<<\n");
+		yyterminate();
 	}
 
 }
