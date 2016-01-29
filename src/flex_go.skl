@@ -23,6 +23,10 @@ m4_define( [[yyunput]], [[yy.Unput($1)]] )
 m4_define( [[YY_START]], [[((yy.start - 1) / 2)]] )
 m4_define( [[YTSTATE]], [[((yy.start - 1) / 2)]] )
 m4_define( [[YY_STATE_EOF]], [[(yyEndOfBuffer + $1 + 1)]] )
+m4_define( [[YY_USER_DATA]], [[m4_define(yyUserData, $1)]] )
+m4_define( [[YY_USER_INIT]], [[m4_define(yyUserInit, $1)]] )
+m4_define( [[YY_USER_ACTION]], [[m4_define(yyUserAction, $1)]] )
+
 
 type Scanner struct {
 	In   io.Reader
@@ -32,8 +36,6 @@ type Scanner struct {
 	m4_ifdef( [[M4_YY_USE_LINENO]], [[Lineno int]])
 
 	Filename      string
-	UserData      interface{}
-	UserAction    func(*Scanner)
 	Wrap          func(*Scanner) bool
 	IsInteractive func(io.Reader) bool
 
@@ -49,8 +51,7 @@ type Scanner struct {
 	fullLp               int
 	lp                   int
 	lookingForTrailBegin int
-	cp, bp               int
-	act                  int
+	cp               int
 	holdChar             byte
 	cBufP                int
 	didBufferSwitchOnEof bool
@@ -176,11 +177,24 @@ func (yy *Scanner) input(offset, maxRead int) int {
 	return n
 }
 
+m4_ifdef( [[yyUserData]],, [[
+  m4_define(yyUserData, [[]])
+]])
+m4_ifdef( [[yyUserInit]],, [[
+  m4_define(yyUserInit, [[]])
+]])
+m4_ifdef( [[yyUserAction]],, [[
+  m4_define(yyUserAction, [[]])
+]])
+
 // The main scanner function which does all the work.
 func (yy *Scanner) Lex() YYtype {
+	var yyAct, yyBp int
+
+	yyUserData
 
 	yyDoBeforeAction := func() {
-		yy.textPtr = yy.bp
+		yy.textPtr = yyBp
 
 // [2.0] code to fiddle yytext and yyleng for yy''more() goes here -------
 %% [2.0] code to fiddle yytext and yyleng for yy''more() goes here
@@ -215,7 +229,7 @@ func (yy *Scanner) Lex() YYtype {
 		m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yylessMacroArg)]])
 		yy.chBuf[yy.cp] = yy.holdChar
 		YY_RESTORE_YY_MORE_OFFSET
-		yy.cp = yy.bp + yylessMacroArg - YY_MORE_ADJ
+		yy.cp = yyBp + yylessMacroArg - YY_MORE_ADJ
 		yy.cBufP = yy.cp
 		yyDoBeforeAction()
 	}
@@ -225,6 +239,7 @@ func (yy *Scanner) Lex() YYtype {
 
 	if !yy.init {
 		yy.init = true
+		yyUserInit
 		if yy.In == nil {
 			yy.In = os.Stdin
 		}
@@ -258,9 +273,9 @@ func (yy *Scanner) Lex() YYtype {
 		/* Support of yytext. */
 		yy.chBuf[yy.cp] = yy.holdChar
 
-		// yy.bp points to the position in yy_ch_buf of the start of
+		// yyBp points to the position in yy_ch_buf of the start of
 		// the current run.
-		yy.bp = yy.cp
+		yyBp = yy.cp
 
 // [9.0] code to set up and find next match goes here ------------------
 %% [9.0] code to set up and find next match goes here
@@ -284,7 +299,7 @@ func (yy *Scanner) Lex() YYtype {
 %% [12.0] debug code goes here
 // SKEL ----------------------------------------------------------------
 
-		switch yy.act { // beginning of action switch
+		switch yyAct { // beginning of action switch
 
 // [13.0] actions go here ----------------------------------------------
 %% [13.0] actions go here
@@ -339,7 +354,7 @@ func (yy *Scanner) Lex() YYtype {
 
 				yyNextState = yy.tryNulTrans(yy.currentState)
 
-				yy.bp = yy.textPtr + YY_MORE_ADJ
+				yyBp = yy.textPtr + YY_MORE_ADJ
 
 				if yyNextState != 0 {
 					/* Consume the NUL. */
@@ -373,7 +388,7 @@ func (yy *Scanner) Lex() YYtype {
 						// yy_NULL will get returned.
 						yy.cBufP = yy.textPtr + YY_MORE_ADJ
 
-						yy.act = YY_STATE_EOF(YY_START)
+						yyAct = YY_STATE_EOF(YY_START)
 						goto doAction
 					} else {
 						if !yy.didBufferSwitchOnEof {
@@ -386,7 +401,7 @@ func (yy *Scanner) Lex() YYtype {
 					yy.currentState = yy.getPreviousState()
 
 					yy.cp = yy.cBufP
-					yy.bp = yy.textPtr + YY_MORE_ADJ
+					yyBp = yy.textPtr + YY_MORE_ADJ
 					goto yyMatch
 				case eobActLastMatch:
 					yy.cBufP = yy.nChars
@@ -394,13 +409,13 @@ func (yy *Scanner) Lex() YYtype {
 					yy.currentState = yy.getPreviousState()
 
 					yy.cp = yy.cBufP
-					yy.bp = yy.textPtr + YY_MORE_ADJ
+					yyBp = yy.textPtr + YY_MORE_ADJ
 					goto yyFindAction
 				}
 			}
 
 		default:
-			log.Panicln("fatal flex scanner internal error--no action found:", yy.act)
+			log.Panicln("fatal flex scanner internal error--no action found:", yyAct)
 		} // end of action switch
 	} // end of scanning one token
 	return nil

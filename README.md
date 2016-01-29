@@ -87,8 +87,6 @@ Ignored options:
     YY_DECL yylex(void)        yy.Lex() interface()
         int input(void)        yyinput() (byte, error)
             unput(int)         yyunput(byte)
-            YY_USER_ACTION     yy.UserAction(yy) // can be assigned to
-                               yy.UserData
 
 Inside actions, the names `yyout`, `yytext`, `yyleng`, and `yylineno`
 are also available.

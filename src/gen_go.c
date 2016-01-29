@@ -518,11 +518,11 @@ void genecs_go (void)
 void gen_find_action_go (void)
 {
     if (fullspd) {
-	indent_puts_go ("yy.act = int(yyTransition[yy.currentState-1].yyNxt)");
+	indent_puts_go ("yyAct = int(yyTransition[yy.currentState-1].yyNxt)");
     }
 
     else if (fulltbl) {
-	indent_puts_go ("yy.act = int(yyAccept[yy.currentState])");
+	indent_puts_go ("yyAct = int(yyAccept[yy.currentState])");
     }
 
     else if (reject) {
@@ -536,19 +536,19 @@ void gen_find_action_go (void)
 	indent_up_go ();
 	indent_puts_go ("if yy.lp != 0 && yy.lp < int(yyAccept[yy.currentState+1]) {");
 	indent_up_go ();
-	indent_puts_go ("yy.act = int(yyAcclist[yy.lp])");
+	indent_puts_go ("yyAct = int(yyAcclist[yy.lp])");
 
 	if (variable_trailing_context_rules) {
 	    indent_puts_go
-		("if yy.act & yyTrailingHeadMask != 0 ||");
+		("if yyAct & yyTrailingHeadMask != 0 ||");
 	    indent_puts_go ("     yy.lookingForTrailBegin != 0 {");
 	    indent_up_go ();
 
 	    indent_puts_go
-		("if yy.act == yy.lookingForTrailBegin {");
+		("if yyAct == yy.lookingForTrailBegin {");
 	    indent_up_go ();
 	    indent_puts_go ("yy.lookingForTrailBegin = 0");
-	    indent_puts_go ("yy.act &= ^yyTrailingHeadMask");
+	    indent_puts_go ("yyAct &= ^yyTrailingHeadMask");
 	    indent_puts_go ("break");
 	    indent_puts_go ("}");
 	    indent_down_go ();
@@ -556,10 +556,10 @@ void gen_find_action_go (void)
 	    indent_down_go ();
 
 	    indent_puts_go
-		("} else if yy.act & yyTrailingMask != 0 {");
+		("} else if yyAct & yyTrailingMask != 0 {");
 	    indent_up_go ();
 	    indent_puts_go
-		("yy.lookingForTrailBegin = yy.act & ^yyTrailingMask");
+		("yy.lookingForTrailBegin = yyAct & ^yyTrailingMask");
 	    indent_puts_go
 		("yy.lookingForTrailBegin |= yyTrailingHeadMask");
 
@@ -620,18 +620,18 @@ void gen_find_action_go (void)
     }
 
     else {			/* compressed */
-	indent_puts_go ("yy.act = int(yyAccept[yy.currentState])");
+	indent_puts_go ("yyAct = int(yyAccept[yy.currentState])");
 
 	if (interactive && !reject) {
 	    /* Do the guaranteed-needed backing up to figure out
 	     * the match.
 	     */
-	    indent_puts_go ("if yy.act == 0 {");
+	    indent_puts_go ("if yyAct == 0 {");
 	    indent_up_go ();
 	    indent_puts_go ("// have to back up");
 	    indent_puts_go ("yy.cp = yy.lastAcceptingCpos");
 	    indent_puts_go ("yy.currentState = yy.lastAcceptingState");
-	    indent_puts_go ("yy.act = int(yyAccept[yy.currentState])");
+	    indent_puts_go ("yyAct = int(yyAccept[yy.currentState])");
 	    indent_down_go ();
 	    indent_puts_go ("}");
 	}
@@ -1781,7 +1781,7 @@ void make_tables_go (void)
     }
 
     else
-	indent_puts_go ("yy.Leng = yy.cp - yy.bp");
+	indent_puts_go ("yy.Leng = yy.cp - yyBp");
 
     /* Now also deal with copying yytext_ptr to yytext if needed. */
     skelout ();		/* %% [3.0] - break point in skel */
@@ -1807,11 +1807,7 @@ void make_tables_go (void)
 	indent_down_go ();
 	indent_puts_go ("}");
     }
-    indent_puts_go ("if yy.UserAction != nil {");
-    indent_up_go ();
-    indent_puts_go ("yy.UserAction(yy)");
-    indent_down_go ();
-    indent_puts_go ("}");
+    indent_puts_go ("yyUserAction");
     indent_puts_go ("yytext = yy.Text");
     indent_puts_go ("yyleng = yy.Leng");
     if (do_yylineno) {
@@ -1857,7 +1853,7 @@ void make_tables_go (void)
     skelout ();		/* %% [11.0] - break point in skel */
     outn ("m4_ifdef( [[M4_YY_USE_LINENO]],[[");
     indent_puts_go
-	("if yy.act != yyEndOfBuffer && yyRuleCanMatchEol[yy.act] != 0 {");
+	("if yyAct != yyEndOfBuffer && yyRuleCanMatchEol[yyAct] != 0 {");
     indent_up_go ();
     do_indent_go ();
     out_str ("for yyl := %s; yyl < yy.Leng; yyl++ {\n",
@@ -1879,22 +1875,22 @@ void make_tables_go (void)
 	indent_puts_go ("if yyFlexDebug {");
 	indent_up_go ();
 
-	indent_puts_go ("if yy.act == 0 {");
+	indent_puts_go ("if yyAct == 0 {");
 	indent_up_go ();
 	indent_puts_go ("fmt.Fprintln(os.Stderr, \"--scanner backing up\")");
 	indent_down_go ();
 
 	do_indent_go ();
-	out_dec ("} else if yy.act < %d {\n", num_rules);
+	out_dec ("} else if yyAct < %d {\n", num_rules);
 	indent_up_go ();
 
 	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting rule at line %d (%q)\\n\",");
-	indent_puts_go ("         yyRuleLinenum[yy.act], yy.Text)");
+	indent_puts_go ("         yyRuleLinenum[yyAct], yy.Text)");
 
 	indent_down_go ();
 
 	do_indent_go ();
-	out_dec ("} else if yy.act == %d {\n", num_rules);
+	out_dec ("} else if yyAct == %d {\n", num_rules);
 	indent_up_go ();
 
 	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yy.Text)");
@@ -1902,7 +1898,7 @@ void make_tables_go (void)
 	indent_down_go ();
 
 	do_indent_go ();
-	out_dec ("} else if yy.act == %d {\n", num_rules + 1);
+	out_dec ("} else if yyAct == %d {\n", num_rules + 1);
 	indent_up_go ();
 
 	indent_puts_go ("fmt.Fprintln(os.Stderr, \"--(end of buffer or a NUL)\")");

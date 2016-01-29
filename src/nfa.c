@@ -267,7 +267,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 		    add_action (action_text);
 		}
 		if (Go) {
-		    snprintf (action_text, sizeof(action_text), "yy.cp = yy.bp + %d\n",
+		    snprintf (action_text, sizeof(action_text), "yy.cp = yyBp + %d\n",
 			      headcnt);
 		    add_action (action_text);
 		    snprintf (action_text, sizeof(action_text), "yy.cBufP = yy.cp\n");

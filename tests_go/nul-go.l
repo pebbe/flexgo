@@ -26,8 +26,19 @@ var (
      R = []byte(")")
 )
 
-%}
+YY_USER_DATA(
+  // my very own user data
+)
 
+YY_USER_INIT(
+  // my very own user init
+)
+
+YY_USER_ACTION(
+  // my very own user action
+)
+
+%}
 
 %%
 

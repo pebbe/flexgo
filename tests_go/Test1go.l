@@ -21,7 +21,14 @@ var YYnull YYtype = nil
 
 %{
 
-var toggle = false
+var (
+	toggle = false
+	count  = make([]int, yyNumRules+1)
+)
+
+YY_USER_ACTION(
+	count[yyAct]++
+)
 
 %}
 
@@ -118,13 +125,6 @@ func main() {
 
 	yy := NewScanner()
 
-	yy.UserData = Data{
-		count: make([]int, yyNumRules+1),
-	}
-	yy.UserAction = func(yy *Scanner) {
-		yy.UserData.(Data).count[yy.act]++
-	}
-
 	filenames := os.Args[1:]
 	if len(filenames) > 0 {
 		yy.Filename = filenames[0]
@@ -155,7 +155,7 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 
-	for i, n := range yy.UserData.(Data).count {
+	for i, n := range count {
 		if i == 0 {
 			continue
 		}
