@@ -173,13 +173,13 @@ void gen_backing_up_go ()
 
     do_indent_go ();
     if (fullspd)
-	indent_puts_go ("if yyTransition[yy.currentState-1].yyNxt != 0 {");
+	indent_puts_go ("if yyTransition[yyCurrentState-1].yyNxt != 0 {");
     else
-	indent_puts_go ("if yyAccept[yy.currentState] != 0 {");
+	indent_puts_go ("if yyAccept[yyCurrentState] != 0 {");
 
     indent_up_go ();
-    indent_puts_go ("yy.lastAcceptingState = yy.currentState");
-    indent_puts_go ("yy.lastAcceptingCpos = yy.cp");
+    indent_puts_go ("yy.lastAcceptingState = yyCurrentState");
+    indent_puts_go ("yy.lastAcceptingCpos = yyCp");
     indent_down_go ();
     indent_puts_go ("}");
 }
@@ -196,17 +196,17 @@ void gen_bu_action_go (void)
 
     indent_puts_go ("case 0: // must back up");
     indent_puts_go ("// undo the effects of yy_DO_BEFORE_ACTION");
-    indent_puts_go ("yy.chBuf[yy.cp] = yy.holdChar");
+    indent_puts_go ("yy.chBuf[yyCp] = yy.holdChar");
 
     if (fullspd || fulltbl)
-	indent_puts_go ("yy.cp = yy.lastAcceptingCpos + 1");
+	indent_puts_go ("yyCp = yy.lastAcceptingCpos + 1");
     else
 	/* Backing-up info for compressed tables is taken \after/
 	 * yy_cp has been incremented for the next state.
 	 */
-	indent_puts_go ("yy.cp = yy.lastAcceptingCpos");
+	indent_puts_go ("yyCp = yy.lastAcceptingCpos");
 
-    indent_puts_go ("yy.currentState = yy.lastAcceptingState");
+    indent_puts_go ("yyCurrentState = yy.lastAcceptingState");
     indent_puts_go ("goto yyFindAction");
     outc ('\n');
 
@@ -518,23 +518,23 @@ void genecs_go (void)
 void gen_find_action_go (void)
 {
     if (fullspd) {
-	indent_puts_go ("yyAct = int(yyTransition[yy.currentState-1].yyNxt)");
+	indent_puts_go ("yyAct = int(yyTransition[yyCurrentState-1].yyNxt)");
     }
 
     else if (fulltbl) {
-	indent_puts_go ("yyAct = int(yyAccept[yy.currentState])");
+	indent_puts_go ("yyAct = int(yyAccept[yyCurrentState])");
     }
 
     else if (reject) {
 	indent_puts_go ("yy.statePtr--");
-	indent_puts_go ("yy.currentState = yy.stateBuf[yy.statePtr]");
-	indent_puts_go ("yy.lp = int(yyAccept[yy.currentState])");
+	indent_puts_go ("yyCurrentState = yy.stateBuf[yy.statePtr]");
+	indent_puts_go ("yy.lp = int(yyAccept[yyCurrentState])");
 
 	indent_puts_go ("findRule: // we branch to this label when backing up");
 
 	indent_puts_go ("for { // until we find what rule we matched");
 	indent_up_go ();
-	indent_puts_go ("if yy.lp != 0 && yy.lp < int(yyAccept[yy.currentState+1]) {");
+	indent_puts_go ("if yy.lp != 0 && yy.lp < int(yyAccept[yyCurrentState+1]) {");
 	indent_up_go ();
 	indent_puts_go ("yyAct = int(yyAcclist[yy.lp])");
 
@@ -568,7 +568,7 @@ void gen_find_action_go (void)
 		 * due to REJECT.
 		 */
 		indent_puts_go
-		    ("yy.fullMatch = yy.cp");
+		    ("yy.fullMatch = yyCp");
 		indent_puts_go
 		    ("yy.fullState = yy.statePtr");
 		indent_puts_go ("yy.fullLp = yy.lp");
@@ -578,7 +578,7 @@ void gen_find_action_go (void)
 
 	    indent_puts_go ("} else {");
 	    indent_up_go ();
-	    indent_puts_go ("yy.fullMatch = yy.cp");
+	    indent_puts_go ("yy.fullMatch = yyCp");
 	    indent_puts_go
 		("yy.fullState = yy.statePtr");
 	    indent_puts_go ("yy.fullLp = yy.lp");
@@ -596,7 +596,7 @@ void gen_find_action_go (void)
 	     */
 	    indent_up_go ();
 	    indent_puts_go ("{");
-	    indent_puts_go ("yy.fullMatch = yy.cp");
+	    indent_puts_go ("yy.fullMatch = yyCp");
 	    indent_puts_go ("break");
 	    indent_puts_go ("}");
 	    indent_down_go ();
@@ -605,22 +605,22 @@ void gen_find_action_go (void)
 	indent_puts_go ("}");
 	indent_down_go ();
 
-	indent_puts_go ("yy.cp--");
+	indent_puts_go ("yyCp--");
 
 	/* We could consolidate the following two lines with those at
 	 * the beginning, but at the cost of complaints that we're
 	 * branching inside a loop.
 	 */
 	indent_puts_go ("yy.statePtr--");
-	indent_puts_go ("yy.currentState = yy.stateBuf[yy.statePtr]");
-	indent_puts_go ("yy.lp = int(yyAccept[yy.currentState])");
+	indent_puts_go ("yyCurrentState = yy.stateBuf[yy.statePtr]");
+	indent_puts_go ("yy.lp = int(yyAccept[yyCurrentState])");
 
 	indent_down_go ();
 	indent_puts_go ("}");
     }
 
     else {			/* compressed */
-	indent_puts_go ("yyAct = int(yyAccept[yy.currentState])");
+	indent_puts_go ("yyAct = int(yyAccept[yyCurrentState])");
 
 	if (interactive && !reject) {
 	    /* Do the guaranteed-needed backing up to figure out
@@ -629,9 +629,9 @@ void gen_find_action_go (void)
 	    indent_puts_go ("if yyAct == 0 {");
 	    indent_up_go ();
 	    indent_puts_go ("// have to back up");
-	    indent_puts_go ("yy.cp = yy.lastAcceptingCpos");
-	    indent_puts_go ("yy.currentState = yy.lastAcceptingState");
-	    indent_puts_go ("yyAct = int(yyAccept[yy.currentState])");
+	    indent_puts_go ("yyCp = yy.lastAcceptingCpos");
+	    indent_puts_go ("yyCurrentState = yy.lastAcceptingState");
+	    indent_puts_go ("yyAct = int(yyAccept[yyCurrentState])");
 	    indent_down_go ();
 	    indent_puts_go ("}");
 	}
@@ -723,9 +723,9 @@ void gen_next_compressed_state_go (char *char_map)
     gen_backing_up_go ();
 
     indent_puts_go
-	("for int(yyChk[int(yyBase[yy.currentState])+yyC]) != yy.currentState {");
+	("for int(yyChk[int(yyBase[yyCurrentState])+yyC]) != yyCurrentState {");
     indent_up_go ();
-    indent_puts_go ("yy.currentState = int(yyDef[yy.currentState])");
+    indent_puts_go ("yyCurrentState = int(yyDef[yyCurrentState])");
 
     if (usemecs) {
 	/* We've arrange it so that templates are never chained
@@ -738,7 +738,7 @@ void gen_next_compressed_state_go (char *char_map)
 	do_indent_go ();
 
 	/* lastdfa + 2 is the beginning of the templates */
-	out_dec ("if yy.currentState >= %d {\n", lastdfa + 2);
+	out_dec ("if yyCurrentState >= %d {\n", lastdfa + 2);
 
 	indent_up_go ();
 	indent_puts_go ("yyC = int(yyMeta[yyC])");
@@ -750,7 +750,7 @@ void gen_next_compressed_state_go (char *char_map)
     indent_puts_go ("}");
 
     indent_puts_go
-	("yy.currentState = int(yyNxt[int(yyBase[yy.currentState])+yyC])");
+	("yyCurrentState = int(yyNxt[int(yyBase[yyCurrentState])+yyC])");
 }
 
 
@@ -762,7 +762,7 @@ void gen_next_match_go (void)
      * gen_NUL_trans().
      */
     char   *char_map = useecs ?
-	"yyEc[yy.chBuf[yy.cp]]" : "yy.chBuf[yy.cp]";
+	"yyEc[yy.chBuf[yyCp]]" : "yy.chBuf[yyCp]";
 
     char   *char_map_2 = useecs ?
 	"yy_ec[YY_SC_TO_UI(*++yy_cp)] " : "YY_SC_TO_UI(*++yy_cp)";
@@ -772,9 +772,9 @@ void gen_next_match_go (void)
 	    indent_puts_go ("for {");
 	    indent_up_go ();
 	    indent_put2s_go (
-			     "yy.currentState = int(yyNxt[yy.currentState][%s])",
+			     "yyCurrentState = int(yyNxt[yyCurrentState][%s])",
 			     char_map);
-	    indent_puts_go ("if yy.currentState <= 0 {");
+	    indent_puts_go ("if yyCurrentState <= 0 {");
 	    indent_up_go ();
 	    indent_puts_go ("break");
 	    indent_down_go ();
@@ -783,7 +783,7 @@ void gen_next_match_go (void)
 	}
 	else
 	    indent_put2s_go
-		("while ( (yy.currentState = yy_nxt[yy.currentState*YY_NXT_LOLEN +  %s ]) > 0 )",
+		("while ( (yyCurrentState = yy_nxt[yyCurrentState*YY_NXT_LOLEN +  %s ]) > 0 )",
 		 char_map);
 
 	indent_up_go ();
@@ -793,35 +793,35 @@ void gen_next_match_go (void)
 	    outc ('\n');
 	}
 
-	indent_puts_go ("yy.cp++");
+	indent_puts_go ("yyCp++");
 
 	indent_down_go ();
 	indent_puts_go ("}");
 
 
 	outc ('\n');
-	indent_puts_go ("yy.currentState = -yy.currentState");
+	indent_puts_go ("yyCurrentState = -yyCurrentState");
     }
 
     else if (fullspd) {
 
-	indent_puts_go ("yyC := yy.chBuf[yy.cp]");
+	indent_puts_go ("yyC := yy.chBuf[yyCp]");
 	indent_puts_go ("for {");
 	indent_up_go ();
-	indent_puts_go ("transInfo := yyTransition[yy.currentState+int(yyC)]");
+	indent_puts_go ("transInfo := yyTransition[yyCurrentState+int(yyC)]");
 	indent_puts_go ("if int(transInfo.yyVerify) != int(yyC) {");
 	indent_up_go ();
 	indent_puts_go ("break");
 	indent_down_go ();
 	indent_puts_go ("}");
 
-	indent_puts_go ("yy.currentState += int(transInfo.yyNxt)");
+	indent_puts_go ("yyCurrentState += int(transInfo.yyNxt)");
 
 	if (num_backing_up > 0)
 	    gen_backing_up_go ();
 
-	indent_puts_go ("yy.cp++");
-	indent_puts_go ("yyC = yy.chBuf[yy.cp]");
+	indent_puts_go ("yyCp++");
+	indent_puts_go ("yyC = yy.chBuf[yyCp]");
 	indent_down_go ();
 	indent_puts_go ("}");
     }
@@ -834,14 +834,14 @@ void gen_next_match_go (void)
 
 	gen_next_state_go (false);
 
-	indent_puts_go( "yy.cp++");
+	indent_puts_go( "yyCp++");
 
 	do_indent_go ();
 
 	if (interactive)
-	    out_dec ("if yyBase[yy.currentState] == %d {\n", jambase);
+	    out_dec ("if yyBase[yyCurrentState] == %d {\n", jambase);
 	else
-	    out_dec ("if yy.currentState == %d {\n",
+	    out_dec ("if yyCurrentState == %d {\n",
 		     jamstate);
 	indent_up_go ();
 	indent_puts_go ("break");
@@ -855,8 +855,8 @@ void gen_next_match_go (void)
 	     * the match.
 	     */
 
-	    indent_puts_go ("yy.cp = yy.lastAcceptingCpos");
-	    indent_puts_go ("yy.currentState = yy.lastAcceptingState");
+	    indent_puts_go ("yyCp = yy.lastAcceptingCpos");
+	    indent_puts_go ("yyCurrentState = yy.lastAcceptingState");
 
 	}
 
@@ -873,42 +873,42 @@ void gen_next_state_go (int worry_about_NULs)
     if (worry_about_NULs && !nultrans) {
 	if (useecs)
 	    snprintf (char_map, sizeof(char_map),
-		      "yyIfElse(yy.chBuf[yy.cp] != 0, int(yyEc[yy.chBuf[yy.cp]]), %d)",
+		      "yyIfElse(yy.chBuf[yyCp] != 0, int(yyEc[yy.chBuf[yyCp]]), %d)",
 		      NUL_ec);
 	else
             snprintf (char_map, sizeof(char_map),
-		      "yyIfElse(yy.chBuf[yy.cp] != 0, int(yy.chBuf[yy.cp]), %d)",
+		      "yyIfElse(yy.chBuf[yyCp] != 0, int(yy.chBuf[yyCp]), %d)",
 		      NUL_ec);
     }
 
     else
 	strcpy (char_map, useecs ?
-		"int(yyEc[yy.chBuf[yy.cp]])" :
-		"int(yy.chBuf[yy.cp])");
+		"int(yyEc[yy.chBuf[yyCp]])" :
+		"int(yy.chBuf[yyCp])");
 
     if (worry_about_NULs && nultrans) {
 	if (!fulltbl && !fullspd)
 	    /* Compressed tables back up *before* they match. */
 	    gen_backing_up_go ();
 
-	indent_puts_go ("if yy.chBuf[yy.cp] != 0 {");
+	indent_puts_go ("if yy.chBuf[yyCp] != 0 {");
 	indent_up_go ();
     }
 
     if (fulltbl) {
 	if (gentables)
 	    indent_put2s_go
-		("yy.currentState = int(yyNxt[yy.currentState][%s])",
+		("yyCurrentState = int(yyNxt[yyCurrentState][%s])",
 		 char_map);
 	else
 	    indent_put2s_go
-		("yy.currentState = int(yyNxt[yy.currentState*YY_NXT_LOLEN + %s])",
+		("yyCurrentState = int(yyNxt[yyCurrentState*YY_NXT_LOLEN + %s])",
 		 char_map);
     }
 
     else if (fullspd)
 	indent_put2s_go
-	    ("yy.currentState += int(yyTransition[yy.currentState+%s].yyNxt)",
+	    ("yyCurrentState += int(yyTransition[yyCurrentState+%s].yyNxt)",
 	     char_map);
 
     else
@@ -919,7 +919,7 @@ void gen_next_state_go (int worry_about_NULs)
 	indent_puts_go ("} else {");
 	indent_up_go ();
 	indent_puts_go
-	    ("yy.currentState = int(yyNulTrans[yy.currentState])");
+	    ("yyCurrentState = int(yyNulTrans[yyCurrentState])");
 	indent_down_go ();
 	indent_puts_go ("}");
     }
@@ -928,7 +928,7 @@ void gen_next_state_go (int worry_about_NULs)
 	gen_backing_up_go ();
 
     if (reject) {
-	indent_puts_go ("yy.stateBuf[yy.statePtr] = yy.currentState");
+	indent_puts_go ("yy.stateBuf[yy.statePtr] = yyCurrentState");
 	indent_puts_go ("yy.statePtr++");
     }
 }
@@ -947,24 +947,24 @@ void gen_NUL_trans_go (void)
 	/* We're going to need yy_cp lying around for the call
 	 * below to gen_backing_up_go().
 	 */
-	indent_puts_go ("yy.cp = yy.cBufP");
+	indent_puts_go ("yyCp = yy.cBufP");
     }
 
     outc ('\n');
 
     if (nultrans) {
 	indent_puts_go
-	    ("yy.currentState = int(yyNulTrans[yy.currentState])");
-	indent_puts_go ("yyIsJam = (yy.currentState == 0)");
+	    ("yyCurrentState = int(yyNulTrans[yyCurrentState])");
+	indent_puts_go ("yyIsJam = (yyCurrentState == 0)");
     }
 
     else if (fulltbl) {
 	do_indent_go ();
 	if (gentables)
-	    out_dec ("yy.currentState = yy_nxt[yy.currentState][%d];\n", NUL_ec);
+	    out_dec ("yyCurrentState = yy_nxt[yyCurrentState][%d];\n", NUL_ec);
 	else
-	    out_dec ("yy.currentState = yy_nxt[yy.currentState*YY_NXT_LOLEN + %d];\n", NUL_ec);
-	indent_puts_go ("yyIsJam = (yy.currentState <= 0)");
+	    out_dec ("yyCurrentState = yy_nxt[yyCurrentState*YY_NXT_LOLEN + %d];\n", NUL_ec);
+	indent_puts_go ("yyIsJam = (yyCurrentState <= 0)");
     }
 
     else if (fullspd) {
@@ -972,8 +972,8 @@ void gen_NUL_trans_go (void)
 	out_dec ("yyC := %d\n", NUL_ec);
 
 	indent_puts_go
-	    ("transInfo := yyTransition[yy.currentState+int(yyC)]");
-	indent_puts_go ("yy.currentState += int(transInfo.yyNxt)");
+	    ("transInfo := yyTransition[yyCurrentState+int(yyC)]");
+	indent_puts_go ("yyCurrentState += int(transInfo.yyNxt)");
 
 	indent_puts_go
 	    ("yyIsJam = int(transInfo.yyVerify) != int(yyC)");
@@ -986,7 +986,7 @@ void gen_NUL_trans_go (void)
 	gen_next_compressed_state_go (NUL_ec_str);
 
 	do_indent_go ();
-	out_dec ("if yy.currentState == %d {\n", jamstate);
+	out_dec ("if yyCurrentState == %d {\n", jamstate);
 	indent_up_go ();
 	indent_puts_go ("yyIsJam = true");
 	indent_down_go ();
@@ -1030,24 +1030,24 @@ void gen_start_state_go (void)
     if (fullspd) {
 	if (bol_needed) {
 	    indent_puts_go
-		("yy.currentState = yyStartStateList[yy.start + yy.atBol]");
+		("yyCurrentState = yyStartStateList[yy.start + yy.atBol]");
 	}
 	else
 	    indent_puts_go
-		("yy.currentState = yyStartStateList[yy.start]");
+		("yyCurrentState = yyStartStateList[yy.start]");
     }
 
     else {
-	indent_puts_go ("yy.currentState = yy.start");
+	indent_puts_go ("yyCurrentState = yy.start");
 
 	if (bol_needed)
-	    indent_puts_go ("yy.currentState += yy.atBol");
+	    indent_puts_go ("yyCurrentState += yy.atBol");
 
 	if (reject) {
 	    /* Set up for storing up states. */
 	    outn ("m4_ifdef( [[M4_YY_USES_REJECT]],\n[[");
 	    indent_puts_go
-		("yy.stateBuf[0] = yy.currentState");
+		("yy.stateBuf[0] = yyCurrentState");
 	    indent_puts_go
 		("yy.statePtr = 1");
 	    outn ("]])");
@@ -1717,13 +1717,13 @@ void make_tables_go (void)
 	}
 
 	outn ("m4_define( [[REJECT]], [[");
-       	outn ("yy.chBuf[yy.cp] = yy.holdChar // undo effects of setting up yytext");
-	outn ("yy.cp = yy.fullMatch          // restore poss. backed-over text");
+       	outn ("yy.chBuf[yyCp] = yy.holdChar // undo effects of setting up yytext");
+	outn ("yyCp = yy.fullMatch          // restore poss. backed-over text");
 
 	if (variable_trailing_context_rules) {
 	    outn ("yy.lp = yy.fullLp // restore orig. accepting pos.");
 	    outn ("yy.statePtr = yy.fullState // restore orig. state");
-	    outn ("yy.currentState = yy.stateBuf[yy.statePtr] // restore curr. state");
+	    outn ("yyCurrentState = yy.stateBuf[yy.statePtr] // restore curr. state");
 	}
 
        	outn ("yy.lp++");
@@ -1777,11 +1777,11 @@ void make_tables_go (void)
     if (yymore_used) {
 	indent_puts_go ("yy.textPtr -= yy.moreLen");
 	indent_puts_go
-	    ("yy.Leng = yy.cp - yy.textPtr");
+	    ("yy.Leng = yyCp - yy.textPtr");
     }
 
     else
-	indent_puts_go ("yy.Leng = yy.cp - yyBp");
+	indent_puts_go ("yy.Leng = yyCp - yyBp");
 
     /* Now also deal with copying yytext_ptr to yytext if needed. */
     skelout ();		/* %% [3.0] - break point in skel */
@@ -1946,7 +1946,7 @@ void make_tables_go (void)
     set_indent_go (4);
 
     if (fullspd || fulltbl)
-	indent_puts_go ("yy.cp = yy.cBufP");
+	indent_puts_go ("yyCp = yy.cBufP");
 
     else {			/* compressed table */
 	if (!reject && !interactive) {
@@ -1954,17 +1954,17 @@ void make_tables_go (void)
 	     * out the match.
 	     */
 
-	    indent_puts_go ("yy.cp = yy.lastAcceptingCpos");
-	    indent_puts_go ("yy.currentState = yy.lastAcceptingState");
+	    indent_puts_go ("yyCp = yy.lastAcceptingCpos");
+	    indent_puts_go ("yyCurrentState = yy.lastAcceptingState");
 
 	}
 
 	else {
-	    /* Still need to initialize yy_cp, though
-	     * yy.currentState was set up by
+	    /* Still need to initialize yyCp, though
+	     * yyCurrentState was set up by
 	     * yy_get_previous_state().
 	     */
-	    indent_puts_go ("yy.cp = yy.cBufP");
+	    indent_puts_go ("yyCp = yy.cBufP");
 	}
     }
 

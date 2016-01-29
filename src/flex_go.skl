@@ -45,13 +45,11 @@ type Scanner struct {
 	start                int
 	stateBuf             []int
 	statePtr             int
-	currentState         int
 	fullState            int
 	fullMatch            int
 	fullLp               int
 	lp                   int
 	lookingForTrailBegin int
-	cp               int
 	holdChar             byte
 	cBufP                int
 	didBufferSwitchOnEof bool
@@ -113,8 +111,8 @@ func (yy *Scanner) lessLineno(n int) {
 	}
 }
 
-func (yy *Scanner) linenoRewindTo(dst int) {
-	for p := yy.cp - 1; p >= dst; p-- {
+func (yy *Scanner) linenoRewindTo(dst int, yyCp int) {
+	for p := yyCp - 1; p >= dst; p-- {
 		if yy.chBuf[p] == '\n' {
 			yy.Lineno--
 		}
@@ -189,7 +187,8 @@ m4_ifdef( [[yyUserAction]],, [[
 
 // The main scanner function which does all the work.
 func (yy *Scanner) Lex() YYtype {
-	var yyAct, yyBp int
+	var yyAct, yyBp, yyCp int
+	var yyCurrentState int
 
 	yyUserData
 
@@ -200,15 +199,15 @@ func (yy *Scanner) Lex() YYtype {
 %% [2.0] code to fiddle yytext and yyleng for yy''more() goes here
 // SKEL ----------------------------------------------------------------
 
-		yy.holdChar = yy.chBuf[yy.cp]
-		yy.chBuf[yy.cp] = 0
+		yy.holdChar = yy.chBuf[yyCp]
+		yy.chBuf[yyCp] = 0
 
 // [3.0] code to copy yytext_ptr to yytext[] goes here, if %array ------
 %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array
 // SKEL ----------------------------------------------------------------
 
-		yy.cBufP = yy.cp
-		yy.Text = yy.chBuf[yy.textPtr:yy.cp]
+		yy.cBufP = yyCp
+		yy.Text = yy.chBuf[yy.textPtr:yyCp]
 }
 
 %if-tables-serialization structures and prototypes
@@ -227,10 +226,10 @@ func (yy *Scanner) Lex() YYtype {
 		// Undo effects of setting up yytext.
 		yylessMacroArg := n
 		m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yylessMacroArg)]])
-		yy.chBuf[yy.cp] = yy.holdChar
+		yy.chBuf[yyCp] = yy.holdChar
 		YY_RESTORE_YY_MORE_OFFSET
-		yy.cp = yyBp + yylessMacroArg - YY_MORE_ADJ
-		yy.cBufP = yy.cp
+		yyCp = yyBp + yylessMacroArg - YY_MORE_ADJ
+		yy.cBufP = yyCp
 		yyDoBeforeAction()
 	}
 	if (false) {
@@ -268,14 +267,14 @@ func (yy *Scanner) Lex() YYtype {
 %% [8.0] yy''more-related code goes here
 // SKEL ----------------------------------------------------------------
 
-		yy.cp = yy.cBufP
+		yyCp = yy.cBufP
 
 		/* Support of yytext. */
-		yy.chBuf[yy.cp] = yy.holdChar
+		yy.chBuf[yyCp] = yy.holdChar
 
 		// yyBp points to the position in yy_ch_buf of the start of
 		// the current run.
-		yyBp = yy.cp
+		yyBp = yyCp
 
 // [9.0] code to set up and find next match goes here ------------------
 %% [9.0] code to set up and find next match goes here
@@ -307,10 +306,10 @@ func (yy *Scanner) Lex() YYtype {
 
 		case yyEndOfBuffer:
 			/* Amount of text matched not including the EOB char. */
-			yyAmountOfMatchedText := yy.cp - yy.textPtr - 1
+			yyAmountOfMatchedText := yyCp - yy.textPtr - 1
 
 			/* Undo the effects of yy_DO_BEFORE_ACTION. */
-			yy.chBuf[yy.cp] = yy.holdChar
+			yy.chBuf[yyCp] = yy.holdChar
 			YY_RESTORE_YY_MORE_OFFSET
 
 			if yy.bufferStatus == yyBufferNew {
@@ -341,7 +340,7 @@ func (yy *Scanner) Lex() YYtype {
 
 				yy.cBufP = yy.textPtr + yyAmountOfMatchedText
 
-				yy.currentState = yy.getPreviousState()
+				yyCurrentState = yy.getPreviousState()
 
 				/* Okay, we're now positioned to make the NUL
 				 * transition.  We couldn't have
@@ -352,15 +351,15 @@ func (yy *Scanner) Lex() YYtype {
 				 * will run more slowly).
 				 */
 
-				yyNextState = yy.tryNulTrans(yy.currentState)
+				yyNextState = yy.tryNulTrans(yyCurrentState)
 
 				yyBp = yy.textPtr + YY_MORE_ADJ
 
 				if yyNextState != 0 {
 					/* Consume the NUL. */
 					yy.cBufP++
-					yy.cp = yy.cBufP
-					yy.currentState = yyNextState
+					yyCp = yy.cBufP
+					yyCurrentState = yyNextState
 					goto yyMatch
 				} else {
 
@@ -398,17 +397,17 @@ func (yy *Scanner) Lex() YYtype {
 				case eobActContinueScan:
 					yy.cBufP = yy.textPtr + yyAmountOfMatchedText
 
-					yy.currentState = yy.getPreviousState()
+					yyCurrentState = yy.getPreviousState()
 
-					yy.cp = yy.cBufP
+					yyCp = yy.cBufP
 					yyBp = yy.textPtr + YY_MORE_ADJ
 					goto yyMatch
 				case eobActLastMatch:
 					yy.cBufP = yy.nChars
 
-					yy.currentState = yy.getPreviousState()
+					yyCurrentState = yy.getPreviousState()
 
-					yy.cp = yy.cBufP
+					yyCp = yy.cBufP
 					yyBp = yy.textPtr + YY_MORE_ADJ
 					goto yyFindAction
 				}
@@ -537,27 +536,22 @@ m4_ifdef( [[M4_YY_USES_REJECT]],
 /* yy_get_previous_state - get the state just before the EOB char was reached */
 func (yy *Scanner) getPreviousState() int {
 
-	yyCurrentState := yy.currentState
-	yyCp := yy.cp
+	var yyCurrentState int
+	var yyCp int
 
 // [15.0] code to get the start state into yy_current_state goes here --
 %% [15.0] code to get the start state into yy_current_state goes here
 // SKEL ----------------------------------------------------------------
 
-	for yy.cp = yy.textPtr + YY_MORE_ADJ; yy.cp < yy.cBufP; yy.cp++ {
+	for yyCp = yy.textPtr + YY_MORE_ADJ; yyCp < yy.cBufP; yyCp++ {
 
 // [16.0] code to find the next state goes here ------------------------
 %% [16.0] code to find the next state goes here
 // SKEL ----------------------------------------------------------------
 
 	}
-	newCurrentState := yy.currentState
-	yy.currentState = yyCurrentState
-	yy.cp = yyCp
-	return newCurrentState
+	return yyCurrentState
 }
-
-
 
 /* yy_try_NUL_trans - try to make a transition on the NUL character
  *
@@ -567,22 +561,20 @@ func (yy *Scanner) getPreviousState() int {
 func (yy *Scanner) tryNulTrans(yyCurrentState int) int {
 
 	var yyIsJam bool
-	oldCurrentState := yy.currentState
-	yy.currentState = yyCurrentState
-	yyCp := yy.cp
+	var yyCp int
+
+	if false {
+		panic(yyCp)
+	}
 
 // [17.0] code to find the next state, and perhaps do backing up, goes here
 %% [17.0] code to find the next state, and perhaps do backing up, goes here
 // SKEL ----------------------------------------------------------------
 
-	newCurrentState := yy.currentState
-	yy.currentState = oldCurrentState
-	yy.cp = yyCp
-
 	if yyIsJam {
 		return 0
 	}
-	return newCurrentState
+	return yyCurrentState
 }
 
 m4_ifdef( [[M4_YY_NO_UNPUT]],,[[

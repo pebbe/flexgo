@@ -257,7 +257,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 
 	    add_action
 		(Go ?
-		 "yy.chBuf[yy.cp] = yy.holdChar // undo effects of setting up yy.Text\n" :
+		 "yy.chBuf[yyCp] = yy.holdChar // undo effects of setting up yy.Text\n" :
 		 "*yy_cp = YY_G(yy_hold_char); /* undo effects of setting up yytext */\n");
 
 	    if (headcnt > 0) {
@@ -267,10 +267,10 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 		    add_action (action_text);
 		}
 		if (Go) {
-		    snprintf (action_text, sizeof(action_text), "yy.cp = yyBp + %d\n",
+		    snprintf (action_text, sizeof(action_text), "yyCp = yyBp + %d\n",
 			      headcnt);
 		    add_action (action_text);
-		    snprintf (action_text, sizeof(action_text), "yy.cBufP = yy.cp\n");
+		    snprintf (action_text, sizeof(action_text), "yy.cBufP = yyCp\n");
 		    add_action (action_text);
 		} else {
 		    snprintf (action_text, sizeof(action_text), "%s = %s + %d;\n",
@@ -287,10 +287,10 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 		}
 
 		if (Go) {
-		    snprintf (action_text, sizeof(action_text), "yy.cp -= %d\n",
+		    snprintf (action_text, sizeof(action_text), "yyCp -= %d\n",
 			      trailcnt);
 		    add_action (action_text);
-		    snprintf (action_text, sizeof(action_text), "yy.cBufP = yy.cp\n");
+		    snprintf (action_text, sizeof(action_text), "yy.cBufP = yyCp\n");
 		    add_action (action_text);
 		} else {
 		    snprintf (action_text, sizeof(action_text), "%s -= %d;\n",
