@@ -103,12 +103,13 @@ Ignored options:
 
             C                  Go
     ----------------------------------------------------------------
-            yyin               yy.In    io.Reader
-            yyout              yy.Out   io.Writer
-            yytext             yy.Text  []byte
-            yyleng             yy.Leng
-            yylineno           yy.Lineno
-    YY_DECL yylex(void)        yy.Lex() interface()
+            yyin               yy.In      io.Reader
+            yyout              yy.Out     io.Writer
+            yytext             yy.Text    []byte
+            yyleng             yy.Leng    int
+            yylineno           yy.Lineno  int
+
+    YY_DECL yylex(void)        yy.Lex() YYtype
         int input(void)        yyinput() (byte, error)
             unput(int)         yyunput(byte)
 
