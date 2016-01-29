@@ -49,6 +49,31 @@
   glex: minimal-go.l
   opts: -B
   files: text3.txt
+- name: Test1-b
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -b --yylineno
+  files: txt*
+- name: Test1-T
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -T --yylineno
+  files: txt*
+- name: Test1-w
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -w --yylineno
+  files: txt*
+- name: Test1-l
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -l --yylineno
+  files: txt*
+- name: Test1-X
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -X --yylineno
+  files: txt*
 - name: Test1-B
   clex: Test1c.l
   glex: Test1go.l

@@ -37,22 +37,23 @@ func main() {
 	fmt.Fprint(fp, "\n\nclean:\n\trm -f")
 
 	for _, test := range tests {
-		fmt.Fprintf(fp, " \\\n\t%s.ok \\\n\t%s-c.out \\\n\t%s-go.out \\\n\t%s-c.c \\\n\t%s-go.go \\\n\t%s-c \\\n\t%s-go",
-			test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name)
+		fmt.Fprintf(fp, " \\\n\t%s.ok \\\n\t%s-c.out \\\n\t%s-go.out \\\n\t%s-c.err \\\n\t%s-go.err \\\n\t%s-c.c \\\n\t%s-go.go \\\n\t%s-c \\\n\t%s-go",
+			test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name)
 	}
 
 	fmt.Fprintln(fp)
 
 	for _, test := range tests {
 		fmt.Fprintf(fp, "\n%s.ok: %s %s %s ../src/flex Make.yaml\n", test.Name, test.Clex, test.Glex, test.Files)
-		fmt.Fprintf(fp, "\t../src/flex --noline %s -o %s-c.c %s\n", test.Opts, test.Name, test.Clex)
+		fmt.Fprintf(fp, "\t../src/flex --noline %s -o %s-c.c %s 2> %s-c.err\n", test.Opts, test.Name, test.Clex, test.Name)
 		fmt.Fprintf(fp, "\tgcc -s -Wall -o %s-c %s-c.c\n", test.Name, test.Name)
 		fmt.Fprintf(fp, "\t./%s-c %s > %s-c.out\n", test.Name, test.Files, test.Name)
-		fmt.Fprintf(fp, "\t../src/flex --go --noline %s -o %s-go.go %s\n", test.Opts, test.Name, test.Glex)
+		fmt.Fprintf(fp, "\t../src/flex --go --noline %s -o %s-go.go %s 2> %s-go.err \n", test.Opts, test.Name, test.Glex, test.Name)
 		fmt.Fprintf(fp, "\tgofmt -w %s-go.go\n", test.Name)
 		fmt.Fprintf(fp, "\tgo build %s-go.go\n", test.Name)
 		fmt.Fprintf(fp, "\t./%s-go %s > %s-go.out\n", test.Name, test.Files, test.Name)
 		fmt.Fprintf(fp, "\tdiff -q %s-c.out %s-go.out\n", test.Name, test.Name)
+		fmt.Fprintf(fp, "\tdiff -q %s-c.err %s-go.err\n", test.Name, test.Name)
 		fmt.Fprintf(fp, "\ttouch %s.ok\n", test.Name)
 	}
 
@@ -60,10 +61,10 @@ func main() {
 
 	fp, err = os.Create(".gitignore")
 	x(err)
-	fmt.Fprintln(fp, ".gitignore\nMake\nMakefile2")
+	fmt.Fprintln(fp, ".gitignore\nMake\nMakefile2\nlex.backup")
 	for _, test := range tests {
-		fmt.Fprintf(fp, "%s.ok\n%s-c.out\n%s-go.out\n%s-c.c\n%s-go.go\n%s-c\n%s-go\n",
-			test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name)
+		fmt.Fprintf(fp, "%s.ok\n%s-c.out\n%s-go.out\n%s-c.err\n%s-go.err\n%s-c.c\n%s-go.go\n%s-c\n%s-go\n",
+			test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name, test.Name)
 	}
 	fp.Close()
 
