@@ -43,35 +43,59 @@ Ignored options:
 
     %top{
 
-    package main
+        // code to put at the very top of the file
 
-    import (
-        "fmt"
-        "io"
-        "log"
-        "os"
-    )
+        package main
 
-    // return type of yy.Flex()
-    type YYtype interface{}
+        import (
+            "fmt"
+            "io"
+            "log"
+            "os"
+        )
 
-    // returned on end of file
-    var YYnull YYtype = nil
+        // return type of yy.Flex()
+        type YYtype interface{}
+
+        // returned on end of file
+        var YYnull YYtype = nil
 
     }
 
-        /* no definitions. */
+    %{
+
+        // code to put near the top of the file
+
+        YY_USER_DATA(
+            // user data inside Lex()
+        )
+
+        YY_USER_INIT(
+            // code to run inside Lex() when it is called the first time
+        )
+
+        YY_USER_ACTION(
+            // code to run at the start of each action
+        )
+
+        // more code
+
+    %}
+
+        // definitions: no definition
 
     %%
 
-        /* No rules so default action of copying each input character to the output is performed. */
+        // rules: no rules, just echo all input to output
 
     %%
 
-    func main() {
-        // runs the scanner on files given as arguments, or stdin if there are no arguments
-        YYmain(os.Args[1:]...)
-    }
+        // code to put at the end of the file
+
+        func main() {
+            // runs the scanner on files given as arguments, or stdin if there are no arguments
+            YYmain(os.Args[1:]...)
+        }
 
 ## Difference between C output and Go output
 

@@ -1807,7 +1807,7 @@ void make_tables_go (void)
 	indent_down_go ();
 	indent_puts_go ("}");
     }
-    indent_puts_go ("yyUserAction");
+    indent_puts_go ("__yyUserAction");
     indent_puts_go ("yytext = yy.Text");
     indent_puts_go ("yyleng = yy.Leng");
     if (do_yylineno) {

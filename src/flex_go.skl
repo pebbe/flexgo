@@ -23,9 +23,9 @@ m4_define( [[yyunput]], [[yy.Unput($1)]] )
 m4_define( [[YY_START]], [[((yy.start - 1) / 2)]] )
 m4_define( [[YTSTATE]], [[((yy.start - 1) / 2)]] )
 m4_define( [[YY_STATE_EOF]], [[(yyEndOfBuffer + $1 + 1)]] )
-m4_define( [[YY_USER_DATA]], [[m4_define(yyUserData, $1)]] )
-m4_define( [[YY_USER_INIT]], [[m4_define(yyUserInit, $1)]] )
-m4_define( [[YY_USER_ACTION]], [[m4_define(yyUserAction, $1)]] )
+m4_define( [[YY_USER_DATA]], [[m4_define(__yyUserData, $1)]] )
+m4_define( [[YY_USER_INIT]], [[m4_define(__yyUserInit, $1)]] )
+m4_define( [[YY_USER_ACTION]], [[m4_define(__yyUserAction, $1)]] )
 
 
 type Scanner struct {
@@ -175,22 +175,23 @@ func (yy *Scanner) input(offset, maxRead int) int {
 	return n
 }
 
-m4_ifdef( [[yyUserData]],, [[
-  m4_define(yyUserData, [[]])
+m4_ifdef( [[__yyUserData]],, [[
+  m4_define(__yyUserData, [[]])
 ]])
-m4_ifdef( [[yyUserInit]],, [[
-  m4_define(yyUserInit, [[]])
+m4_ifdef( [[__yyUserInit]],, [[
+  m4_define(__yyUserInit, [[]])
 ]])
-m4_ifdef( [[yyUserAction]],, [[
-  m4_define(yyUserAction, [[]])
+m4_ifdef( [[__yyUserAction]],, [[
+  m4_define(__yyUserAction, [[]])
 ]])
 
 // The main scanner function which does all the work.
 func (yy *Scanner) Lex() YYtype {
-	var yyAct, yyBp, yyCp int
 	var yyCurrentState int
+	var yyBp, yyCp int
+	var yyAct int
 
-	yyUserData
+	__yyUserData
 
 	yyDoBeforeAction := func() {
 		yy.textPtr = yyBp
@@ -238,7 +239,7 @@ func (yy *Scanner) Lex() YYtype {
 
 	if !yy.init {
 		yy.init = true
-		yyUserInit
+		__yyUserInit
 		if yy.In == nil {
 			yy.In = os.Stdin
 		}
