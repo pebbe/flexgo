@@ -1516,26 +1516,6 @@ void make_tables_go (void)
     struct yytbl_data *yynultrans_tbl = NULL;
 
 
-    skelout ();		/* %% [2.0] - break point in skel */
-
-    /* First, take care of yy_DO_BEFORE_ACTION depending on yymore
-     * being used.
-     */
-    set_indent_go (1);
-
-    if (yymore_used) {
-	indent_puts_go ("yy.textPtr -= yy.moreLen");
-	indent_puts_go
-	    ("yy.Leng = yy.cp - yy.textPtr");
-    }
-
-    else
-	indent_puts_go ("yy.Leng = yy.cp - yy.bp");
-
-    /* Now also deal with copying yytext_ptr to yytext if needed. */
-    skelout ();		/* %% [3.0] - break point in skel */
-
-    set_indent_go (0);
 
     skelout ();		/* %% [4.0] - break point in skel */
 
@@ -1786,6 +1766,27 @@ void make_tables_go (void)
     skelout ();		/* %% [5.0] - break point in skel */
 
     outn ("// nothing here, all moved to skeleton");
+
+    skelout ();		/* %% [2.0] - break point in skel */
+
+    /* First, take care of yy_DO_BEFORE_ACTION depending on yymore
+     * being used.
+     */
+    set_indent_go (1);
+
+    if (yymore_used) {
+	indent_puts_go ("yy.textPtr -= yy.moreLen");
+	indent_puts_go
+	    ("yy.Leng = yy.cp - yy.textPtr");
+    }
+
+    else
+	indent_puts_go ("yy.Leng = yy.cp - yy.bp");
+
+    /* Now also deal with copying yytext_ptr to yytext if needed. */
+    skelout ();		/* %% [3.0] - break point in skel */
+
+    set_indent_go (0);
 
     skelout ();		/* %% [6.0] - break point in skel */
 

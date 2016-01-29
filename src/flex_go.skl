@@ -15,10 +15,9 @@ m4_define( [[M4_YY_INCR_LINENO]], [[
 ]])
 m4_define( [[INITIAL]], [[yyInitial]] )
 m4_define( [[BEGIN]], [[yy.start = 1 + 2*]] )
-m4_define( [[ECHO]], [[yy.Echo()]] )
+m4_define( [[ECHO]], [[yyout.Write(yytext)]] )
 m4_define( [[REJECT]], [[yy.Reject()]] )
 m4_define( [[yyterminate]], [[return YYnull]] )
-m4_define( [[yyless]], [[yy.Less($1)]] )
 m4_define( [[yyinput]], [[yy.Input()]] )
 m4_define( [[yyunput]], [[yy.Unput($1)]] )
 m4_define( [[YY_START]], [[((yy.start - 1) / 2)]] )
@@ -136,24 +135,6 @@ const (
 %% [1.5] DFA
 // SKEL ----------------------------------------------------------------
 
-func (yy *Scanner) doBeforeAction() {
-	yy.textPtr = yy.bp
-
-// [2.0] code to fiddle yytext and yyleng for yy''more() goes here -------
-%% [2.0] code to fiddle yytext and yyleng for yy''more() goes here
-// SKEL ----------------------------------------------------------------
-
-	yy.holdChar = yy.chBuf[yy.cp]
-	yy.chBuf[yy.cp] = 0
-
-// [3.0] code to copy yytext_ptr to yytext[] goes here, if %array ------
-%% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array
-// SKEL ----------------------------------------------------------------
-
-	yy.cBufP = yy.cp
-	yy.Text = yy.chBuf[yy.textPtr:yy.cp]
-}
-
 // [4.0] data tables for the DFA go here -------------------------------
 %% [4.0] data tables for the DFA go here
 // SKEL ----------------------------------------------------------------
@@ -161,10 +142,6 @@ func (yy *Scanner) doBeforeAction() {
 M4_YY_SC_DEFS
 
 const yyReadBufSize = 16384
-
-func (yy *Scanner) Echo() {
-	yy.Out.Write(yy.Text)
-}
 
 func (yy *Scanner) input(offset, maxRead int) int {
 
@@ -199,6 +176,27 @@ func (yy *Scanner) input(offset, maxRead int) int {
 	return n
 }
 
+// The main scanner function which does all the work.
+func (yy *Scanner) Lex() YYtype {
+
+	yyDoBeforeAction := func() {
+		yy.textPtr = yy.bp
+
+// [2.0] code to fiddle yytext and yyleng for yy''more() goes here -------
+%% [2.0] code to fiddle yytext and yyleng for yy''more() goes here
+// SKEL ----------------------------------------------------------------
+
+		yy.holdChar = yy.chBuf[yy.cp]
+		yy.chBuf[yy.cp] = 0
+
+// [3.0] code to copy yytext_ptr to yytext[] goes here, if %array ------
+%% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array
+// SKEL ----------------------------------------------------------------
+
+		yy.cBufP = yy.cp
+		yy.Text = yy.chBuf[yy.textPtr:yy.cp]
+}
+
 %if-tables-serialization structures and prototypes
 // TODO: flex.skl line 1182-1216
 
@@ -211,19 +209,19 @@ func (yy *Scanner) input(offset, maxRead int) int {
 %% [6.0] YY_RULE_SETUP definition goes here
 // SKEL ----------------------------------------------------------------
 
-func (yy *Scanner) Less(n int) {
-	// Undo effects of setting up yytext.
-	yylessMacroArg := n
-	m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yylessMacroArg)]])
-	yy.chBuf[yy.cp] = yy.holdChar
-	YY_RESTORE_YY_MORE_OFFSET
-	yy.cp = yy.bp + yylessMacroArg - YY_MORE_ADJ
-	yy.cBufP = yy.cp
-	yy.doBeforeAction()
-}
-
-// The main scanner function which does all the work.
-func (yy *Scanner) Lex() YYtype {
+	yyless := func(n int) {
+		// Undo effects of setting up yytext.
+		yylessMacroArg := n
+		m4_ifdef( [[M4_YY_USE_LINENO]], [[yy.lessLineno(yylessMacroArg)]])
+		yy.chBuf[yy.cp] = yy.holdChar
+		YY_RESTORE_YY_MORE_OFFSET
+		yy.cp = yy.bp + yylessMacroArg - YY_MORE_ADJ
+		yy.cBufP = yy.cp
+		yyDoBeforeAction()
+	}
+	if (false) {
+		fmt.Print(yyless)
+	}
 
 	if !yy.init {
 		yy.init = true
@@ -274,7 +272,7 @@ func (yy *Scanner) Lex() YYtype {
 %% [10.0] code to find the action number goes here
 // SKEL ----------------------------------------------------------------
 
-		yy.doBeforeAction()
+		yyDoBeforeAction()
 
 // [11.0] code for yylineno update goes here ---------------------------
 %% [11.0] code for yylineno update goes here
