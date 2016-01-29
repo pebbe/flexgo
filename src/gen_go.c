@@ -1534,31 +1534,6 @@ void make_tables_go (void)
 
     /* Now also deal with copying yytext_ptr to yytext if needed. */
     skelout ();		/* %% [3.0] - break point in skel */
-    if (yytext_is_array) {
-	if (yymore_used)
-	    indent_puts_go
-		("if yyleng + yy_more_offset >= YYLMAX \\");
-	else
-	    indent_puts_go ("if yyleng >= YYLMAX \\");
-
-	indent_up_go ();
-	indent_puts_go
-	    ("YY_FATAL_ERROR( \"token too large, exceeds YYLMAX\" ); \\");
-	indent_down_go ();
-
-	if (yymore_used) {
-	    indent_puts_go
-		("yy_flex_strncpy( &yytext[YY_G(yy_more_offset)], YY_G(yytext_ptr), yyleng + 1 M4_YY_CALL_LAST_ARG); \\");
-	    indent_puts_go ("yyleng += YY_G(yy_more_offset); \\");
-	    indent_puts_go
-		("YY_G(yy_prev_more_offset) = YY_G(yy_more_offset); \\");
-	    indent_puts_go ("YY_G(yy_more_offset) = 0; \\");
-	}
-	else {
-	    indent_puts_go
-		("yy_flex_strncpy( yytext, YY_G(yytext_ptr), yyleng + 1 M4_YY_CALL_LAST_ARG); \\");
-	}
-    }
 
     set_indent_go (0);
 
@@ -1790,65 +1765,18 @@ void make_tables_go (void)
     }
 
     if (yymore_used) {
-	if (!C_plus_plus) {
-	    if (yytext_is_array) {
-		if (!reentrant){
-		    indent_puts_go ("static int yy_more_offset = 0");
-                    indent_puts_go ("static int yy_prev_more_offset = 0");
-                }
-	    }
-	}
-
-	if (yytext_is_array) {
-	    indent_puts_go
-		("#define yymore() (YY_G(yy_more_offset) = yy_flex_strlen( yytext M4_YY_CALL_LAST_ARG))");
-	    indent_puts_go ("#define YY_NEED_STRLEN");
-	    indent_puts_go ("#define YY_MORE_ADJ 0");
-	    indent_puts_go
-		("#define YY_RESTORE_YY_MORE_OFFSET \\");
-	    indent_up_go ();
-	    indent_puts_go ("{ \\");
-	    indent_puts_go
-		("YY_G(yy_more_offset) = YY_G(yy_prev_more_offset); \\");
-	    indent_puts_go ("yyleng -= YY_G(yy_more_offset); \\");
-	    indent_puts_go ("}");
-	    indent_down_go ();
-	}
-	else {
-	    indent_puts_go
-		("m4_define( [[yymore]], [[yy.moreFlag = true]] )");
-	    indent_puts_go
-		("m4_define( [[YY_MORE_ADJ]], [[yy.moreLen]] )");
-	    indent_puts_go
-		("m4_define( [[YY_RESTORE_YY_MORE_OFFSET]], [[]] )");
-	}
+	indent_puts_go
+	    ("m4_define( [[yymore]], [[yy.moreFlag = true]] )");
+	indent_puts_go
+	    ("m4_define( [[YY_MORE_ADJ]], [[yy.moreLen]] )");
+	indent_puts_go
+	    ("m4_define( [[YY_RESTORE_YY_MORE_OFFSET]], [[]] )");
     }
 
     else {
-	/* TODO
-	    indent_puts_go
-		("#define yymore() yymore_used_but_not_detected");
-	*/
 	indent_puts_go ("m4_define( [[YY_MORE_ADJ]], [[0]] )");
 	indent_puts_go ("");
 	indent_puts_go ("m4_define( [[YY_RESTORE_YY_MORE_OFFSET]], [[]] )");
-    }
-
-    if (!C_plus_plus) {
-	if (yytext_is_array) {
-	    outn ("#ifndef YYLMAX");
-	    outn ("#define YYLMAX 8192");
-	    outn ("#endif\n");
-	    if (!reentrant){
-                outn ("char yytext[YYLMAX]");
-                outn ("char *yytext_ptr");
-            }
-	}
-
-	else {
-	    // if(! reentrant)
-	    //    outn ("var yytext []byte");
-	}
     }
 
     out (&action_array[defs1_offset]);
@@ -1932,8 +1860,7 @@ void make_tables_go (void)
     indent_up_go ();
     do_indent_go ();
     out_str ("for yyl := %s; yyl < yy.Leng; yyl++ {\n",
-	     yymore_used ? (yytext_is_array ? "yy_prev_more_offset" :
-			    "yy.moreLen") : "0");
+	     yymore_used ? "yy.moreLen" : "0");
     indent_up_go ();
     indent_puts_go ("if yy.Text[yyl] == '\\n' {");
     indent_up_go ();
