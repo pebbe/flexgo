@@ -150,7 +150,7 @@ code inside the scanner, `YY_USER_DATA()` (not in regular `flex`),
 must put them in the block between `%{` and `%}`. See above, the basic
 scanner.
 
-The macro `YY_USER_INIT` doesn't seem very useful in
+The macro `YY_USER_INIT()` doesn't seem very useful in
 Go, but it is there in regular `flex`.
 
 ### YYmain
@@ -169,7 +169,7 @@ Inside actions in the scanner, the current file name is available as
 
 ### IsInteractive
 
-Regular `flex` check to see if the input file is a terminal. It then
+Regular `flex` checks to see if the input file is a terminal. It then
 reads in bytes one by one instead of in large chunks.
 
 In `flexgo`, the input is a `io.Reader`, and there is no easy way to
