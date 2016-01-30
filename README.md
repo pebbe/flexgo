@@ -120,6 +120,8 @@ The following are defined as macros:
  * `ECHO`
  * `REJECT`
  * `yyterminate()`
+ * `yyless(n)`
+ * `yymore()`
  * `yyinput()`
  * `yyunput(c)`
  * `YY_START`
