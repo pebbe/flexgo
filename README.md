@@ -58,6 +58,8 @@ Keywords: flex, lex, go, golang
             YYmain(os.Args[1:]...)
         }
 
+See directory `tests_go` for more complex examples.
+
 To compile a flex file into Go code, call one of these:
 
     flex --go
