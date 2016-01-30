@@ -1,10 +1,10 @@
 A version of flex that can produce Go code.
 
-Based on flex version 2.6.0, see: http://flex.sourceforge.net/
+This is a modified version of flex version 2.6.0, see: http://flex.sourceforge.net/
 
 Keywords: flex, lex, go, golang
 
-## Minimal scanner
+## A basic scanner
 
     %top{
 
@@ -47,7 +47,7 @@ Keywords: flex, lex, go, golang
 
     %%
 
-        // rules: no rules, just echo all input to output
+    Hi      yyout.Write([]byte("Hello world!")
 
     %%
 
@@ -58,12 +58,29 @@ Keywords: flex, lex, go, golang
             YYmain(os.Args[1:]...)
         }
 
+To compile a flex file into Go code, call one of these:
+
+    flex --go
+    flex -G
+    flexgo
+
+Run `flex` without `--go` of `-G` to get the behaviour of regular `flex`.
+
+Regular `flex` output is C code with a lot of global variables. With the
+option `--reentrant` you get a scanner with those variables encapsulated
+in a struct, and there are special commands to interact with the
+scanner.
+
+The Go code produced with `flexgo` has no global variables, other then
+those that should never be changed. A scanner is an object you create
+with `NewScanner()` and then you call its `Lex()` method.
+
 ## Not implemented
 
 Multiple buffers are not supported. If you want to switch input sources
 temporarily, just start another scanner. There are no global variables.
 
-Ignored options:
+Ignored/irrelevant options:
 
  * --array
  * --c++
@@ -88,17 +105,80 @@ Ignored options:
 
 Inside actions, the names `yyout` and `yylineno` are also available.
 
-### yy.IsInteractive(io.Reader)
-
-`yy.IsInteractive(io.Reader)` is a variable to a function that returns a
-bool. The default returns `true` is `flexgo` was called with option
-`-I`, and `false` with option `-B`. (TODO: default value with neither
-option?)
-
-### YYmain()
-
-TODO
-
 ### Macros
 
-TODO
+Because Go doesn't have the `#define` of C, `flexgo` uses more M4 macros
+than regular `flex`, to achieve the same functionality. Like `flex`, the
+tokens `[[` and `]]` have special meaning.
+
+The following are defined as macros:
+
+ * `INITIAL`
+ * `BEGIN`
+ * `ECHO`
+ * `REJECT`
+ * `yyterminate()`
+ * `yyinput()`
+ * `yyunput(c)`
+ * `YY_START`
+ * `YYSTATE`
+
+Only those relevant to the user are listed.
+
+The M4 macro mechanism has some particularities you have to watch out
+for.
+
+`BEGIN` is defined as a macro without argument:
+
+    BEGIN state     // OK
+    BEGIN (state)   // OK
+    BEGIN(state)    // Error: MUST use space
+    BEGIN x + y     // Error: MUST use parenthesis
+    BEGIN (x + y)   // OK
+    BEGIN(x + y)    // Error: MUST use space
+
+`input(c) is defined as a macro with argument:
+
+    yyunput(c)      // OK
+    yyunput (c)     // Error: MUST NOT use space
+
+Furthermore, there are three macros that can be used to set data and
+code inside the scanner, `YY_USER_DATA()` (not in regular `flex`),
+`YY_USER_INIT()`, and `YY_USER_ACTION()`. If you use these macros, you
+must put them in the block between `%{` and `%}`. See above, the basic
+scanner.
+
+The macro `YY_USER_INIT` doesn't seem very useful in
+Go, but it is there in regular `flex`.
+
+### YYmain
+
+`YYmain(filenames ...string)` is a convenience function. If you call it
+without arguments, it is the same as this:
+
+    scanner := NewScanner()
+    return scanner.Lex(), nil
+
+When there are filenames, `YYmain` sets up `scanner.YYwrap()` to iterate
+over all files before calling `scanner.Lex()`.
+
+Inside actions in the scanner, the current file name is available as
+`yy.Filename`.
+
+### IsInteractive
+
+Regular `flex` check to see if the input file is a terminal. It then
+reads in bytes one by one instead of in large chunks.
+
+In `flexgo`, the input is a `io.Reader`, and there is no easy way to
+tell if it's interactive or not. Calling `scanner := NewScanner()` sets
+up the variable `scanner.IsInteractive(io.Reader)` to return `true` if
+you called `flexgo` with the option `-I`, and `false` if you called
+`flexgo` with the option `-B`. You can point `scanner.IsInteractive` to
+another function of you need more control.
+
+### To do
+
+ * Use `YY_FATAL()` for critical errors?
+ * More tests
+

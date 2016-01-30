@@ -22,7 +22,7 @@ return __
 m4_define( [[yyinput]], [[yy.Input()]] )
 m4_define( [[yyunput]], [[yy.Unput($1)]] )
 m4_define( [[YY_START]], [[((yy.start - 1) / 2)]] )
-m4_define( [[YTSTATE]], [[((yy.start - 1) / 2)]] )
+m4_define( [[YYSTATE]], [[((yy.start - 1) / 2)]] )
 m4_define( [[YY_STATE_EOF]], [[(yyEndOfBuffer + $1 + 1)]] )
 m4_define( [[YY_USER_DATA]], [[m4_define(YY_MACRO_USER_DATA, $1)]] )
 m4_define( [[YY_USER_INIT]], [[m4_define(YY_MACRO_USER_INIT, $1)]] )
