@@ -1777,11 +1777,11 @@ void make_tables_go (void)
     if (yymore_used) {
 	indent_puts_go ("yy.textPtr -= yy.moreLen");
 	indent_puts_go
-	    ("yy.Leng = yyCp - yy.textPtr");
+	    ("yyleng = yyCp - yy.textPtr");
     }
 
     else
-	indent_puts_go ("yy.Leng = yyCp - yyBp");
+	indent_puts_go ("yyleng = yyCp - yyBp");
 
     /* Now also deal with copying yytext_ptr to yytext if needed. */
     skelout ();		/* %% [3.0] - break point in skel */
@@ -1793,9 +1793,9 @@ void make_tables_go (void)
     indent_puts_go ("m4_define( [[YY_RULE_SETUP]], [[");
     indent_up_go ();
     if (bol_needed) {
-	indent_puts_go ("if yy.Leng > 0 {");
+	indent_puts_go ("if yyleng > 0 {");
 	indent_up_go ();
-	indent_puts_go ("if yy.Text[yy.Leng-1] == '\\n' {");
+	indent_puts_go ("if yytext[yyleng-1] == '\\n' {");
 	indent_up_go ();
 	indent_puts_go ("yy.atBol = 1");
 	indent_down_go ();
@@ -1808,8 +1808,6 @@ void make_tables_go (void)
 	indent_puts_go ("}");
     }
     indent_puts_go ("__yyUserAction");
-    indent_puts_go ("yytext = yy.Text");
-    indent_puts_go ("yyleng = yy.Leng");
     if (do_yylineno) {
 	indent_puts_go ("yylineno = yy.Lineno");
     }
@@ -1856,10 +1854,10 @@ void make_tables_go (void)
 	("if yyAct != yyEndOfBuffer && yyRuleCanMatchEol[yyAct] != 0 {");
     indent_up_go ();
     do_indent_go ();
-    out_str ("for yyl := %s; yyl < yy.Leng; yyl++ {\n",
+    out_str ("for yyl := %s; yyl < yyleng; yyl++ {\n",
 	     yymore_used ? "yy.moreLen" : "0");
     indent_up_go ();
-    indent_puts_go ("if yy.Text[yyl] == '\\n' {");
+    indent_puts_go ("if yytext[yyl] == '\\n' {");
     indent_up_go ();
     indent_puts_go ("M4_YY_INCR_LINENO");
     indent_down_go ();
@@ -1885,7 +1883,7 @@ void make_tables_go (void)
 	indent_up_go ();
 
 	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting rule at line %d (%q)\\n\",");
-	indent_puts_go ("         yyRuleLinenum[yyAct], yy.Text)");
+	indent_puts_go ("         yyRuleLinenum[yyAct], yytext)");
 
 	indent_down_go ();
 
@@ -1893,7 +1891,7 @@ void make_tables_go (void)
 	out_dec ("} else if yyAct == %d {\n", num_rules);
 	indent_up_go ();
 
-	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yy.Text)");
+	indent_puts_go ("fmt.Fprintf(os.Stderr, \"--accepting default rule (%q)\\n\", yytext)");
 
 	indent_down_go ();
 

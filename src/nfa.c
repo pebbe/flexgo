@@ -300,7 +300,7 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 	    }
 
 	    add_action
-		(Go ? "yyDoBeforeAction() // set up yy.Text again\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
+		(Go ? "YY_DO_BEFORE_ACTION // set up yy.Text again\n" : "YY_DO_BEFORE_ACTION; /* set up yytext again */\n");
 	}
     }
 
