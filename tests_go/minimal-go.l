@@ -3,26 +3,37 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
 )
 
-// return type of yy.Flex()
+// return type of yy.Lex()
 type YYtype interface{}
-
-// returned on end of file
-var YYnull YYtype = nil
 
 }
 
-        /* no definitions. */
+%{
+
+YY_USER_DATA(
+  // my very own user data
+)
+
+YY_USER_INIT(
+  // my very own user init
+)
+
+YY_USER_ACTION(
+  // my very own user action
+)
+%}
+
+        // definitions: no definition
 
 
 %%
 
-	/* No rules so default action of copying each input character to the output is performed. */
+	// rules: no rules, just echo all input to output
 
 %%
 

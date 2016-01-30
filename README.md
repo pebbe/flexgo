@@ -48,17 +48,13 @@ Ignored options:
         package main
 
         import (
-            "fmt"
             "io"
             "log"
             "os"
         )
 
-        // return type of yy.Flex()
+        // return type of yy.Lex()
         type YYtype interface{}
-
-        // returned on end of file
-        var YYnull YYtype = nil
 
     }
 

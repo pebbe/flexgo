@@ -11,11 +11,8 @@ import (
 	"os"
 )
 
-// return type of yy.Flex()
+// return type of yy.Lex()
 type YYtype interface{}
-
-// returned on end of file
-var YYnull YYtype = nil
 
 }
 
@@ -107,36 +104,7 @@ type Data struct {
 
 func main() {
 
-	var errval error
-
-	yy := NewScanner()
-
-	filenames := os.Args[1:]
-	if len(filenames) > 0 {
-		yy.Filename = filenames[0]
-		yy.In, errval = os.Open(yy.Filename)
-		if errval != nil {
-			log.Fatalln(errval)
-		}
-		yy.Wrap = func(yyy *Scanner) bool {
-			if len(filenames) == 0 {
-				return true
-			}
-			yyy.In.(*os.File).Close()
-			filenames = filenames[1:]
-			if len(filenames) == 0 {
-				return true
-			}
-			yyy.Filename = filenames[0]
-			yyy.In, errval = os.Open(yyy.Filename)
-			if errval != nil {
-				log.Fatalln(errval)
-			}
-			return false
-		}
-	}
-
-	yy.Lex()
+	YYmain(os.Args[1:]...)
 
 	fmt.Println()
 	fmt.Println()
