@@ -141,10 +141,10 @@ for.
     BEGIN (x + y)   // OK
     BEGIN(x + y)    // Error: MUST use space
 
-`input(c)` and `yyless(n)` are defined as macros with argument:
+`yyless(n)` and `yyinput(c)` are defined as macros with argument:
 
-    yyunput(c)      // OK
-    yyunput (c)     // Error: MUST NOT use space
+    yyless(n)      // OK
+    yyless (n)     // Error: MUST NOT use space
 
 Furthermore, there are three macros that can be used to set data and
 code inside the scanner, `YY_USER_DATA()` (not in regular `flex`),
