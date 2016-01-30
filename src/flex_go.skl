@@ -10,9 +10,7 @@ m4_changecom
 m4_changequote
 m4_changequote([[, ]])
 
-m4_define( [[M4_YY_INCR_LINENO]], [[
-    yy.Lineno++
-]])
+m4_define( [[M4_YY_INCR_LINENO]], [[yy.Lineno++]])
 m4_define( [[INITIAL]], [[yyInitial]] )
 m4_define( [[BEGIN]], [[yy.start = 1 + 2*]] )
 m4_define( [[ECHO]], [[yyout.Write(yytext)]] )
@@ -26,9 +24,9 @@ m4_define( [[yyunput]], [[yy.Unput($1)]] )
 m4_define( [[YY_START]], [[((yy.start - 1) / 2)]] )
 m4_define( [[YTSTATE]], [[((yy.start - 1) / 2)]] )
 m4_define( [[YY_STATE_EOF]], [[(yyEndOfBuffer + $1 + 1)]] )
-m4_define( [[YY_USER_DATA]], [[m4_define(__yyUserData, $1)]] )
-m4_define( [[YY_USER_INIT]], [[m4_define(__yyUserInit, $1)]] )
-m4_define( [[YY_USER_ACTION]], [[m4_define(__yyUserAction, $1)]] )
+m4_define( [[YY_USER_DATA]], [[m4_define(YY_MACRO_USER_DATA, $1)]] )
+m4_define( [[YY_USER_INIT]], [[m4_define(YY_MACRO_USER_INIT, $1)]] )
+m4_define( [[YY_USER_ACTION]], [[m4_define(YY_MACRO_USER_ACTION, $1)]] )
 
 
 type Scanner struct {
@@ -110,7 +108,7 @@ m4_ifdef( [[M4_YY_USE_LINENO]], [[
 		}
 	}
 	]] )
-	m4_define( [[YY_lINENO_REWIND_TO]], [[
+	m4_define( [[YY_LINENO_REWIND_TO]], [[
 	for p := yyCp - 1; p >= $1; p-- {
 		if yy.chBuf[p] == '\n' {
 			yy.Lineno--
@@ -174,14 +172,14 @@ func (yy *Scanner) input(offset, maxRead int) int {
 	return n
 }
 
-m4_ifdef( [[__yyUserData]],, [[
-  m4_define(__yyUserData, [[]])
+m4_ifdef( [[YY_MACRO_USER_DATA]],, [[
+  m4_define(YY_MACRO_USER_DATA, [[]])
 ]])
-m4_ifdef( [[__yyUserInit]],, [[
-  m4_define(__yyUserInit, [[]])
+m4_ifdef( [[YY_MACRO_USER_INIT]],, [[
+  m4_define(YY_MACRO_USER_INIT, [[]])
 ]])
-m4_ifdef( [[__yyUserAction]],, [[
-  m4_define(__yyUserAction, [[]])
+m4_ifdef( [[YY_MACRO_USER_ACTION]],, [[
+  m4_define(YY_MACRO_USER_ACTION, [[]])
 ]])
 
 m4_define( [[YY_DO_BEFORE_ACTION]], [[
@@ -230,11 +228,11 @@ func (yy *Scanner) Lex() YYtype {
 	_ = yyleng
 	m4_ifdef( [[M4_YY_USE_LINENO]], [[_ =  yylineno]] )
 
-	__yyUserData
+	YY_MACRO_USER_DATA
 
 	if !yy.init {
 		yy.init = true
-		__yyUserInit
+		YY_MACRO_USER_INIT
 		if yy.In == nil {
 			yy.In = os.Stdin
 		}

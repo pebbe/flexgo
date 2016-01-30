@@ -49,12 +49,14 @@ func main() {
 		fmt.Fprintf(fp, "\tgcc -s -Wall -o %s-c %s-c.c\n", test.Name, test.Name)
 		fmt.Fprintf(fp, "\t./%s-c %s > %s-c.out\n", test.Name, test.Files, test.Name)
 		fmt.Fprintf(fp, "\t../src/flex --go --noline %s -o %s-go.go %s 2> %s-go.err \n", test.Opts, test.Name, test.Glex, test.Name)
-		fmt.Fprintf(fp, "\tgofmt -w %s-go.go\n", test.Name)
+		fmt.Fprintf(fp, "\t@gofmt -w %s-go.go\n", test.Name)
 		fmt.Fprintf(fp, "\tgo build %s-go.go\n", test.Name)
 		fmt.Fprintf(fp, "\t./%s-go %s > %s-go.out\n", test.Name, test.Files, test.Name)
-		fmt.Fprintf(fp, "\tdiff -q %s-c.out %s-go.out\n", test.Name, test.Name)
-		fmt.Fprintf(fp, "\tdiff -q %s-c.err %s-go.err\n", test.Name, test.Name)
-		fmt.Fprintf(fp, "\ttouch %s.ok\n", test.Name)
+		fmt.Fprintf(fp, "\t@diff -q %s-c.out %s-go.out\n", test.Name, test.Name)
+		fmt.Fprintf(fp, "\t@echo -n %c[1m\n", 27)
+		fmt.Fprintf(fp, "\t@diff -U0 %s-c.err %s-go.err || true\n", test.Name, test.Name)
+		fmt.Fprintf(fp, "\t@echo %c[0m\n", 27)
+		fmt.Fprintf(fp, "\t@touch %s.ok\n", test.Name)
 	}
 
 	fp.Close()

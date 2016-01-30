@@ -73,7 +73,7 @@ baz    {
 		    yyout.Write(b)
 		}
 		yyout.Write([]byte("<<<\n"))
-		yyterminate(nil)
+		yyterminate()
 	}
 
 }

@@ -4,41 +4,6 @@ Based on flex version 2.6.0, see: http://flex.sourceforge.net/
 
 Keywords: flex, lex, go, golang
 
-**Needs more testing**
-
-## To do
-
- * ~~a simple pattern~~
- * ~~a simple pattern with ^~~
- * ~~trailing context~~
- * ~~pattern with EOF~~
- * ~~yy.Wrap()~~
- * ~~REJECT~~
- * ~~REJECT with trailing context~~
- * ~~BEGIN(state)~~
- * ~~yyless(n)~~
- * ~~yymore()~~
- * ~~yyinput()~~
- * ~~yyunput(c)~~
- * ~~yy.UserData~~
- * ~~yy.UserAction~~
- * ~~--yylineno~~
- * ~~non-default table compression~~
- * copy and modify all tests from subdirectory `tests` to work with `flexgo`
- * documentation
-
-## Not implemented
-
-Multiple buffers are not supported. If you want to switch input sources
-temporarily, just start another scanner. There are no global variables.
-
-Ignored options:
-
- * --7bit
- * --array
- * --c++
- * --reentrant
-
 ## Minimal scanner
 
     %top{
@@ -89,9 +54,21 @@ Ignored options:
         // code to put at the end of the file
 
         func main() {
-            // runs the scanner on files given as arguments, or stdin if there are no arguments
+            // runs yy.Lex() on files given as arguments, or stdin if there are no arguments
             YYmain(os.Args[1:]...)
         }
+
+## Not implemented
+
+Multiple buffers are not supported. If you want to switch input sources
+temporarily, just start another scanner. There are no global variables.
+
+Ignored options:
+
+ * --array
+ * --c++
+ * --reentrant
+ * others... TODO
 
 ## Difference between C output and Go output
 
@@ -101,21 +78,15 @@ Ignored options:
     ----------------------------------------------------------------
             yyin               yy.In      io.Reader
             yyout              yy.Out     io.Writer
-            yytext             yy.Text    []byte
-            yyleng             yy.Leng    int
             yylineno           yy.Lineno  int
+            yytext             yytext     []byte
 
     YY_DECL yylex(void)        yy.Lex() YYtype
+        int yywrap(void)       yy.Wrap() bool
         int input(void)        yyinput() (byte, error)
-            unput(int)         yyunput(byte)
+       void unput(int)         yyunput(byte)
 
-Inside actions, the names `yyout`, `yytext`, `yyleng`, and `yylineno`
-are also available.
-
-### yy.Wrap()
-
-`yy.Wrap` is a variable containing a function that returns a bool. The
-default returns `true`.
+Inside actions, the names `yyout` and `yylineno` are also available.
 
 ### yy.IsInteractive(io.Reader)
 
@@ -125,5 +96,9 @@ bool. The default returns `true` is `flexgo` was called with option
 option?)
 
 ### YYmain()
+
+TODO
+
+### Macros
 
 TODO

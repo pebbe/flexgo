@@ -54,6 +54,16 @@
   glex: Test1go.l
   opts: -b --yylineno
   files: txt*
+- name: Test1-p
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -p --yylineno
+  files: txt*
+- name: Test1-v
+  clex: Test1c.l
+  glex: Test1go.l
+  opts: -v --yylineno
+  files: txt*
 - name: Test1-T
   clex: Test1c.l
   glex: Test1go.l

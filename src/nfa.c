@@ -262,7 +262,11 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 
 	    if (headcnt > 0) {
 		if (rule_has_nl[num_rules]) {
-		    snprintf (action_text, sizeof(action_text),
+		    if (Go)
+			snprintf (action_text, sizeof(action_text),
+				  "YY_LINENO_REWIND_TO(yyBp + %d)\n", headcnt);
+		    else
+			snprintf (action_text, sizeof(action_text),
 			      "YY_LINENO_REWIND_TO(%s + %d);\n", scanner_bp, headcnt);
 		    add_action (action_text);
 		}
@@ -281,8 +285,12 @@ void    finish_rule (mach, variable_trail_rule, headcnt, trailcnt,
 
 	    else {
 		if (rule_has_nl[num_rules]) {
-		    snprintf (action_text, sizeof(action_text),
-			      "YY_LINENO_REWIND_TO(yy_cp - %d);\n", trailcnt);
+		    if (Go)
+			snprintf (action_text, sizeof(action_text),
+				  "YY_LINENO_REWIND_TO(yyCp - %d)\n", trailcnt);
+		    else
+			snprintf (action_text, sizeof(action_text),
+				  "YY_LINENO_REWIND_TO(yy_cp - %d);\n", trailcnt);
 		    add_action (action_text);
 		}
 

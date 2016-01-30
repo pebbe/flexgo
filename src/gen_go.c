@@ -1807,10 +1807,10 @@ void make_tables_go (void)
 	indent_down_go ();
 	indent_puts_go ("}");
     }
-    indent_puts_go ("__yyUserAction");
     if (do_yylineno) {
 	indent_puts_go ("yylineno = yy.Lineno");
     }
+    indent_puts_go ("YY_MACRO_USER_ACTION");
     indent_down_go ();
     indent_puts_go ("]])");
 
