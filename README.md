@@ -141,7 +141,7 @@ for.
     BEGIN (x + y)   // OK
     BEGIN(x + y)    // Error: MUST use space
 
-`input(c) is defined as a macro with argument:
+`input(c)` and `yyless(n)` are defined as macros with argument:
 
     yyunput(c)      // OK
     yyunput (c)     // Error: MUST NOT use space
