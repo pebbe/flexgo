@@ -1900,4 +1900,6 @@ void usage ()
 		  "  -V, --version           report %s version\n"),
 		 backing_name, program_name, outfile_path, program_name);
 
+	fprintf (f, _("\nFor generating Go code, see https://github.com/pebbe/flexgo\n\n"));
+
 }
