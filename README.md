@@ -66,7 +66,7 @@ To compile a flex file into Go code, call one of these:
     flex -G
     flexgo
 
-Run `flex` without `--go` of `-G` to get the behaviour of regular `flex`.
+Run `flex` without `--go` or `-G` to get the behaviour of regular `flex`.
 
 Regular `flex` output is C code with a lot of global variables. With the
 option `--reentrant` you get a scanner with those variables encapsulated
@@ -91,21 +91,23 @@ Ignored/irrelevant options:
 
 ## Difference between C output and Go output
 
-### Functions and variables
+### Variables and functions
 
             C                  Go
     ----------------------------------------------------------------
-            yyin               yy.In      io.Reader
-            yyout              yy.Out     io.Writer
-            yylineno           yy.Lineno  int
-            yytext             yytext     []byte
+            yyin               yy.In       io.Reader
+            yyout              yy.Out      io.Writer
+            yylineno           yy.Lineno   int
+            yytext             yytext      []byte
+        int yywrap(void)       yy.Wrap     func() bool
 
     YY_DECL yylex(void)        yy.Lex() YYtype
-        int yywrap(void)       yy.Wrap() bool
         int input(void)        yyinput() (byte, error)
        void unput(int)         yyunput(byte)
 
 Inside actions, the names `yyout` and `yylineno` are also available.
+
+The default value of `yy.Wrap` is a function that always returns `true`.
 
 ### Macros
 
