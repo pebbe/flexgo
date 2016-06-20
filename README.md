@@ -87,7 +87,7 @@ To pass in extra parameters to the scanner, do:
         // type of Scanner.Context
         type YYcontext struct {
             foo int
-	    bar int
+            bar int
         }
 
         // more...
