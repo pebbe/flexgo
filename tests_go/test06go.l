@@ -12,6 +12,9 @@ import (
 // return type of yy.Lex()
 type YYtype interface{}
 
+// type of Scanner.Context
+type YYcontext interface{}
+
 }
 
 %%

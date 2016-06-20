@@ -41,6 +41,7 @@ const char *skel1_go[] = {
   "	Filename      string",
   "	Wrap          func(*Scanner) bool",
   "	IsInteractive func(io.Reader) bool",
+  "	Context       YYcontext",
   "",
   "	lastAcceptingState   int",
   "	lastAcceptingCpos    int",

@@ -21,6 +21,9 @@ Keywords: flex, lex, go, golang
         // return type of yy.Lex()
         type YYtype interface{}
 
+        // type of Scanner.Context
+        type YYcontext interface{}
+
     }
 
     %{
@@ -76,6 +79,14 @@ scanner.
 The Go code produced with `flexgo` has no global variables, other then
 those that should never be changed. A scanner is an object you create
 with `NewScanner()` and then you call its `Lex()` method.
+
+To pass in extra variables, define the type of `YYcontext` in the
+header, and do:
+
+    scanner := NewScanner()
+    scanner.Context.foo = bar
+    scanner.In = os.Stdin
+    scanner.Lex()
 
 ## Not implemented
 
