@@ -406,7 +406,8 @@ func (yy *Scanner) Lex() YYtype {
 			log.Panicln("fatal flex scanner internal error--no action found:", yyAct)
 		} // end of action switch
 	} // end of scanning one token
-	return nil
+	var yyvalue YYtype
+	return yyvalue
 } // end of yylex
 
 /* yy_get_next_buffer - try to read in a new buffer
