@@ -57,6 +57,10 @@ static int indent_level = 0;	/* each level is 8 spaces */
 
 static const char *get_int16_decl (void)
 {
+    if (Go)
+	return (gentables)
+	    ? "var %s = [%d]int16{   0,\n"
+	    : "var %s []int16\n";
 	return (gentables)
 		? "static yyconst flex_int16_t %s[%d] =\n    {   0,\n"
 		: "static yyconst flex_int16_t * %s = 0;\n";
@@ -65,6 +69,10 @@ static const char *get_int16_decl (void)
 
 static const char *get_int32_decl (void)
 {
+    if (Go)
+	return (gentables)
+	    ? "var %s = [%d]int32{   0,\n"
+	    : "var %s []int32\n";
 	return (gentables)
 		? "static yyconst flex_int32_t %s[%d] =\n    {   0,\n"
 		: "static yyconst flex_int32_t * %s = 0;\n";
@@ -72,6 +80,10 @@ static const char *get_int32_decl (void)
 
 static const char *get_state_decl (void)
 {
+    if (Go)
+	return (gentables)
+	    ? "var %s = [%d]int{   0,\n"
+	    : "var %s []int\n";
 	return (gentables)
 		? "static yyconst yy_state_type %s[%d] =\n    {   0,\n"
 		: "static yyconst yy_state_type * %s = 0;\n";
@@ -79,6 +91,10 @@ static const char *get_state_decl (void)
 
 static const char *get_uint16_decl (void)
 {
+    if (Go)
+	return (gentables)
+	    ? "var %s = [%d]uint16{   0,\n"
+	    : "var %s []uint16\n";
 	return (gentables)
 		? "static yyconst flex_uint16_t %s[%d] =\n    {   0,\n"
 		: "static yyconst flex_uint16_t * %s = 0;\n";
@@ -86,6 +102,10 @@ static const char *get_uint16_decl (void)
 
 static const char *get_uint32_decl (void)
 {
+    if (Go)
+	return (gentables)
+	    ? "var %s = [%d]uint32{     0,\n"
+	    : "var %s []uint32\n";
 	return (gentables)
 		? "static yyconst flex_uint32_t %s[%d] =\n    {   0,\n"
 		: "static yyconst flex_uint32_t * %s = 0;\n";
@@ -93,6 +113,10 @@ static const char *get_uint32_decl (void)
 
 static const char *get_yy_char_decl (void)
 {
+    if (Go)
+	return (gentables)
+	    ? "var %s = [%d]byte{    0,\n"
+	    : "var %s []byte\n";
 	return (gentables)
 		? "static yyconst YY_CHAR %s[%d] =\n    {   0,\n"
 		: "static yyconst YY_CHAR * %s = 0;\n";
@@ -1047,10 +1071,10 @@ void gen_start_state (void)
 	}
 
 	else {
-		indent_puts ("yy_current_state = YY_G(yy_start);");
+	    indent_puts (Go ? "yy_current_state = yy_start" : "yy_current_state = YY_G(yy_start);");
 
 		if (bol_needed)
-			indent_puts ("yy_current_state += YY_AT_BOL();");
+		    indent_puts (Go ? "yy_current_state += YY_AT_BOL()" : "yy_current_state += YY_AT_BOL();");
 
 		if (reject) {
 			/* Set up for storing up states. */
@@ -1579,8 +1603,8 @@ void make_tables (void)
 
 	/* This is where we REALLY begin generating the tables. */
 
-	out_dec ("#define YY_NUM_RULES %d\n", num_rules);
-	out_dec ("#define YY_END_OF_BUFFER %d\n", num_rules + 1);
+	out_dec (Go ? "const YY_NUM_RULES = %d\n" : "#define YY_NUM_RULES %d\n", num_rules);
+	out_dec (Go ? "const YY_END_OF_BUFFER = %d\n" : "#define YY_END_OF_BUFFER %d\n", num_rules + 1);
 
 	if (fullspd) {
 		/* Need to define the transet type as a size large
@@ -1620,12 +1644,20 @@ void make_tables (void)
 		indent_puts
 			("/* This struct is not used in this scanner,");
 		indent_puts ("   but its presence is necessary. */");
-		indent_puts ("struct yy_trans_info");
-		indent_up ();
-		indent_puts ("{");
-		indent_puts ("flex_int32_t yy_verify;");
-		indent_puts ("flex_int32_t yy_nxt;");
-		indent_puts ("};");
+		if (Go) {
+		    indent_puts("type yy_trans_info struct {");
+		    indent_up();
+		    indent_puts ("yy_verify int32");
+		    indent_puts ("yy_nxt    int32");
+		    indent_puts ("}");
+		} else {
+		    indent_puts ("struct yy_trans_info");
+		    indent_up ();
+		    indent_puts ("{");
+		    indent_puts ("flex_int32_t yy_verify;");
+		    indent_puts ("flex_int32_t yy_nxt;");
+		    indent_puts ("};");
+		}
 		indent_down ();
 	}
 
@@ -1706,10 +1738,17 @@ void make_tables (void)
 	 */
 	if (num_backing_up > 0 && !reject) {
 		if (!C_plus_plus && !reentrant) {
+		    if (Go) {
+			indent_puts
+				("var yy_last_accepting_state int");
+			indent_puts
+				("var yy_last_accepting_cpos int");
+		    } else {
 			indent_puts
 				("static yy_state_type yy_last_accepting_state;");
 			indent_puts
 				("static char *yy_last_accepting_cpos;\n");
+		    }
 		}
 	}
 
@@ -1766,9 +1805,14 @@ void make_tables (void)
 	}
 
 	if (!C_plus_plus && !reentrant) {
+	    if (Go) {
+		indent_put2s ("var yy_flex_debug = %s\n",
+			      ddebug ? "true" : "false");
+	    } else {
 		indent_puts ("extern int yy_flex_debug;");
 		indent_put2s ("int yy_flex_debug = %s;\n",
 			      ddebug ? "1" : "0");
+	    }
 	}
 
 	if (ddebug) {		/* Spit out table mapping rules to line numbers. */
@@ -1821,10 +1865,14 @@ void make_tables (void)
 	}
 
 	else {
+	    if (Go) {
+		// TODO
+	    } else {
 		outn ("/* The intent behind this definition is that it'll catch");
 		outn (" * any uses of REJECT which flex missed.");
 		outn (" */");
 		outn ("#define REJECT reject_used_but_not_detected");
+	    }
 	}
 
 	if (yymore_used) {
@@ -1868,10 +1916,14 @@ void make_tables (void)
 	}
 
 	else {
+	    if (Go) {
+		// TODO
+	    } else {
 		indent_puts
 			("#define yymore() yymore_used_but_not_detected");
 		indent_puts ("#define YY_MORE_ADJ 0");
 		indent_puts ("#define YY_RESTORE_YY_MORE_OFFSET");
+	    }
 	}
 
 	if (!C_plus_plus) {
@@ -1887,15 +1939,17 @@ void make_tables (void)
 
 		else {
 			if(! reentrant)
-                outn ("char *yytext;");
+			    outn (Go ? "var yytext []byte" : "char *yytext;");
 		}
 	}
 
-	out (&action_array[defs1_offset]);
+	if (!Go)
+	    out (&action_array[defs1_offset]);
 
 	line_directive_out (stdout, 0);
 
 	skelout ();		/* %% [5.0] - break point in skel */
+
 
 	if (!C_plus_plus) {
 		if (use_read) {
