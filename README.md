@@ -80,13 +80,28 @@ The Go code produced with `flexgo` has no global variables, other then
 those that should never be changed. A scanner is an object you create
 with `NewScanner()` and then you call its `Lex()` method.
 
-To pass in extra variables, define the type of `YYcontext` in the
-header, and do:
+To pass in extra parameters to the scanner, do:
+
+    %top{
+
+        // type of Scanner.Context
+        type YYcontext struct {
+            foo int
+	    bar int
+        }
+
+        // more...
+
+    }
+
+    //more ...
 
     scanner := NewScanner()
-    scanner.Context.foo = bar
-    scanner.In = os.Stdin
+    scanner.Context.foo = 42
+    scanner.Context.bar = 1999
     scanner.Lex()
+
+Inside the scanner, the variable is available as `yy.Context.foo`
 
 ## Not implemented
 
