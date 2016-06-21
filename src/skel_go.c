@@ -78,6 +78,8 @@ const char *skel1_go[] = {
   "func NewScanner() *Scanner {",
   "	yy := Scanner{",
   "		m4_ifdef( [[M4_YY_USE_LINENO]], [[Lineno: 1,]])",
+  "		In:            os.Stdin,",
+  "		Out:           os.Stdout,",
   "		Wrap:          func(yyy *Scanner) bool { return true },",
   "		IsInteractive: func(file io.Reader) bool { return yyInteractiveDefault },",
   "		bufSize:       yyBufSize,",
